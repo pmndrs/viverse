@@ -134,7 +134,7 @@ export default function App() {
 />
 ```
 
-# Prerequisites
+## Step 0: Prerequisites
 
 Make sure you have the required dependencies installed:
 
@@ -142,7 +142,7 @@ Make sure you have the required dependencies installed:
 npm install three @react-three/fiber @react-three/viverse @react-three/drei
 ```
 
-# Setting Up the Canvas
+## Step 1: Setting Up the Canvas
 
 First, let's create the basic Canvas setup with shadows and proper camera settings:
 
@@ -168,13 +168,9 @@ export function App() {
 }
 ```
 
-# Creating the Scene
+## Step 2: Adding the Scene and creating the Sky
 
-Now let's build our game scene step by step. We'll start simple and add complexity gradually so you can see the progress at each stage.
-
-## Step 1: Adding the Sky
-
-Let's start with just the sky and basic lighting. Add the `Sky` import from `@react-three/drei`:
+Let's create another component called `Scene` and add the sky and basic lighting. Add the `Sky` import from `@react-three/drei`:
 
 ```jsx
 import { Sky } from '@react-three/drei'
@@ -199,7 +195,7 @@ export function Scene() {
 
 At this point, you should see a beautiful sky gradient in your scene!
 
-## Step 2: Building the Level
+## Step 3: Building the Level
 
 Now add the level geometry. Import `FixedBvhPhysicsBody` and `PrototypeBox` from `@react-three/viverse`, and expand the directional light with shadow properties:
 
@@ -267,7 +263,7 @@ export function Scene() {
 
 Now you should see a colorful platformer level with various platforms at different heights!
 
-## Step 3: Adding the Character
+## Step 4: Adding the Character
 
 Add the character. Import `SimpleCharacter` from `@react-three/viverse`:
 
@@ -304,7 +300,7 @@ export function Scene() {
 
 Great! Now you can move around with WASD keys, look around with the mouse, and jump with the spacebar. Try jumping between the platforms!
 
-## Step 4: Adding Respawn Logic
+## Step 5: Adding Respawn Logic
 
 Finally, add the respawn system. Import `useRef` from `react` and `useFrame` from `@react-three/fiber` and add the respawn logic:
 

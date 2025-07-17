@@ -4,7 +4,7 @@ description: Complete reference for all available components and hooks in @react
 nav: 2
 ---
 
-# Components
+## Components
 
 ## `<Viverse>`
 
@@ -32,7 +32,7 @@ The main provider component that sets up Viverse authentication and physics cont
 </Viverse>
 ```
 
-## `<SimpleCharacter>`
+### `<SimpleCharacter>`
 
 Creates a simple character controller with physics based on three-mesh-bvh, walking, running, jumping actions, and camera controls. Automatically uses the active Viverse avatar if authenticated.
 
@@ -54,7 +54,7 @@ Provides physics context for collision detection. Usually wrapped automatically 
 
 - `children?: ReactNode` - Child components
 
-## `<FixedBvhPhysicsBody>`
+### `<FixedBvhPhysicsBody>`
 
 Adds child meshes as static collision objects to the physics world.
 
@@ -76,7 +76,7 @@ Adds child meshes as static collision objects to the physics world.
 </FixedBvhPhysicsBody>
 ```
 
-## `<PrototypeBox>`
+### `<PrototypeBox>`
 
 A quick prototyping component that renders a textured box with the prototype material.
 
@@ -91,7 +91,7 @@ A quick prototyping component that renders a textured box with the prototype mat
 <PrototypeBox position={[0, 1, 0]} scale={[2, 1, 3]} color="red" />
 ```
 
-## `<VrmCharacterModelBone>`
+### `<VrmCharacterModelBone>`
 
 Component for placing content inside the in VRM character models.
 
@@ -107,7 +107,7 @@ Component for placing content inside the in VRM character models.
 </SimpleCharacter>
 ```
 
-# Hooks
+## Hooks
 
 | Hook                             | Description                                                   | Returns                                                          |
 | -------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------- |
@@ -125,11 +125,11 @@ Component for placing content inside the in VRM character models.
 > [!NOTE]
 > `useViverseClient()` throws an error if not within a `<Viverse>` provider. All avatar-related hooks return `undefined` when the user is not authenticated.
 
-# SimpleCharacter Options
+## SimpleCharacter Options
 
 The `SimpleCharacter` component accepts detailed configuration options for customizing character behavior:
 
-## `movement` Options
+### `movement` Options
 
 - **walk:** `object | boolean` - Enable walking (default: `true`)
   - **speed:** Movement speed in units per second (default: `2.5`)
@@ -145,7 +145,7 @@ The `SimpleCharacter` component accepts detailed configuration options for custo
   - **speed:** Jump velocity in units per second (default: `8`)
   - Set to `false` to disable jumping
 
-## `input` Options
+### `input` Options
 
 Either a array of `Input` objects or a custom `InputSystem`
 
@@ -158,7 +158,7 @@ Either a array of `Input` objects or a custom `InputSystem`
 - `PointerCaptureInput` - Mouse look with pointer capture (requires manual `setPointerCapture`)
 - `PointerLockInput` - Mouse look with pointer lock (requires manual `requestPointerLock`)
 
-## `model` Options
+### `model` Options
 
 - **url:** `string` - URL to VRM model file
 - **castShadow:** `boolean` - Enable shadow casting (default: `true`)
@@ -166,7 +166,7 @@ Either a array of `Input` objects or a custom `InputSystem`
 - Set to `false` to disable model loading
 - Set to `true` or omit to use default robot model
 
-## `physics` Options
+### `physics` Options
 
 - **capsuleRadius:** `number` - Character collision capsule radius (default: `0.4`)
 - **capsuleHeight:** `number` - Character collision capsule height (default: `1.7`)
@@ -174,7 +174,7 @@ Either a array of `Input` objects or a custom `InputSystem`
 - **linearDamping:** `number` - Air resistance coefficient (default: `0.1`)
 - **slopeGroundingThreshold:** `number` - Slope detection threshold (default: `0.25`)
 
-## `cameraBehavior` Options
+### `cameraBehavior` Options
 
 - **collision:** `object | boolean` - Enable camera collision (default: `true`)
   - **offset:** `number` - Collision offset distance (default: `0.2`)
@@ -193,7 +193,7 @@ Either a array of `Input` objects or a custom `InputSystem`
   - **minDistance:** `number` - Minimum camera distance (default: `1`)
   - **maxDistance:** `number` - Maximum camera distance (default: `7`)
 
-## `animation` Options
+### `animation` Options
 
 - **yawRotationBasedOn:** `'camera' | 'movement'` - Character rotation basis (default: `'movement'`)
 - **maxYawRotationSpeed:** `number` - Maximum rotation speed (default: `10`)
@@ -207,7 +207,7 @@ The `SimpleCharacter` uses the following animations `walk`, `run`, `idle`, `jump
 - **trimTime:** `{ start?: number; end?: number }` - Trim animation timing
 - **scaleTime:** `number` - Scale animation playback speed
 
-# PrototypeMaterial
+## PrototypeMaterial
 
 The `<prototypeMaterial>` component provides a textured material for prototyping using kenney.nl's prototype texture.
 

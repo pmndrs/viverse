@@ -71,8 +71,6 @@ First, we switch from third-person to first-person camera behavior and hide the 
 - `model={false}` - Hides the character model since in first-person view, you don't want to see your own character
 - `cameraBehavior={FirstPersonCharacterCameraBehavior}` - Switches from the default third-person camera to first-person camera behavior
 
-### Step 2: Configure Input Controls
-
 Next, you need to set up the appropriate input controls for first-person movement and looking around:
 
 ```jsx
@@ -86,7 +84,7 @@ Next, you need to set up the appropriate input controls for first-person movemen
 - `LocomotionKeyboardInput` - Handles WASD movement controls for walking around
 - `PointerLockInput` - Enables mouse look controls for rotating the camera/view direction
 
-We need to enable pointer locking when the user clicks on the canvas for the `PointerLockInput` to work properly:
+Finally, we need to enable pointer locking when the user clicks on the canvas for the `PointerLockInput` to work properly:
 
 ```jsx
 <Canvas

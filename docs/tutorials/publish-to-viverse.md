@@ -4,12 +4,12 @@ description: Learn how to deploy your game to Viverse using the CLI.
 nav: 9
 ---
 
-# Prerequisites
+## Prerequisites
 
 - Node.js version 22 or higher installed
 - A Viverse account (create one at [viverse.htcvive.com](https://viverse.htcvive.com))
 
-# Step 1: Install the Viverse CLI
+## Step 1: Install the Viverse CLI
 
 Install the official Viverse command-line interface:
 
@@ -17,7 +17,7 @@ Install the official Viverse command-line interface:
 npm install -g @viverse/cli
 ```
 
-# Step 2: Authenticate with Viverse
+## Step 2: Authenticate with Viverse
 
 Before you can create apps or deploy, you need to authenticate with your Viverse account:
 
@@ -25,7 +25,7 @@ Before you can create apps or deploy, you need to authenticate with your Viverse
 viverse-cli auth login
 ```
 
-# Step 3: Create a Viverse App
+## Step 3: Create a Viverse App
 
 Create a new app entry in the Viverse platform:
 
@@ -35,14 +35,14 @@ viverse-cli app create
 
 After creation, **note the App ID** - you'll need this for deployment.
 
-# Step 4: Configure Your App ID
+## Step 4: Configure Your App ID
 
 You have two options for providing the App ID to your application:
 
 > [!TIP]
 > Do not include the App ID in your local development environment. Keep it production-only to avoid conflicts during development.
 
-## Option 1: Environment Variable
+### Option 1: Environment Variable
 
 > only applies when you are building with vite
 
@@ -53,7 +53,7 @@ Create a production environment file (`.env.prod`) in your project root and use 
 VITE_VIVERSE_APP_ID=your-app-id-here
 ```
 
-## Option 2: Direct Configuration
+### Option 2: Direct Configuration
 
 Alternatively, you can pass the App ID directly to the Viverse component:
 
@@ -63,11 +63,11 @@ Alternatively, you can pass the App ID directly to the Viverse component:
 </Viverse>
 ```
 
-# Step 5: Build Your Application
+## Step 5: Build Your Application
 
 Build your application for production. The exact command depends on your build tool.
 
-# Step 6: Deploy to Viverse
+## Step 6: Deploy to Viverse
 
 Deploy your built application to the Viverse platform:
 
