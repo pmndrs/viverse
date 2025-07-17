@@ -1,0 +1,95 @@
+
+In this tutorial we will configure the `SimpleCharacter` to use first person controls with the following result:
+
+```jsx
+commenting out for now until packages are published - this will be a live codesandbox
+<Sandpack
+  template="react-ts"
+  customSetup={{
+    dependencies: {
+      'three': 'latest',
+      '@react-three/fiber': 'latest',
+      '@react-three/viverse': 'latest',
+      '@react-three/drei': 'latest',
+    },
+  }}
+  files={{
+    '/App.tsx': `
+import { Sky } from '@react-three/drei'
+import { Canvas } from '@react-three/fiber'
+import {
+  Viverse,
+  SimpleCharacter,
+  FixedBvhPhysicsBody,
+  PrototypeBox,
+  FirstPersonCharacterCameraBehavior,
+  PointerLockInput,
+  LocomotionKeyboardInput,
+} from '@react-three/viverse'
+
+export default function App() {
+  return (
+   <Canvas
+      onClick={(e) => (e.target as HTMLElement).requestPointerLock()}
+      style={{ position: 'absolute', inset: '0', touchAction: 'none' }}
+    >
+      <Viverse>
+        <Sky />
+        <directionalLight intensity={1.2} position={[-10, 10, -10]} />
+        <ambientLight intensity={1} />
+        <SimpleCharacter
+          model={false}
+          input={[LocomotionKeyboardInput, PointerLockInput]}
+          cameraBehavior={FirstPersonCharacterCameraBehavior}
+        />
+        <FixedBvhPhysicsBody>
+          <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
+        </FixedBvhPhysicsBody>
+      </Viverse>
+    </Canvas>,
+  )
+}`}}
+/>
+```
+
+First, we switch from third-person to first-person camera behavior and hide the character model to prevent the model from occluding the players view.
+
+```jsx
+<SimpleCharacter
+  model={false}
+  cameraBehavior={FirstPersonCharacterCameraBehavior}
+  // ... other props
+/>
+```
+
+**Changes:**
+- `model={false}` - Hides the character model since in first-person view, you don't want to see your own character
+- `cameraBehavior={FirstPersonCharacterCameraBehavior}` - Switches from the default third-person camera to first-person camera behavior
+
+### Step 2: Configure Input Controls
+
+Next, you need to set up the appropriate input controls for first-person movement and looking around:
+
+```jsx
+<SimpleCharacter
+  input={[LocomotionKeyboardInput, PointerLockInput]}
+  // ... other props
+/>
+```
+
+**Input components:**
+- `LocomotionKeyboardInput` - Handles WASD movement controls for walking around
+- `PointerLockInput` - Enables mouse look controls for rotating the camera/view direction
+
+We need to enable pointer locking when the user clicks on the canvas for the `PointerLockInput` to work properly:
+
+```jsx
+<Canvas
+  onClick={(e) => (e.target as HTMLElement).requestPointerLock()}
+>
+  {/* ... rest of your scene */}
+</Canvas>
+```
+
+**What this does:**
+- `onClick={(e) => (e.target as HTMLElement).requestPointerLock()}` - When the user clicks anywhere on the canvas, it requests pointer lock, which captures the mouse cursor and allows for unlimited mouse movement for camera control

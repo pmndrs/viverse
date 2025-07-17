@@ -1,0 +1,89 @@
+name: Deploy Packages
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  deploy-packages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        with:
+          version: 10
+          run_install: false
+
+      - uses: gittools/actions/gitversion/setup@v0
+        with:
+          versionSpec: "5.x"
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Check
+        run: |
+          pnpm -r check:prettier
+          pnpm -r check:eslint
+      
+      - name: Build
+        run: |
+          pnpm -r convert
+          pnpm -r generate
+          pnpm -r build
+
+      - name: Copy README
+        run: cp ./README.md packages/react
+
+      - name: Gitversion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0
+
+      - name: Set Version
+        run: pnpm -r exec json -f "package.json" -I -e 'this.version = "${{ steps.gitversion.outputs.fullSemVer }}"'
+
+      - name: Set publishing config
+        run: pnpm config set '//registry.npmjs.org/:_authToken' "${{ secrets.NPM_TOKEN }}"
+
+      - name: Deploy msdfonts Package
+        working-directory: ./packages/msdfonts
+        run: pnpm publish --access public --no-git-checks --tag ${{ steps.gitversion.outputs.preReleaseLabel == '' && 'latest' || steps.gitversion.outputs.preReleaseLabel }}
+
+      - name: Deploy Uikit Vanilla Package
+        working-directory: ./packages/uikit
+        run: pnpm publish --access public --no-git-checks --tag ${{ steps.gitversion.outputs.preReleaseLabel == '' && 'latest' || steps.gitversion.outputs.preReleaseLabel }}
+      
+      - name: Deploy Uikit-Lucide Vanilla Package
+        working-directory: ./packages/icons/lucide/vanilla
+        run: pnpm publish --access public --no-git-checks --tag ${{ steps.gitversion.outputs.preReleaseLabel == '' && 'latest' || steps.gitversion.outputs.preReleaseLabel }}   
+
+      - name: Deploy Uikit React Package
+        working-directory: ./packages/react
+        run: pnpm publish --access public --no-git-checks --tag ${{ steps.gitversion.outputs.preReleaseLabel == '' && 'latest' || steps.gitversion.outputs.preReleaseLabel }}
+      
+      - name: Deploy Uikit-Lucide React Package
+        working-directory: ./packages/icons/lucide/react
+        run: pnpm publish --access public --no-git-checks --tag ${{ steps.gitversion.outputs.preReleaseLabel == '' && 'latest' || steps.gitversion.outputs.preReleaseLabel }}
+          
+      - name: Deploy Uikit-Default React Package
+        working-directory: ./packages/kits/default
+        run: pnpm publish --access public --no-git-checks --tag ${{ steps.gitversion.outputs.preReleaseLabel == '' && 'latest' || steps.gitversion.outputs.preReleaseLabel }}
+          
+      - name: Deploy Uikit-Apfel React Package
+        working-directory: ./packages/kits/apfel
+        run: pnpm publish --access public --no-git-checks --tag ${{ steps.gitversion.outputs.preReleaseLabel == '' && 'latest' || steps.gitversion.outputs.preReleaseLabel }}
+          

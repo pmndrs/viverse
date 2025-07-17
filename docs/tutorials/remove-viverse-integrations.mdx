@@ -1,0 +1,44 @@
+---
+title: Remove Viverse Integrations
+description: Learn how to build with @react-three/viverse without the viverse integrations.
+nav: 3
+---
+
+To remove the viverse integrations replace the `<Viverse>` component with `<BvhPhysicsWorld>` and remove all Viverse-specific hooks from your components as these hooks will no longer work without the Viverse context.
+
+
+```jsx
+commenting out for now until packages are published - this will be a live codesandbox
+<Sandpack
+  template="react-ts"
+  customSetup={{
+    dependencies: {
+      'three': 'latest',
+      '@react-three/fiber': 'latest',
+      '@react-three/viverse': 'latest',
+      '@react-three/drei': 'latest',
+    },
+  }}
+  files={{
+    '/App.tsx': `
+import { Sky } from '@react-three/drei'
+import { Canvas } from '@react-three/fiber'
+import { BvhPhysicsWorld, SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+
+export default function App() {
+  return (
+    <Canvas shadows style={{ position: "absolute", inset: "0", touchAction: "none" }}>
+      <BvhPhysicsWorld>
+        <Sky />
+        <directionalLight intensity={1.2} position={[-10, 10, -10]} castShadow />
+        <ambientLight intensity={1} />
+        <SimpleCharacter />
+        <FixedBvhPhysicsBody>
+          <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
+        </FixedBvhPhysicsBody>
+      </BvhPhysicsWorld>
+    </Canvas>,
+  )
+}`}}
+/>
+```

@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.47.6",
+    "@pixiv/three-vrm": "^3.4.2",
+    "@pmndrs/uikit": "^1.0.0",
+    "@pmndrs/viverse": "workspace:^",
+    "@viverse/sdk": "^1.2.10-alpha.0"
+  },
+  "scripts": {
+    "dev": "vite --host",
+    "check:eslint": "eslint \"*.{ts,tsx}\"",
+    "fix:eslint": "eslint \"*.{ts,tsx}\" --fix",
+    "deploy": "dotenvx run -f .env.prod -- sh -c 'viverse-cli app publish ./dist --app-id $VITE_VIVERSE_APP_ID'",
+    "build": "dotenvx run -f .env.prod -- vite build"
+  }
+}

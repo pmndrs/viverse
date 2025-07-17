@@ -1,0 +1,69 @@
+---
+title: Introduction
+description: Build 3D web games with threejs and viverse.
+nav: 0
+---
+
+```bash
+npm install three @react-three/fiber @react-three/viverse
+```
+
+### What does it look like?
+
+> A prototype map with the simple character controller and its default model
+
+```jsx
+commenting out for now until packages are published - this will be a live codesandbox
+<Sandpack
+  template="react-ts"
+  customSetup={{
+    dependencies: {
+      'three': 'latest',
+      '@react-three/fiber': 'latest',
+      '@react-three/viverse': 'latest',
+      '@react-three/drei': 'latest',
+    },
+  }}
+  files={{
+    '/App.tsx': `
+import { Sky } from '@react-three/drei'
+import { Canvas } from '@react-three/fiber'
+import { Viverse, SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+
+export default function App() {
+  return (
+    <Canvas shadows style={{ position: "absolute", inset: "0", touchAction: "none" }}>
+      <Viverse>
+        <Sky />
+        <directionalLight intensity={1.2} position={[-10, 10, -10]} castShadow />
+        <ambientLight intensity={1} />
+        <SimpleCharacter />
+        <FixedBvhPhysicsBody>
+          <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
+        </FixedBvhPhysicsBody>
+      </Viverse>
+    </Canvas>,
+  )
+}`}}
+/>
+```
+
+## How to get started
+
+> Some familiarity with
+> react, threejs, and @react-three/fiber, is recommended.
+
+Get started with **[building a simple game](../tutorials/simple-game.mdx)**, take a look at our **[examples](./examples.md)**, or follow one of our **tutorials**:
+
+- [First person controls](../tutorials/first-person.mdx)
+- [Augmented and virtual reality](../tutorials/augmented-and-virtual-reality.mdx)
+- [Accessing avatar and profile](../tutorials/access-avatar-and-profile.mdx)
+- [Using custom animations and models](../tutorials/custom-models-and-animations.mdx)
+- [How to remove the viverse integrations](../tutorials/remove-viverse-integrations.mdx)
+- Building your own character controller - _Coming Soon_
+
+## Not into react?
+
+> No Problem
+
+Check out how to build games using @pmndrs/viverse and only [vanilla three.js](../without-react/index.mdx).

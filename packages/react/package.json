@@ -1,0 +1,20 @@
+{
+  "name": "@react-three/viverse",
+  "description": "Build 3D web games with react-three/fiber and viverse.",
+  "type": "module",
+  "main": "src/index.tsx",
+  "dependencies": {
+    "@pmndrs/viverse": "workspace:^",
+    "@viverse/sdk": "^1.2.10-alpha.0",
+    "suspend-react": "^0.1.3"
+  },
+  "peerDependencies": {
+    "@react-three/fiber": "*",
+    "react": "*"
+  },
+  "devDependencies": {
+    "@react-three/fiber": "^9.2.0",
+    "@types/react": "^19.1.8",
+    "react": "^19.1.0"
+  }
+}

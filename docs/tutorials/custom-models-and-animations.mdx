@@ -1,0 +1,60 @@
+# Using Custom VRM Models
+
+By default, the `SimpleCharacter` component uses a built-in robot avatar. You can easily replace this with your own VRM model by providing a URL to the model file.
+
+```tsx
+import { SimpleCharacter } from '@react-three/viverse'
+
+export function MyCharacter() {
+  return (
+    <SimpleCharacter
+      model={{
+        url: '/path/to/your-model.vrm',
+        castShadow: true,
+        receiveShadow: true
+      }}
+    />
+  )
+}
+```
+
+# Adding Custom Animations
+
+Your can replace the default animations of the `SimpleCharacter` component with files in any of these  three supported animation formats:
+- **VRMA** (VRM Animation) - The native VRM animation format
+- **Mixamo** (FBX) - Popular for character animations
+- **GLTF** - Standard 3D format with animations
+
+Each animation type can be configured individually:
+
+```tsx
+<SimpleCharacter
+  animation={{
+    walk: {
+      type: 'mixamo',
+      url: '/animations/walking.fbx',
+      removeXZMovement: true,
+      scaleTime: 0.8
+    },
+    run: {
+      type: 'vrma', 
+      url: '/animations/running.vrma'
+    },
+    idle: {
+      type: 'gltf',
+      url: '/animations/idle.gltf',
+      trimTime: { start: 0.5, end: 3.0 }
+    }
+  }}
+/>
+```
+
+You can customize any of these animation slots:
+
+- `walk` - Walking animation
+- `run` - Running animation  
+- `idle` - Standing idle animation
+- `jumpStart` - Beginning of jump
+- `jumpUp` - Ascending during jump
+- `jumpLoop` - Mid-air loop animation
+- `jumpDown` - Landing animation

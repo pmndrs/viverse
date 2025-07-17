@@ -1,0 +1,123 @@
+---
+title: Accessing Avatar and Profile
+description: Learn how to display player information and use Viverse avatars in your game.
+nav: 2
+---
+
+This tutorial builds upon the [simple game tutorial](./simple-game.mdx) and shows you how to display a player tag above the character by accessing the user profile information from Viverse.
+
+First, we use the `useViverseProfile()` hook to fetch the current user's profile from Viverse, including their name and avatar information. We provide a fallback for when the user isn't logged in:
+
+```jsx
+const profile = useViverseProfile() ?? {
+  name: 'Anonymous',
+  activeAvatar: { headIconUrl: 'https://picsum.photos/200' },
+}
+```
+
+Next, we need a 3D ui library, install it via
+
+```bash
+pnpm add @react-three/uikit
+```
+
+UIKit provides HTML-like components (`Root`, `Image`, `Text`) that work in 3D space. We create a card-like layout with flexbox:
+
+```jsx
+<Root
+  depthTest={false}
+  renderOrder={1}
+  backgroundOpacity={0.5}
+  borderRadius={10}
+  paddingX={2}
+  height={20}
+  backgroundColor="white"
+  flexDirection="row"
+  alignItems="center"
+  gap={4}
+>
+  <Image 
+    width={16} 
+    height={16} 
+    borderRadius={14} 
+    src={profile.activeAvatar?.headIconUrl} 
+  />
+  <Text fontWeight="bold" fontSize={12} marginRight={3}>
+    {profile.name}
+  </Text>
+</Root>
+```
+
+Next, we use `useFrame` to constantly update the tag's rotation to match the camera:
+
+```jsx
+const ref = useRef()
+
+useFrame((state) => {
+  if (ref.current == null) {
+    return
+  }
+  ref.current.quaternion.copy(state.camera.quaternion)
+})
+```
+
+The full `PlayerTag` component looks like this:
+
+```jsx
+import { useViverseProfile } from '@react-three/viverse'
+import { Root, Image, Text } from '@react-three/uikit'
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+
+function PlayerTag() {
+  const profile = useViverseProfile() ?? {
+    name: 'Anonymous',
+    activeAvatar: { headIconUrl: 'https://picsum.photos/200' },
+  }
+  
+  const ref = useRef()
+  
+  // Make the tag always face the camera
+  useFrame((state) => {
+    if (ref.current == null) {
+      return
+    }
+    ref.current.quaternion.copy(state.camera.quaternion)
+  })
+
+  return (
+    <group ref={ref} position-y={2.15}>
+      <Root
+        depthTest={false}
+        renderOrder={1}
+        backgroundOpacity={0.5}
+        borderRadius={10}
+        paddingX={2}
+        height={20}
+        backgroundColor="white"
+        flexDirection="row"
+        alignItems="center"
+        gap={4}
+      >
+        <Image 
+          width={16} 
+          height={16} 
+          borderRadius={14} 
+          src={profile.activeAvatar?.headIconUrl} 
+        />
+        <Text fontWeight="bold" fontSize={12} marginRight={3}>
+          {profile.name}
+        </Text>
+      </Root>
+    </group>
+  )
+}
+```
+
+Now finally lets add the PlayerTag as a child of SimpleCharacter to display it
+
+```jsx
+<SimpleCharacter>
+  <PlayerTag />
+</SimpleCharacter>
+```
