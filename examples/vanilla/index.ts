@@ -11,7 +11,7 @@ import {
 } from 'three'
 import { BvhPhysicsWorld, SimpleCharacter } from '@pmndrs/viverse'
 import { GLTFLoader, Sky } from 'three/examples/jsm/Addons.js'
-import { Container, withOpacity, Image, Text, reversePainterSortStable } from '@pmndrs/uikit'
+import { Container, withOpacity, Image, Text, reversePainterSortStable, Fullscreen } from '@pmndrs/uikit'
 import { Client } from '@viverse/sdk'
 import AvatarClient from '@viverse/sdk/avatar-client'
 
@@ -20,6 +20,7 @@ camera.position.z = 1
 camera.position.y = 1
 
 const scene = new Scene()
+scene.add(camera)
 const sky = new Sky()
 sky.scale.setScalar(450000)
 const phi = MathUtils.degToRad(40)
@@ -43,6 +44,10 @@ scene.add(new AmbientLight('white', 0.3))
 
 const canvas = document.getElementById('root') as HTMLCanvasElement
 
+const renderer = new WebGLRenderer({ antialias: true, canvas, powerPreference: 'high-performance', alpha: true })
+renderer.shadowMap.enabled = true
+renderer.xr.enabled = true
+
 const gltfLoader = new GLTFLoader()
 const ground = await gltfLoader.loadAsync('./map.glb')
 ground.scene.traverse((object) => {
@@ -51,9 +56,10 @@ ground.scene.traverse((object) => {
 })
 scene.add(ground.scene)
 
-const renderer = new WebGLRenderer({ antialias: true, canvas, powerPreference: 'high-performance', alpha: true })
-renderer.shadowMap.enabled = true
-renderer.xr.enabled = true
+const fullscreen = new Fullscreen(renderer, { alignItems: 'flex-end', justifyContent: 'flex-end', padding: 32 })
+camera.add(fullscreen)
+const viverseLogo = new Image({ src: 'viverse-logo.png', height: 64 })
+fullscreen.add(viverseLogo)
 
 // connect the viverse client and load the profile
 const client =
@@ -111,6 +117,7 @@ renderer.setAnimationLoop(() => {
   renderer.render(scene, camera)
   // update the ui
   container.update(delta)
+  fullscreen.update(delta)
   // rotate the player tag to the user
   playerTag.quaternion.copy(camera.quaternion)
   //respawn player when they felt down

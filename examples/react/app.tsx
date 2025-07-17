@@ -22,6 +22,9 @@ export function App() {
         }
       >
         <Viverse>
+          <Fullscreen alignItems="flex-end" justifyContent="flex-end" padding={32}>
+            <Image src="viverse-logo.png" height={64} />
+          </Fullscreen>
           <Scene />
         </Viverse>
       </Suspense>

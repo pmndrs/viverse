@@ -23,7 +23,7 @@ npm install three @react-three/fiber @react-three/viverse
 
 ### What does it look like?
 
-| A prototype map with the `<SimpleCharacter/>` and its default model. | ![render of the code below](./docs/getting-started/basic-example.gif) |
+| A prototype map with the `<SimpleCharacter/>` component and its default model. | ![render of the code below](./docs/getting-started/basic-example.gif) |
 | --------------------------------------------------------------------------- | --------------------------------------------------------------------- |
 
 ```jsx
