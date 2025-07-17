@@ -37,7 +37,6 @@ jobs:
     with:
       mdx: 'docs'
       libname: 'viverse'
-      base_path: '/viverse/docs'
       icon: '⟁'
       home_redirect: '/getting-started/introduction'
       github: 'https://github.com/pmndrs/viverse'
