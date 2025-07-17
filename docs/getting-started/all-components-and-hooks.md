@@ -30,7 +30,7 @@ The main provider component that sets up Viverse authentication and physics cont
 
 Creates a simple character controller with physics based on three-mesh-bvh, walking, running, jumping actions, and camera controls. Automatically uses the active Viverse avatar if authenticated.
 
-**Props:** See [SimpleCharacter Options](#simplecharacter-options) section below for complete details.
+**Props:** See the SimpleCharacter Options section below for complete details.
 
 **Example:**
 

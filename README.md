@@ -59,6 +59,7 @@ Get started with **[building a simple game](https://docs.pmnd.rs/viverse/tutoria
 - [Accessing avatar and profile](https://docs.pmnd.rs/viverse/tutorials/access-avatar-and-profile)
 - [Using custom animations and models](https://docs.pmnd.rs/viverse/tutorials/custom-models-and-animations)
 - [How to remove the viverse integrations](https://docs.pmnd.rs/viverse/tutorials/remove-viverse-integrations)
+- [Publish to Viverse](https://docs.pmnd.rs/viverse/tutorials/publish-to-viverse)
 - Building your own character controller - _Coming Soon_
 
 ## Not into react?
