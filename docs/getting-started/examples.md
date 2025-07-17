@@ -1,7 +1,7 @@
 ---
 title: Examples
 description: Examples made with @react-three/viverse or @pmndrs/viverse.
-nav: 2
+nav: 1
 ---
 
 <Grid cols={2}>
