@@ -1,4 +1,14 @@
-import { AnimationAction, Euler, Group, LoopOnce, Object3D, Quaternion, Vector3 } from 'three'
+import {
+  AnimationAction,
+  AnimationClip,
+  AnimationMixer,
+  Euler,
+  Group,
+  LoopOnce,
+  Object3D,
+  Quaternion,
+  Vector3,
+} from 'three'
 import {
   Input,
   InputSystem,
@@ -12,7 +22,6 @@ import {
   LastTimeJumpPressedField,
 } from './input/index.js'
 import { BvhCharacterPhysicsOptions, BvhCharacterPhysics, BvhPhysicsWorld } from './physics/index.js'
-import { SimpleAnimationMixer } from './mixer.js'
 import {
   clearVrmCharacterModelCache,
   simpleCharacterAnimationNames as simpleCharacterAnimationNames,
@@ -22,7 +31,17 @@ import {
   VrmModelAnimationOptions,
   VrmCharacterModelOptions,
 } from './model.js'
-import { action, animationFinished, build, duration, forever, parallel, Update } from '@pmndrs/timeline'
+import {
+  action,
+  animationFinished,
+  build,
+  timePassed,
+  forever,
+  parallel,
+  Update,
+  graph,
+  ActionClock,
+} from '@pmndrs/timeline'
 import { SimpleCharacterCameraBehavior, SimpleCharacterCameraBehaviorOptions } from './camera.js'
 import { VRM, VRMUtils } from '@pixiv/three-vrm'
 
@@ -33,7 +52,7 @@ export type SimpleCharacterMovementOptions = {
   jump?:
     | {
         /**
-         * @default 0.15
+         * @default 0.2
          */
         delay?: number
         /**
@@ -64,6 +83,7 @@ export type SimpleCharacterAnimationOptions = {
   readonly jumpUp?: VrmModelAnimationOptions
   readonly jumpLoop?: VrmModelAnimationOptions
   readonly jumpDown?: VrmModelAnimationOptions
+  readonly jumpForward?: VrmModelAnimationOptions
   /**
    * @default "movement"
    */
@@ -78,6 +98,9 @@ export type SimpleCharacterAnimationOptions = {
   crossFadeDuration?: number
 }
 
+const DefaultCrossFadeDuration = 0.1
+const DefaultJumDelay = 0.2
+
 export type SimpleCharacterOptions = {
   /**
    * @default [LocomotionKeyboardInput,PointerCaptureInput]
@@ -88,30 +111,6 @@ export type SimpleCharacterOptions = {
   physics?: BvhCharacterPhysicsOptions
   cameraBehavior?: SimpleCharacterCameraBehaviorOptions
   readonly animation?: SimpleCharacterAnimationOptions
-}
-
-function computeShouldJump(
-  isGrounded: boolean,
-  lastJump: number,
-  lastTimePressed: number | null,
-  options: Exclude<SimpleCharacterOptions['movement'], undefined>['jump'],
-): boolean {
-  if (options === false) {
-    return false
-  }
-  if (options === true) {
-    options = {}
-  }
-  if (!isGrounded) {
-    return false
-  }
-  if (lastTimePressed == null) {
-    return false
-  }
-  if (lastJump > lastTimePressed) {
-    return false
-  }
-  return performance.now() / 1000 - lastTimePressed < (options?.bufferTime ?? 0.1)
 }
 
 //constants
@@ -138,26 +137,63 @@ export async function preloadSimpleCharacterAssets(options: Pick<SimpleCharacter
   // load animations
   return {
     vrm,
-    animations: await Promise.all(
-      simpleCharacterAnimationNames.map(async (name) =>
-        loadVrmCharacterModelAnimation(
-          vrm,
-          options.animation?.[name] ?? (await getSimpleCharacterVrmModelAnimationOptions(name)),
+    animations: (
+      await Promise.all(
+        simpleCharacterAnimationNames.map(async (name) =>
+          loadVrmCharacterModelAnimation(
+            vrm,
+            options.animation?.[name] ?? (await getSimpleCharacterVrmModelAnimationOptions(name)),
+          ),
         ),
-      ),
+      )
+    ).reduce(
+      (prev, animation, i) => {
+        prev[simpleCharacterAnimationNames[i]] = animation
+        return prev
+      },
+      {} as Record<(typeof simpleCharacterAnimationNames)[number], AnimationClip>,
     ),
   }
 }
 
-async function* SimpleCharacterTimeline(
-  camera: Object3D,
-  inputSystem: InputSystem,
-  physics: BvhCharacterPhysics,
-  vrm: VRM | undefined,
-  actions: Record<(typeof simpleCharacterAnimationNames)[number], AnimationAction> | undefined,
-  mixer: SimpleAnimationMixer,
-  options: SimpleCharacterOptions = {},
-) {
+async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleCharacter) {
+  let lastJump = 0
+
+  function shouldJump(): boolean {
+    let jumpOptions = character.options.movement?.jump
+    if (jumpOptions === false) {
+      return false
+    }
+    if (jumpOptions === true) {
+      jumpOptions = {}
+    }
+    if (!character.physics.isGrounded) {
+      return false
+    }
+    const lastTimePressed = character.inputSystem.get(LastTimeJumpPressedField)
+    if (lastTimePressed == null) {
+      return false
+    }
+    if (lastJump > lastTimePressed) {
+      return false
+    }
+    return performance.now() / 1000 - lastTimePressed < (jumpOptions?.bufferTime ?? 0.1)
+  }
+
+  function applyJumpForce() {
+    character.physics.applyVelocity(
+      vector.set(
+        0,
+        (typeof character.options.movement?.jump === 'object' ? character.options.movement?.jump.speed : undefined) ??
+          8,
+        0,
+      ),
+    )
+  }
+
+  const vrm = character.vrm
+  const actions = character.actions
+
   //run character
   yield* parallel(
     'all',
@@ -169,23 +205,23 @@ async function* SimpleCharacterTimeline(
         cameraEuler.z = 0
 
         let inputSpeed = 0
-        let runOptions = options.movement?.run ?? true
-        if (inputSystem.get(RunField) && runOptions !== false) {
+        let runOptions = character.options.movement?.run ?? true
+        if (character.inputSystem.get(RunField) && runOptions !== false) {
           runOptions = runOptions === true ? {} : runOptions
-          inputSpeed = runOptions.speed ?? 4.5
+          inputSpeed = runOptions.speed ?? 6
         }
 
-        let walkOptions = options.movement?.walk ?? true
+        let walkOptions = character.options.movement?.walk ?? true
         if (inputSpeed === 0 && walkOptions !== false) {
           walkOptions = walkOptions === true ? {} : walkOptions
-          inputSpeed = walkOptions.speed ?? 2.5
+          inputSpeed = walkOptions.speed ?? 3
         }
 
-        physics.inputVelocity
+        character.physics.inputVelocity
           .set(
-            -inputSystem.get(MoveLeftField) + inputSystem.get(MoveRightField),
+            -character.inputSystem.get(MoveLeftField) + character.inputSystem.get(MoveRightField),
             0,
-            -inputSystem.get(MoveForwardField) + inputSystem.get(MoveBackwardField),
+            -character.inputSystem.get(MoveForwardField) + character.inputSystem.get(MoveBackwardField),
           )
           .normalize()
           .applyEuler(cameraEuler)
@@ -200,18 +236,18 @@ async function* SimpleCharacterTimeline(
       action({
         update(_, clock) {
           // Character yaw rotation logic
-          const basedOn = options.animation?.yawRotationBasdOn ?? 'movement'
+          const basedOn = character.options.animation?.yawRotationBasdOn ?? 'movement'
 
           // compute goalTargetEuler
           if (basedOn === 'camera') {
             goalTargetEuler.setFromQuaternion(camera.getWorldQuaternion(quaternion), 'YXZ')
           } else {
             //don't rotate if not moving
-            if (physics.inputVelocity.lengthSq() === 0) {
+            if (character.physics.inputVelocity.lengthSq() === 0) {
               // run forever
               return true
             }
-            inputDirection.copy(physics.inputVelocity).normalize()
+            inputDirection.copy(character.physics.inputVelocity).normalize()
             quaternion.setFromUnitVectors(NegZAxis, inputDirection)
             goalTargetEuler.setFromQuaternion(quaternion, 'YXZ')
           }
@@ -231,7 +267,9 @@ async function* SimpleCharacterTimeline(
           }
           const yawRotationDirection = deltaYaw / absDeltaYaw
           const maxYawRotationSpeed =
-            (typeof options.animation === 'object' ? options.animation.maxYawRotationSpeed : undefined) ?? 10
+            (typeof character.options.animation === 'object'
+              ? character.options.animation.maxYawRotationSpeed
+              : undefined) ?? 10
           vrm.scene.rotation.y += Math.min(maxYawRotationSpeed * clock.delta, absDeltaYaw) * yawRotationDirection
           // run forever
           return true
@@ -239,99 +277,163 @@ async function* SimpleCharacterTimeline(
       }),
     // jump and walk animations
     actions == null
-      ? async function* () {
-          let lastJump = 0
-          yield* action({
-            update() {
-              if (
-                computeShouldJump(
-                  physics.isGrounded,
-                  lastJump,
-                  inputSystem.get(LastTimeJumpPressedField),
-                  options.movement?.jump,
-                )
-              ) {
-                physics.applyVelocity(
-                  vector.set(
-                    0,
-                    (typeof options.movement?.jump === 'object' ? options.movement?.jump.speed : undefined) ?? 8,
-                    0,
-                  ),
-                )
-              }
-              return true
-            },
-          })
-        }
-      : async function* () {
-          let lastJump = 0
-          while (true) {
-            let shouldJump = false
-            yield* action({
-              update() {
-                if (physics.inputVelocity.lengthSq() === 0) {
-                  mixer.play(actions.idle, options.animation?.crossFadeDuration)
-                } else {
-                  let action = actions.idle
-                  if (inputSystem.get(RunField) && options.movement?.run != false) {
-                    action = actions.run
-                  }
-                  if (action === actions.idle && options.movement?.walk != false) {
-                    action = actions.walk
-                  }
-                  mixer.play(action, options.animation?.crossFadeDuration)
-                }
-                shouldJump = computeShouldJump(
-                  physics.isGrounded,
-                  lastJump,
-                  inputSystem.get(LastTimeJumpPressedField),
-                  options.movement?.jump,
-                )
-                return !shouldJump && physics.isGrounded
-              },
-            })
-
-            if (shouldJump) {
-              lastJump = performance.now() / 1000
-              mixer.play(actions.jumpStart, options.animation?.crossFadeDuration)
+      ? action({
+          update: () => void (shouldJump() && applyJumpForce()),
+        })
+      : graph('moving', {
+          jumpStart: {
+            timeline: async function* () {
               yield* action({
-                until: animationFinished(mixer, actions.jumpStart),
-                update: () => {
-                  physics.inputVelocity.multiplyScalar(0.5)
-                  return true
+                init() {
+                  actions.jumpUp.reset()
+                  actions.jumpUp.play()
+                  actions.jumpUp.paused = true
+                  actions.jumpUp.fadeIn(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
+                  actions.jumpForward.reset()
+                  actions.jumpForward.play()
+                  actions.jumpForward.paused = true
+                  actions.jumpForward.fadeIn(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
                 },
-              })
-              mixer.play(actions.jumpUp, options.animation?.crossFadeDuration)
-              physics.applyVelocity(
-                vector.set(
-                  0,
-                  (typeof options.movement?.jump === 'object' ? options.movement?.jump.speed : undefined) ?? 8,
-                  0,
+                update: () => void character.physics.inputVelocity.multiplyScalar(DefaultCrossFadeDuration),
+                until: timePassed(
+                  (typeof character.options.movement?.jump === 'object'
+                    ? character.options.movement?.jump.delay
+                    : undefined) ?? DefaultJumDelay,
+                  'seconds',
                 ),
-              )
-            }
-
-            yield* parallel('race', action({ update: () => !physics.isGrounded }), async function* () {
-              if (shouldJump) {
-                yield* action({ until: animationFinished(mixer, actions.jumpUp) })
+              })
+              if (character.inputSystem.get(RunField)) {
+                actions.jumpUp.fadeOut(0.1)
+                return 'jumpForward'
+              } else {
+                actions.jumpForward.fadeOut(0.1)
+                return 'jumpUp'
               }
-              mixer.play(actions.jumpLoop, options.animation?.crossFadeDuration)
-              yield* action({ until: forever() })
-            })
-
-            mixer.play(actions.jumpDown, options.animation?.crossFadeDuration)
-            yield* action({ until: duration(50, 'milliseconds') })
-          }
-        },
+            },
+            transitionTo: {
+              jumpDown: { when: () => !character.physics.isGrounded },
+            },
+          },
+          jumpForward: {
+            timeline: async function* () {
+              yield* action({
+                init: () => {
+                  actions.jumpForward.paused = false
+                  applyJumpForce()
+                },
+                cleanup: () =>
+                  void actions.jumpForward.fadeOut(
+                    character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration,
+                  ),
+                until: animationFinished(actions.jumpForward),
+              })
+              if (character.physics.isGrounded) {
+                return 'moving'
+              }
+              return 'jumpLoop'
+            },
+          },
+          jumpUp: {
+            timeline: () =>
+              action({
+                init: () => {
+                  actions.jumpUp.paused = false
+                  applyJumpForce()
+                },
+                cleanup: () =>
+                  void actions.jumpUp.fadeOut(
+                    character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration,
+                  ),
+                until: animationFinished(actions.jumpUp),
+              }),
+            transitionTo: {
+              jumpDown: {
+                when: (_: unknown, clock: ActionClock) => clock.actionTime > 0.1 && character.physics.isGrounded,
+              },
+              finally: 'jumpLoop',
+            },
+          },
+          jumpLoop: {
+            timeline: () =>
+              action({
+                init: () => {
+                  actions.jumpLoop.reset()
+                  actions.jumpLoop.play()
+                  actions.jumpLoop.fadeIn(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
+                },
+                cleanup: () =>
+                  actions.jumpLoop.fadeOut(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration),
+                until: forever(),
+              }),
+            transitionTo: {
+              jumpDown: { when: () => character.physics.isGrounded },
+            },
+          },
+          jumpDown: {
+            timeline: () =>
+              action({
+                init: () => {
+                  actions.jumpUp.fadeOut(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
+                  actions.jumpForward.fadeOut(
+                    character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration,
+                  )
+                  actions.jumpDown.reset()
+                  actions.jumpDown.play()
+                  actions.jumpDown.fadeIn(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
+                },
+                cleanup: () =>
+                  actions.jumpDown.fadeOut(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration),
+                until: timePassed(50, 'milliseconds'),
+              }),
+            transitionTo: { finally: 'moving' },
+          },
+          moving: {
+            timeline: () => {
+              let currentAnimation: AnimationAction | undefined
+              return action({
+                update() {
+                  let nextAnimation: AnimationAction
+                  if (character.physics.inputVelocity.lengthSq() === 0) {
+                    nextAnimation = actions.idle
+                  } else if (character.inputSystem.get(RunField) && character.options.movement?.run != false) {
+                    nextAnimation = actions.run
+                  } else if (character.options.movement?.walk != false) {
+                    nextAnimation = actions.walk
+                  } else {
+                    nextAnimation = actions.idle
+                  }
+                  if (nextAnimation === currentAnimation) {
+                    return
+                  }
+                  currentAnimation?.fadeOut(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
+                  nextAnimation.reset()
+                  nextAnimation.play()
+                  nextAnimation.fadeIn(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
+                  currentAnimation = nextAnimation
+                },
+                cleanup: () =>
+                  currentAnimation?.fadeOut(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration),
+              })
+            },
+            transitionTo: {
+              jumpStart: { when: () => shouldJump() },
+              jumpLoop: { when: () => !character.physics.isGrounded },
+            },
+          },
+        }),
   )
 }
 
 export class SimpleCharacter extends Group {
-  public readonly inputSystem: InputSystem
   public readonly cameraBehavior: SimpleCharacterCameraBehavior
   public readonly physics: BvhCharacterPhysics
-  public readonly mixer = new SimpleAnimationMixer(this)
+  public readonly mixer = new AnimationMixer(this)
 
+  //can be changed from the outside
+  public inputSystem: InputSystem
+
+  //loaded asychronously
+  public actions?: Record<(typeof simpleCharacterAnimationNames)[number], AnimationAction> | undefined
   public vrm?: Awaited<Exclude<ReturnType<typeof loadVrmCharacterModel>, undefined>>
 
   private updateTimeline?: Update<unknown>
@@ -364,24 +466,21 @@ export class SimpleCharacter extends Group {
     const { vrm, animations } = await preloadSimpleCharacterAssets(options)
     this.vrm = vrm
 
-    let actions: Record<(typeof simpleCharacterAnimationNames)[number], AnimationAction> | undefined
     if (vrm != null && animations != null) {
       this.add(vrm.scene)
-      const [walk, run, idle, jumpStart, jumpUp, jumpLoop, jumpDown] = animations.map((clip) =>
-        this.mixer!.clipAction(clip),
-      )
-      jumpDown.loop = LoopOnce
-      jumpDown.clampWhenFinished = true
-      jumpStart.loop = LoopOnce
-      jumpStart.clampWhenFinished = true
-      jumpUp.loop = LoopOnce
-      jumpUp.clampWhenFinished = true
-      actions = { idle, jumpDown, jumpLoop, jumpStart, jumpUp, run, walk }
+      this.actions = {} as Record<(typeof simpleCharacterAnimationNames)[number], AnimationAction>
+      for (const name of simpleCharacterAnimationNames) {
+        this.actions[name] = this.mixer!.clipAction(animations[name])
+      }
+      this.actions.jumpDown.loop = LoopOnce
+      this.actions.jumpDown.clampWhenFinished = true
+      this.actions.jumpUp.loop = LoopOnce
+      this.actions.jumpUp.clampWhenFinished = true
+      this.actions.jumpForward.loop = LoopOnce
+      this.actions.jumpForward.clampWhenFinished = true
     }
 
-    this.updateTimeline = build(
-      SimpleCharacterTimeline(camera, this.inputSystem, this.physics, vrm, actions, this.mixer, options),
-    )
+    this.updateTimeline = build(SimpleCharacterTimeline(camera, this))
   }
 
   update(delta: number) {

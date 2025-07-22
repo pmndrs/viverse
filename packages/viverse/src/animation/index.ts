@@ -149,17 +149,19 @@ export function loadVrmCharacterModelAnimation(vrm: VRM, options: VrmModelAnimat
 }
 
 const extraOptions: Record<string, Partial<VrmModelAnimationOptions>> = {
-  walk: { scaleTime: 0.75 },
+  walk: { scaleTime: 0.5 },
+  run: { scaleTime: 0.8 },
+  jumpForward: { scaleTime: 1.2 },
 }
 
 const simpleCharacterAnimationUrls = {
   walk: () => import('../assets/walk.js'),
   run: () => import('../assets/run.js'),
   idle: () => import('../assets/idle.js'),
-  jumpStart: () => import('../assets/jump-start.js'),
   jumpUp: () => import('../assets/jump-up.js'),
   jumpLoop: () => import('../assets/jump-loop.js'),
   jumpDown: () => import('../assets/jump-down.js'),
+  jumpForward: () => import('../assets/jump-forward.js'),
 }
 
 export const simpleCharacterAnimationNames = Object.keys(simpleCharacterAnimationUrls) as Array<
@@ -170,7 +172,7 @@ export async function getSimpleCharacterVrmModelAnimationOptions(
   animationName: keyof typeof simpleCharacterAnimationUrls,
 ): Promise<VrmModelAnimationOptions> {
   return {
-    type: 'vrma',
+    type: 'gltf',
     ...extraOptions[animationName],
     url: (await simpleCharacterAnimationUrls[animationName]()).url,
   }

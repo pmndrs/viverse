@@ -11,7 +11,7 @@
   "dependencies": {
     "@pixiv/three-vrm": "^3.4.2",
     "@pixiv/three-vrm-animation": "^3.4.2",
-    "@pmndrs/timeline": "^0.1.3",
+    "@pmndrs/timeline": "^0.1.10",
     "@viverse/sdk": "1.2.10-alpha.0",
     "three": "*",
     "three-mesh-bvh": "^0.9.1"

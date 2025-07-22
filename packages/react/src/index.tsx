@@ -220,3 +220,4 @@ export {
 } from '@pmndrs/viverse'
 export * from '@viverse/sdk'
 export * from '@viverse/sdk/avatar-client'
+export * from './gamepad.js'

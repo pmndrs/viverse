@@ -20,7 +20,7 @@ export class InputSystem {
   }
 
   destroy(): void {
-    this.inputs.forEach((input) => input.destroy())
+    this.inputs.forEach((input) => input.destroy?.())
     this.inputs.length = 0
   }
 
@@ -35,7 +35,6 @@ export class InputSystem {
       }
       return result
     }
-    console.warn(`no input providing values for the following field`, field)
     return field.default
   }
 }
@@ -82,7 +81,7 @@ export const DeltaPitchField: InputField<number> = {
 
 export interface Input {
   get<T>(field: InputField<T>): T | undefined
-  destroy(): void
+  destroy?(): void
 }
 
 export * from './pointer-lock.js'

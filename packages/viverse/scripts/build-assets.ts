@@ -18,7 +18,7 @@ if (!fs.existsSync(outputDir)) {
 // Get only .vrma and .vrm files
 const assetFiles = fs
   .readdirSync(assetsDir)
-  .filter((file) => file.endsWith('.vrma') || file.endsWith('.vrm') || file.endsWith('.jpg') || file.endsWith('.jpeg'))
+  .filter((file) => file.endsWith('.vrma') || file.endsWith('.vrm') || file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.glb'))
 
 // Convert each asset file
 assetFiles.forEach((filename) => {
@@ -31,6 +31,8 @@ assetFiles.forEach((filename) => {
   let mimeType = 'application/octet-stream' // default
   if (ext === '.jpg' || ext === '.jpeg') {
     mimeType = 'image/jpeg'
+  } else if (ext === '.glb') {
+    mimeType = 'model/gltf-binary'
   }
 
   const dataUrl = `data:${mimeType};base64,${base64}`

@@ -5,6 +5,9 @@ import {
   VRMHumanBoneName,
   preloadSimpleCharacterAssets,
   simpleCharacterAnimationNames,
+  InputSystem,
+  LocomotionKeyboardInput,
+  PointerCaptureInput,
 } from '@pmndrs/viverse'
 import {
   createContext,
@@ -17,9 +20,10 @@ import {
   useRef,
 } from 'react'
 import { useFrame, useThree, extend, ThreeElement } from '@react-three/fiber'
-import { Group } from 'three'
+import { Camera, Group, Object3D, OrthographicCamera } from 'three'
 import { useViverseActiveAvatar } from './index.js'
 import { clear, suspend } from 'suspend-react'
+import type {} from '@pmndrs/pointer-events'
 
 const BvhPhyiscsWorldContext = createContext<BvhPhysicsWorldImpl | undefined>(undefined)
 
@@ -44,7 +48,7 @@ const PreloadSimpleCharacterAssetsSymbol = Symbol('preload-simple-character-asse
  * creates a simple character controller supporting running, walking, and jumping with a default avatar and animations with can be configutred
  */
 export const SimpleCharacter = forwardRef<Group, SimpleCharacterOptions & { children?: ReactNode }>(
-  ({ children, ...options }, ref) => {
+  ({ children, input, ...options }, ref) => {
     const avatar = useViverseActiveAvatar()
     const world = useContext(BvhPhyiscsWorldContext)
     if (world == null) {
@@ -73,10 +77,26 @@ export const SimpleCharacter = forwardRef<Group, SimpleCharacterOptions & { chil
     const currentOptions = useMemo<SimpleCharacterOptions>(() => ({}), preloadSimpleCharacterAssetsKeys)
     Object.assign(currentOptions, newOptions)
     const internalRef = useRef<SimpleCharacterImpl>(null)
-    useImperativeHandle(ref, () => internalRef.current!, [])
+    useEffect(
+      () => {
+        if (internalRef.current == null) {
+          return
+        }
+        if (input == null || 'length' in input) {
+          internalRef.current.inputSystem = new InputSystem(
+            domElement,
+            input ?? [LocomotionKeyboardInput, PointerCaptureInput],
+          )
+          return
+        }
+        internalRef.current.inputSystem = input
+      },
+      Array.isArray(input) ? [...input, domElement] : [input, domElement],
+    )
+    useImperativeHandle(ref, () => internalRef.current!, [camera as any, world, domElement, currentOptions])
     useFrame((_, delta) => internalRef.current?.update(delta))
     return (
-      <simpleCharacterImpl args={[camera, world, domElement, currentOptions]} ref={internalRef}>
+      <simpleCharacterImpl args={[camera as any, world, domElement, currentOptions]} ref={internalRef}>
         {children}
       </simpleCharacterImpl>
     )
@@ -88,12 +108,12 @@ export const SimpleCharacter = forwardRef<Group, SimpleCharacterOptions & { chil
  * @requires that the inner content is not dynamic
  * do not wrap the content inside in a suspense!
  */
-export const FixedBvhPhysicsBody = forwardRef<Group, { children?: ReactNode }>(({ children }, ref) => {
+export const FixedBvhPhysicsBody = forwardRef<Object3D, { children?: ReactNode }>(({ children }, ref) => {
   const world = useContext(BvhPhyiscsWorldContext)
   if (world == null) {
     throw new Error('FixedPhysicsBody must be used within a BvhPhysicsWorld component')
   }
-  const internalRef = useRef<Group>(null)
+  const internalRef = useRef<Object3D>(null)
   useEffect(() => {
     const body = internalRef.current
     if (body == null) {

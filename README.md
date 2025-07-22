@@ -52,18 +52,18 @@ createRoot(document.getElementById('root')!).render(
 > Some familiarity with
 > react, threejs, and @react-three/fiber, is recommended.
 
-Get started with **[building a simple game](https://docs.pmnd.rs/viverse/tutorials/simple-game)**, take a look at our **[examples](https://docs.pmnd.rs/viverse/getting-started/examples)**, or follow one of our **tutorials**:
+Get started with **[building a simple game](https://pmndrs.github.io/viverse/tutorials/simple-game)**, take a look at our **[examples](https://pmndrs.github.io/viverse/getting-started/examples)**, or follow one of our **tutorials**:
 
-- [First person controls](https://docs.pmnd.rs/viverse/tutorials/first-person)
-- [Augmented and virtual reality](https://docs.pmnd.rs/viverse/tutorials/augmented-and-virtual-reality)
-- [Accessing avatar and profile](https://docs.pmnd.rs/viverse/tutorials/access-avatar-and-profile)
-- [Using custom animations and models](https://docs.pmnd.rs/viverse/tutorials/custom-models-and-animations)
-- [How to remove the viverse integrations](https://docs.pmnd.rs/viverse/tutorials/remove-viverse-integrations)
-- [Publish to Viverse](https://docs.pmnd.rs/viverse/tutorials/publish-to-viverse)
+- [First person controls](https://pmndrs.github.io/viverse/tutorials/first-person)
+- [Augmented and virtual reality](https://pmndrs.github.io/viverse/tutorials/augmented-and-virtual-reality)
+- [Accessing avatar and profile](https://pmndrs.github.io/viverse/tutorials/access-avatar-and-profile)
+- [Using custom animations and models](https://pmndrs.github.io/viverse/tutorials/custom-models-and-animations)
+- [How to remove the viverse integrations](https://pmndrs.github.io/viverse/tutorials/remove-viverse-integrations)
+- [Publish to Viverse](https://pmndrs.github.io/viverse/tutorials/publish-to-viverse)
 - Building your own character controller - _Coming Soon_
 
 ## Not into react?
 
 > No Problem
 
-Check out how to build games using @pmndrs/viverse and only [vanilla three.js](https://docs.pmnd.rs/viverse/without-react).
+Check out how to build games using @pmndrs/viverse and only [vanilla three.js](https://pmndrs.github.io/viverse/without-react).

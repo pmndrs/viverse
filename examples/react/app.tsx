@@ -8,27 +8,27 @@ import { PrototypeBox } from '@react-three/viverse'
 
 export function App() {
   return (
-    <Canvas
-      style={{ width: '100%', flexGrow: 1 }}
-      camera={{ fov: 90, position: [0, 2, 2] }}
-      shadows
-      gl={{ antialias: true, localClippingEnabled: true }}
-    >
-      <Suspense
-        fallback={
-          <Fullscreen alignItems="center" justifyContent="center">
-            <Text>Loading ...</Text>
-          </Fullscreen>
-        }
+    <Viverse>
+      <Canvas
+        style={{ width: '100%', flexGrow: 1 }}
+        camera={{ fov: 90, position: [0, 2, 2] }}
+        shadows
+        gl={{ antialias: true, localClippingEnabled: true }}
       >
-        <Viverse>
+        <Suspense
+          fallback={
+            <Fullscreen alignItems="center" justifyContent="center">
+              <Text>Loading ...</Text>
+            </Fullscreen>
+          }
+        >
           <Fullscreen alignItems="flex-end" justifyContent="flex-end" padding={32}>
             <Image src="viverse-logo.png" height={64} />
           </Fullscreen>
           <Scene />
-        </Viverse>
-      </Suspense>
-    </Canvas>
+        </Suspense>
+      </Canvas>
+    </Viverse>
   )
 }
 
@@ -57,7 +57,7 @@ export function Scene() {
         shadow-camera-bottom={-10}
       />
       <ambientLight intensity={1} />
-      <SimpleCharacter ref={characterRef}>
+      <SimpleCharacter model={{ url: 'avatar.vrm' }} ref={characterRef}>
         <PlayerTag />
       </SimpleCharacter>
       <FixedBvhPhysicsBody>
