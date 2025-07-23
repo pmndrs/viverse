@@ -27,7 +27,7 @@ const store = createXRStore({
 
 export function App() {
   return (
-    <Viverse>
+    <Viverse clientId={import.meta.env.VITE_VIVERSE_APP_ID}>
       <Canvas
         style={{ width: '100%', flexGrow: 1 }}
         camera={{ fov: 90, position: [0, 2, 2] }}

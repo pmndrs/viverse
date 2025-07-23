@@ -1,6 +1,6 @@
 ---
 title: Introduction
-description: Build 3D web games with threejs and viverse.
+description: Toolkit for building and publishing React Three Fiber Apps to Viverse.
 nav: 0
 ---
 
@@ -17,9 +17,9 @@ npm install three @react-three/fiber @react-three/viverse
   customSetup={{
     dependencies: {
       'three': 'latest',
-      '@react-three/fiber': 'latest',
+      '@react-three/fiber': '<9',
       '@react-three/viverse': 'latest',
-      '@react-three/drei': 'latest',
+      '@react-three/drei': '<10'
     },
   }}
   files={{
@@ -40,7 +40,7 @@ export default function App() {
           <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
         </FixedBvhPhysicsBody>
       </Viverse>
-    </Canvas>,
+    </Canvas>
   )
 }`}}
 />

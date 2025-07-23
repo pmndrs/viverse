@@ -37,14 +37,10 @@ After creation, **note the App ID** - you'll need this for deployment.
 
 ## Step 4: Configure Your App ID
 
-You have two options for providing the App ID to your application:
+Next, we need to provide the app id to our Viverse component.
 
 > [!TIP]
 > Do not include the App ID in your local development environment. Keep it production-only to avoid conflicts during development.
-
-### Option 1: Environment Variable
-
-> only applies when you are building with vite
 
 Create a production environment file (`.env.prod`) in your project root and use dotenvx when building your app (`dotenvx run -f .env.prod -- vite build`)
 
@@ -53,15 +49,15 @@ Create a production environment file (`.env.prod`) in your project root and use 
 VITE_VIVERSE_APP_ID=your-app-id-here
 ```
 
-### Option 2: Direct Configuration
-
-Alternatively, you can pass the App ID directly to the Viverse component:
+this allows to provide the appId to your Viverse component using the environment variable `VITE_VIVERSE_APP_ID`
 
 ```jsx
-<Viverse clientId="your-app-id-here">
+<Viverse clientId={import.meta.env.VITE_VIVERSE_APP_ID}>
   <YourGame />
 </Viverse>
 ```
+
+This only works when using vite. If you don't use vite you need to manually make sure the `appId` is provided to the Viverse `clientId` in the production build.
 
 ## Step 5: Build Your Application
 

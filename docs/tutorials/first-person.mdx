@@ -14,9 +14,9 @@ In this tutorial we will configure the `SimpleCharacter` to use first person con
   customSetup={{
     dependencies: {
       'three': 'latest',
-      '@react-three/fiber': 'latest',
+      '@react-three/fiber': '<9',
       '@react-three/viverse': 'latest',
-      '@react-three/drei': 'latest',
+      '@react-three/drei': '<10'
     },
   }}
   files={{
@@ -52,7 +52,7 @@ export default function App() {
           <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
         </FixedBvhPhysicsBody>
       </Viverse>
-    </Canvas>,
+    </Canvas>
   )
 }`}}
 />

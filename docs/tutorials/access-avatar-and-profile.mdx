@@ -13,9 +13,9 @@ This tutorial builds upon the [simple game tutorial](./simple-game.mdx) and show
   customSetup={{
     dependencies: {
       'three': 'latest',
-      '@react-three/fiber': 'latest',
+      '@react-three/fiber': '<9',
       '@react-three/viverse': 'latest',
-      '@react-three/drei': 'latest',
+      '@react-three/drei': '<10'
     },
   }}
   files={{
@@ -158,7 +158,7 @@ export function Scene() {
     '/App.tsx': `
 import { Canvas } from '@react-three/fiber'
 import { Viverse } from '@react-three/viverse'
-import { Scene } from "./Scene.js
+import { Scene } from "./Scene.js"
 
 export default function App() {
   return (

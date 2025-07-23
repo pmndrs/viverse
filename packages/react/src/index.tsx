@@ -52,7 +52,7 @@ export function Viverse({
   checkAuth,
   ...options
 }: Partial<ClientOptions> & { children?: ReactNode; loginRequired?: boolean; checkAuth?: checkAuthOptions }) {
-  const clientId = import.meta.env.VITE_VIVERSE_APP_ID ?? options.clientId
+  const clientId = options.clientId
   const client = suspend(
     async () =>
       clientId == null
