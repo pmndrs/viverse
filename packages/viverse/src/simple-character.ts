@@ -452,7 +452,7 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
     options.physics ??= {}
 
     // camera behavior
-    this.cameraBehavior = new SimpleCharacterCameraBehavior(camera, this, this.inputSystem, world.raycast.bind(world))
+    this.cameraBehavior = new SimpleCharacterCameraBehavior(camera, this, world.raycast.bind(world))
 
     // physics
     this.physics = new BvhCharacterPhysics(this, world)

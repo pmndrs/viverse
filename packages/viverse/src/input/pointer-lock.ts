@@ -16,8 +16,10 @@ export class PointerLockInput implements Input {
         if (document.pointerLockElement != domElement) {
           return
         }
-        this.deltaYaw -= (0.4 * event.movementX) / window.innerHeight
-        this.deltaPitch -= (0.4 * event.movementY) / window.innerHeight
+        // Compute based on domElement bounds instead of window.innerHeight
+        const rect = domElement.getBoundingClientRect()
+        this.deltaYaw -= (0.4 * event.movementX) / rect.height
+        this.deltaPitch -= (0.4 * event.movementY) / rect.height
       },
       {
         signal: this.abortController.signal,

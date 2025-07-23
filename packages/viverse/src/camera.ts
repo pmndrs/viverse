@@ -1,6 +1,7 @@
 import { Object3D, Vector3, Euler, Vector3Tuple, Ray } from 'three'
 import { clamp } from 'three/src/math/MathUtils.js'
-import { type InputSystem, DeltaYawField, DeltaPitchField, DeltaZoomField } from './input/index.js'
+import { DeltaYawField, DeltaPitchField, DeltaZoomField } from './input/index.js'
+import { SimpleCharacter } from './simple-character.js'
 
 export const FirstPersonCharacterCameraBehavior: SimpleCharacterCameraBehaviorOptions = {
   characterBaseOffset: [0, 1.6, 0],
@@ -90,8 +91,7 @@ export class SimpleCharacterCameraBehavior {
 
   constructor(
     public camera: Object3D,
-    public character: Object3D,
-    public inputSystem: InputSystem,
+    public character: SimpleCharacter,
     private readonly raycast?: (ray: Ray, far: number) => number | undefined,
   ) {}
 
@@ -187,8 +187,8 @@ export class SimpleCharacterCameraBehavior {
     if (!this.firstUpdate && rotationOptions !== false) {
       rotationOptions = rotationOptions === true ? {} : rotationOptions
       const rotationSpeed = rotationOptions.speed ?? 1000.0
-      const deltaYaw = this.inputSystem.get(DeltaYawField)
-      const deltaPitch = this.inputSystem.get(DeltaPitchField)
+      const deltaYaw = this.character.inputSystem.get(DeltaYawField)
+      const deltaPitch = this.character.inputSystem.get(DeltaPitchField)
       this.rotationYaw = this.clampYaw(this.rotationYaw + deltaYaw * rotationSpeed * deltaTime, rotationOptions)
       this.rotationPitch = this.clampPitch(this.rotationPitch + deltaPitch * rotationSpeed * deltaTime, rotationOptions)
     } else {
@@ -206,7 +206,7 @@ export class SimpleCharacterCameraBehavior {
     if (!this.firstUpdate && zoomOptions !== false) {
       zoomOptions = zoomOptions === true ? {} : zoomOptions
       const zoomSpeed = zoomOptions.speed ?? 1000.0
-      const deltaZoom = this.inputSystem.get(DeltaZoomField)
+      const deltaZoom = this.character.inputSystem.get(DeltaZoomField)
       const zoomFactor = 1 + deltaZoom * zoomSpeed * deltaTime
       if (deltaZoom >= 0) {
         this.zoomDistance *= zoomFactor
