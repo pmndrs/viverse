@@ -15,7 +15,8 @@ This tutorial builds upon the [simple game tutorial](./simple-game.mdx) and show
       'three': 'latest',
       '@react-three/fiber': '<9',
       '@react-three/viverse': 'latest',
-      '@react-three/drei': '<10'
+      '@react-three/drei': '<10',
+      "@react-three/uikit": "latest"
     },
   }}
   files={{
@@ -72,7 +73,7 @@ import { Sky } from '@react-three/drei'
 import { SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { PlayerTag } from "./Playertag.js"
+import { PlayerTag } from "./Playertag"
 
 export function Scene() {
   const characterRef = useRef()
@@ -156,9 +157,10 @@ export function Scene() {
   )
 }`,
     '/App.tsx': `
+import { Suspense } from "react"
 import { Canvas } from '@react-three/fiber'
 import { Viverse } from '@react-three/viverse'
-import { Scene } from "./Scene.js"
+import { Scene } from "./Scene"
 
 export default function App() {
   return (

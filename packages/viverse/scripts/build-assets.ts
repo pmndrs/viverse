@@ -18,7 +18,14 @@ if (!fs.existsSync(outputDir)) {
 // Get only .vrma and .vrm files
 const assetFiles = fs
   .readdirSync(assetsDir)
-  .filter((file) => file.endsWith('.vrma') || file.endsWith('.vrm') || file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.glb'))
+  .filter(
+    (file) =>
+      file.endsWith('.vrma') ||
+      file.endsWith('.vrm') ||
+      file.endsWith('.jpg') ||
+      file.endsWith('.jpeg') ||
+      file.endsWith('.glb'),
+  )
 
 // Convert each asset file
 assetFiles.forEach((filename) => {

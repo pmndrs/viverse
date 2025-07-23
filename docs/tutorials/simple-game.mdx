@@ -111,9 +111,10 @@ export function Scene() {
   )
 }`,
     '/App.tsx': `
+import { Suspense } from "react"
 import { Canvas } from '@react-three/fiber'
 import { Viverse } from '@react-three/viverse'
-import { Scene } from "./Scene.js"
+import { Scene } from "./Scene"
 
 export default function App() {
   return (
