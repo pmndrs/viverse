@@ -39,12 +39,12 @@
     "@pixiv/three-vrm-animation": "^3.4.2",
     "@pmndrs/timeline": "^0.1.10",
     "@viverse/sdk": "1.2.10-alpha.0",
-    "three": "*",
     "three-mesh-bvh": "^0.9.1"
   },
   "devDependencies": {
     "ts-node": "^10.9.2",
-    "@types/node": "^24.0.14"
+    "@types/node": "^24.0.14",
+    "three": "*"
   },
   "main": "src/index.ts"
 }

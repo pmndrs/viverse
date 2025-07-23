@@ -210,9 +210,6 @@ importers:
       '@pmndrs/viverse':
         specifier: workspace:^
         version: link:../viverse
-      '@react-three/xr':
-        specifier: ^6.6.20
-        version: 6.6.20(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0)
       '@viverse/sdk':
         specifier: ^1.2.10-alpha.0
         version: 1.2.10-alpha.0
@@ -226,6 +223,9 @@ importers:
       '@react-three/fiber':
         specifier: ^9.2.0
         version: 9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0)
+      '@react-three/xr':
+        specifier: ^6.6.20
+        version: 6.6.20(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0)
       '@types/react':
         specifier: ^19.1.8
         version: 19.1.8
@@ -247,9 +247,6 @@ importers:
       '@viverse/sdk':
         specifier: 1.2.10-alpha.0
         version: 1.2.10-alpha.0
-      three:
-        specifier: '*'
-        version: 0.178.0
       three-mesh-bvh:
         specifier: ^0.9.1
         version: 0.9.1(three@0.178.0)
@@ -257,6 +254,9 @@ importers:
       '@types/node':
         specifier: ^24.0.14
         version: 24.1.0
+      three:
+        specifier: '*'
+        version: 0.178.0
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.1.0)(typescript@5.9.0-beta)

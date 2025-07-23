@@ -10,7 +10,7 @@
     "dev": "vite --host",
     "check:eslint": "eslint \"*.{ts,tsx}\"",
     "fix:eslint": "eslint \"*.{ts,tsx}\" --fix",
-    "deploy": "dotenvx run -f .env.production -- sh -c 'viverse-cli app publish ./dist --app-id $VITE_VIVERSE_APP_ID'",
+    "deploy": "dotenvx run -f .env.production -- sh -c 'pnpm exec viverse-cli app publish ./dist --app-id $VITE_VIVERSE_APP_ID'",
     "build": "vite build"
   }
 }
