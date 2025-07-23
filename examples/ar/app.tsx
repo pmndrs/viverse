@@ -1,11 +1,17 @@
+import { OrbitControls } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { SimpleCharacter, FixedBvhPhysicsBody, useViverseProfile, Viverse } from '@react-three/viverse'
-import { OrbitControls, Sky } from '@react-three/drei'
 import { Root, Image, Text, Fullscreen } from '@react-three/uikit'
+import {
+  SimpleCharacter,
+  FixedBvhPhysicsBody,
+  useViverseProfile,
+  Viverse,
+  PrototypeBox,
+  useXRControllerInput,
+} from '@react-three/viverse'
+import { XR, XROrigin, createXRStore } from '@react-three/xr'
 import { Suspense, useRef } from 'react'
 import { Group, Object3D } from 'three'
-import { PrototypeBox, useXRControllerInput } from '@react-three/viverse'
-import { XR, XROrigin, createXRStore } from '@react-three/xr'
 
 const store = createXRStore({ offerSession: 'immersive-ar' })
 
@@ -64,7 +70,7 @@ export function Scene() {
         shadow-camera-bottom={-10}
       />
       <ambientLight intensity={1} />
-      <SimpleCharacter input={[input]} cameraBehavior={false} model={{ url: 'avatar.vrm' }} ref={characterRef}>
+      <SimpleCharacter input={[input]} cameraBehavior={false} ref={characterRef}>
         <PlayerTag />
       </SimpleCharacter>
       <FixedBvhPhysicsBody>

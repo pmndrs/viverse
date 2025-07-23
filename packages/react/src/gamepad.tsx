@@ -51,6 +51,6 @@ export function useXRControllerInput() {
         return undefined
       },
     }),
-    [rightController, leftController],
+    [leftController],
   )
 }

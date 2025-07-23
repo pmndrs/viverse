@@ -129,6 +129,11 @@ Component for placing content inside the in VRM character models.
 
 The `SimpleCharacter` component accepts detailed configuration options for customizing character behavior:
 
+### `useViverseAvatar` flag
+
+Allows to configure whether the users vrm avatar should be displayed as the character model.
+- **Default:** `true`
+
 ### `movement` Options
 
 - **walk:** `object | boolean` - Enable walking (default: `true`)
@@ -160,9 +165,11 @@ Either a array of `Input` objects or a custom `InputSystem`
 
 ### `model` Options
 
-- **url:** `string` - URL to VRM model file
+- **url:** `string` - URL to VRM or GLTF model file
+- **type:** `"gltf" | "vrm"` - the type of file to be loaded
 - **castShadow:** `boolean` - Enable shadow casting (default: `true`)
 - **receiveShadow:** `boolean` - Enable shadow receiving (default: `true`)
+- **boneRotationOffset:** `Quaternion | undefined` - Allows to apply an rotation offset when placing objects as children of the character's bones (default: `undefined`)
 - Set to `false` to disable model loading
 - Set to `true` or omit to use default robot model
 
@@ -199,7 +206,7 @@ Either a array of `Input` objects or a custom `InputSystem`
 - **maxYawRotationSpeed:** `number` - Maximum rotation speed (default: `10`)
 - **crossFadeDuration:** `number` - Animation blend time in seconds (default: `0.3`)
 
-The `SimpleCharacter` uses the following animations `walk`, `run`, `idle`, `jumpStart`, `jumpUp`, `jumpLoop`, `jumpDown` each with the following options:
+The `SimpleCharacter` uses the following animations `walk`, `run`, `idle`, `jumpForward`, `jumpUp`, `jumpLoop`, `jumpDown` each with the following options:
 
 - **type:** `'mixamo' | 'gltf' | 'vrma'` - Animation file type
 - **url:** `string` - Animation file URL

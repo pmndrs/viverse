@@ -1,3 +1,15 @@
+import { VRM, VRMUtils } from '@pixiv/three-vrm'
+import {
+  action,
+  animationFinished,
+  build,
+  timePassed,
+  forever,
+  parallel,
+  Update,
+  graph,
+  ActionClock,
+} from '@pmndrs/timeline'
 import {
   AnimationAction,
   AnimationClip,
@@ -6,9 +18,17 @@ import {
   Group,
   LoopOnce,
   Object3D,
+  Object3DEventMap,
   Quaternion,
   Vector3,
 } from 'three'
+import {
+  simpleCharacterAnimationNames,
+  getSimpleCharacterModelAnimationOptions as getSimpleCharacterModelAnimationOptions,
+  loadCharacterModelAnimation as loadCharacterModelAnimation,
+  ModelAnimationOptions,
+} from './animation/index.js'
+import { SimpleCharacterCameraBehavior, SimpleCharacterCameraBehaviorOptions } from './camera.js'
 import {
   Input,
   InputSystem,
@@ -21,29 +41,8 @@ import {
   RunField,
   LastTimeJumpPressedField,
 } from './input/index.js'
+import { clearCharacterModelCache, CharacterModelOptions, loadCharacterModel } from './model/index.js'
 import { BvhCharacterPhysicsOptions, BvhCharacterPhysics, BvhPhysicsWorld } from './physics/index.js'
-import {
-  clearVrmCharacterModelCache,
-  simpleCharacterAnimationNames as simpleCharacterAnimationNames,
-  getSimpleCharacterVrmModelAnimationOptions,
-  loadVrmCharacterModel,
-  loadVrmCharacterModelAnimation,
-  VrmModelAnimationOptions,
-  VrmCharacterModelOptions,
-} from './model.js'
-import {
-  action,
-  animationFinished,
-  build,
-  timePassed,
-  forever,
-  parallel,
-  Update,
-  graph,
-  ActionClock,
-} from '@pmndrs/timeline'
-import { SimpleCharacterCameraBehavior, SimpleCharacterCameraBehaviorOptions } from './camera.js'
-import { VRM, VRMUtils } from '@pixiv/three-vrm'
 
 export type SimpleCharacterMovementOptions = {
   /**
@@ -76,14 +75,13 @@ export type SimpleCharacterMovementOptions = {
 }
 
 export type SimpleCharacterAnimationOptions = {
-  readonly walk?: VrmModelAnimationOptions
-  readonly run?: VrmModelAnimationOptions
-  readonly idle?: VrmModelAnimationOptions
-  readonly jumpStart?: VrmModelAnimationOptions
-  readonly jumpUp?: VrmModelAnimationOptions
-  readonly jumpLoop?: VrmModelAnimationOptions
-  readonly jumpDown?: VrmModelAnimationOptions
-  readonly jumpForward?: VrmModelAnimationOptions
+  readonly walk?: ModelAnimationOptions
+  readonly run?: ModelAnimationOptions
+  readonly idle?: ModelAnimationOptions
+  readonly jumpUp?: ModelAnimationOptions
+  readonly jumpLoop?: ModelAnimationOptions
+  readonly jumpDown?: ModelAnimationOptions
+  readonly jumpForward?: ModelAnimationOptions
   /**
    * @default "movement"
    */
@@ -107,7 +105,7 @@ export type SimpleCharacterOptions = {
    */
   readonly input?: ReadonlyArray<Input | { new (domElement: HTMLElement): Input }> | InputSystem
   movement?: SimpleCharacterMovementOptions
-  readonly model?: VrmCharacterModelOptions
+  readonly model?: CharacterModelOptions
   physics?: BvhCharacterPhysicsOptions
   cameraBehavior?: SimpleCharacterCameraBehaviorOptions
   readonly animation?: SimpleCharacterAnimationOptions
@@ -128,21 +126,21 @@ const quaternion = new Quaternion()
 
 export async function preloadSimpleCharacterAssets(options: Pick<SimpleCharacterOptions, 'animation' | 'model'>) {
   // load model
-  const vrm = await loadVrmCharacterModel(options.model)
-  if (vrm == null) {
+  const model = await loadCharacterModel(options.model)
+  if (model == null) {
     return {}
   }
-  vrm.scene.addEventListener('dispose', () => clearVrmCharacterModelCache(options.model))
+  model.scene.addEventListener('dispose', () => clearCharacterModelCache(options.model))
 
   // load animations
   return {
-    vrm,
+    model,
     animations: (
       await Promise.all(
         simpleCharacterAnimationNames.map(async (name) =>
-          loadVrmCharacterModelAnimation(
-            vrm,
-            options.animation?.[name] ?? (await getSimpleCharacterVrmModelAnimationOptions(name)),
+          loadCharacterModelAnimation(
+            model,
+            options.animation?.[name] ?? (await getSimpleCharacterModelAnimationOptions(name)),
           ),
         ),
       )
@@ -191,7 +189,7 @@ async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleChara
     )
   }
 
-  const vrm = character.vrm
+  const model = character.model
   const actions = character.actions
 
   //run character
@@ -232,7 +230,7 @@ async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleChara
       },
     }),
     // rotation animations
-    vrm != null &&
+    model != null &&
       action({
         update(_, clock) {
           // Character yaw rotation logic
@@ -253,7 +251,7 @@ async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleChara
           }
 
           // compute currentTargetEuler
-          vrm.scene.getWorldQuaternion(quaternion)
+          model.scene.getWorldQuaternion(quaternion)
           characterTargetEuler.setFromQuaternion(quaternion, 'YXZ')
           // apply delta yaw rotation
           let deltaYaw = (goalTargetEuler.y - characterTargetEuler.y + _2MathPI) % _2MathPI
@@ -270,7 +268,7 @@ async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleChara
             (typeof character.options.animation === 'object'
               ? character.options.animation.maxYawRotationSpeed
               : undefined) ?? 10
-          vrm.scene.rotation.y += Math.min(maxYawRotationSpeed * clock.delta, absDeltaYaw) * yawRotationDirection
+          model.scene.rotation.y += Math.min(maxYawRotationSpeed * clock.delta, absDeltaYaw) * yawRotationDirection
           // run forever
           return true
         },
@@ -424,7 +422,7 @@ async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleChara
   )
 }
 
-export class SimpleCharacter extends Group {
+export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
   public readonly cameraBehavior: SimpleCharacterCameraBehavior
   public readonly physics: BvhCharacterPhysics
   public readonly mixer = new AnimationMixer(this)
@@ -434,7 +432,7 @@ export class SimpleCharacter extends Group {
 
   //loaded asychronously
   public actions?: Record<(typeof simpleCharacterAnimationNames)[number], AnimationAction> | undefined
-  public vrm?: Awaited<Exclude<ReturnType<typeof loadVrmCharacterModel>, undefined>>
+  public model?: Awaited<Exclude<ReturnType<typeof loadCharacterModel>, undefined>>
 
   private updateTimeline?: Update<unknown>
 
@@ -463,11 +461,11 @@ export class SimpleCharacter extends Group {
   }
 
   private async init(camera: Object3D, options: SimpleCharacterOptions) {
-    const { vrm, animations } = await preloadSimpleCharacterAssets(options)
-    this.vrm = vrm
+    const { model, animations } = await preloadSimpleCharacterAssets(options)
+    this.model = model
 
-    if (vrm != null && animations != null) {
-      this.add(vrm.scene)
+    if (model != null && animations != null) {
+      this.add(model.scene)
       this.actions = {} as Record<(typeof simpleCharacterAnimationNames)[number], AnimationAction>
       for (const name of simpleCharacterAnimationNames) {
         this.actions[name] = this.mixer!.clipAction(animations[name])
@@ -481,19 +479,22 @@ export class SimpleCharacter extends Group {
     }
 
     this.updateTimeline = build(SimpleCharacterTimeline(camera, this))
+    this.dispatchEvent({ type: 'loaded' })
   }
 
   update(delta: number) {
     this.updateTimeline?.(undefined, delta)
     this.mixer?.update(delta)
-    this.vrm?.update(delta)
+    if (this.model instanceof VRM) {
+      this.model.update(delta)
+    }
     this.physics.update(delta, this.options.physics)
     this.cameraBehavior.update(delta, this.options.cameraBehavior)
   }
 
   dispose(): void {
     this.parent?.remove(this)
-    this.vrm?.scene.dispatchEvent({ type: 'dispose' })
+    this.model?.scene.dispatchEvent({ type: 'dispose' })
     VRMUtils.deepDispose(this)
   }
 }

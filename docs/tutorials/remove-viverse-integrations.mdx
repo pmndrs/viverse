@@ -1,14 +1,11 @@
 ---
 title: Remove Viverse Integrations
 description: Learn how to build with @react-three/viverse without the viverse integrations.
-nav: 8
+nav: 9
 ---
 
 To remove the viverse integrations replace the `<Viverse>` component with `<BvhPhysicsWorld>` and remove all Viverse-specific hooks from your components as these hooks will no longer work without the Viverse context.
 
-
-```jsx
-commenting out for now until packages are published - this will be a live codesandbox
 <Sandpack
   template="react-ts"
   customSetup={{
@@ -41,4 +38,3 @@ export default function App() {
   )
 }`}}
 />
-```

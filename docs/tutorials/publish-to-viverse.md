@@ -1,7 +1,7 @@
 ---
 title: Publish to Viverse
 description: Learn how to deploy your game to Viverse using the CLI.
-nav: 9
+nav: 10
 ---
 
 ## Prerequisites

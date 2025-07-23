@@ -1,6 +1,6 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { PrototypeMaterial } from '@pmndrs/viverse'
 import { extend, ThreeElement } from '@react-three/fiber'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { ColorRepresentation, Group, PlaneGeometry } from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 

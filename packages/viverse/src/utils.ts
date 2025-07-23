@@ -8,7 +8,10 @@ function shallowEqual<T>(a: ReadonlyArray<T>, b: ReadonlyArray<T>): boolean {
 
 const cacheMap = new Map<Function, Array<{ deps: ReadonlyArray<unknown>; result: Promise<unknown> }>>()
 
-export function cached<D extends ReadonlyArray<unknown>, T>(fn: (...deps: D) => Promise<T>, dependencies: D): Promise<T> {
+export function cached<D extends ReadonlyArray<unknown>, T>(
+  fn: (...deps: D) => Promise<T>,
+  dependencies: D,
+): Promise<T> {
   let cache = cacheMap.get(fn)
   if (cache == null) {
     cacheMap.set(fn, (cache = []))

@@ -6,6 +6,177 @@ nav: 6
 
 This tutorial builds upon the [simple game tutorial](./simple-game.mdx) and shows you how to display a player tag above the character by accessing the user profile information from Viverse.
 
+*Here's a preview of what we'll build in this tutorial:*
+
+<Sandpack
+  template="react-ts"
+  customSetup={{
+    dependencies: {
+      'three': 'latest',
+      '@react-three/fiber': 'latest',
+      '@react-three/viverse': 'latest',
+      '@react-three/drei': 'latest',
+    },
+  }}
+  files={{
+    '/Playertag.tsx': `import { useViverseProfile } from '@react-three/viverse'
+import { Root, Image, Text } from '@react-three/uikit'
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+
+export function PlayerTag() {
+  const profile = useViverseProfile() ?? {
+    name: 'Anonymous',
+    activeAvatar: { headIconUrl: 'https://picsum.photos/200' },
+  }
+  
+  const ref = useRef()
+  
+  // Make the tag always face the camera
+  useFrame((state) => {
+    if (ref.current == null) {
+      return
+    }
+    ref.current.quaternion.copy(state.camera.quaternion)
+  })
+
+  return (
+    <group ref={ref} position-y={2.15}>
+      <Root
+        depthTest={false}
+        renderOrder={1}
+        backgroundOpacity={0.5}
+        borderRadius={10}
+        paddingX={2}
+        height={20}
+        backgroundColor="white"
+        flexDirection="row"
+        alignItems="center"
+        gap={4}
+      >
+        <Image 
+          width={16} 
+          height={16} 
+          borderRadius={14} 
+          src={profile.activeAvatar?.headIconUrl} 
+        />
+        <Text fontWeight="bold" fontSize={12} marginRight={3}>
+          {profile.name}
+        </Text>
+      </Root>
+    </group>
+  )
+}`,
+    '/Scene.tsx': `
+import { Sky } from '@react-three/drei'
+import { SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { PlayerTag } from "./Playertag.js"
+
+export function Scene() {
+  const characterRef = useRef()
+  
+  // Respawn logic - reset character position if they fall off the map
+  useFrame(() => {
+    if (characterRef.current == null) {
+      return
+    }
+    if (characterRef.current.position.y < -10) {
+      characterRef.current.position.set(0, 0, 0)
+    }
+  })
+
+  return (
+    <>
+      {/* Environment */}
+      <Sky />
+      
+      {/* Lighting */}
+      <directionalLight
+        intensity={1.2}
+        position={[5, 10, 10]}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-left={-10}
+        shadow-camera-right={10}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-10}
+      />
+      <ambientLight intensity={1} />
+      
+      {/* Character */}
+      <SimpleCharacter ref={characterRef} >
+        <PlayerTag />
+      </SimpleCharacter>
+      
+      {/* Level Geometry */}
+      <FixedBvhPhysicsBody>
+        {/* Main ground */}
+        <PrototypeBox 
+          color="#ffffff" 
+          scale={[10, 0.5, 10]} 
+          position={[0, -2, 0]} 
+        />
+        
+        {/* Platforms */}
+        <PrototypeBox 
+          color="#cccccc" 
+          scale={[2, 1, 3]} 
+          position={[4, 0, 0]} 
+        />
+        <PrototypeBox 
+          color="#ffccff" 
+          scale={[3, 1, 3]} 
+          position={[3, 1.5, -1]} 
+        />
+        <PrototypeBox 
+          color="#ccffff" 
+          scale={[2, 0.5, 3]} 
+          position={[2, 2.5, -3]} 
+        />
+        <PrototypeBox 
+          color="#ffccff" 
+          scale={[2, 1, 3]} 
+          position={[-3, 0, -2]} 
+        />
+        <PrototypeBox 
+          color="#ccffff" 
+          scale={[1, 1, 4]} 
+          position={[0, -1, 0]} 
+        />
+        <PrototypeBox 
+          color="#ffffcc" 
+          scale={[4, 1, 1]} 
+          position={[0, 3.5, 0]} 
+        />
+      </FixedBvhPhysicsBody>
+    </>
+  )
+}`,
+    '/App.tsx': `
+import { Canvas } from '@react-three/fiber'
+import { Viverse } from '@react-three/viverse'
+import { Scene } from "./Scene.js
+
+export default function App() {
+  return (
+    <Canvas
+      style={{ position: "absolute", inset: "0", touchAction: "none" }}
+      camera={{ fov: 90, position: [0, 2, 2] }}
+      shadows
+    >
+      <Suspense fallback={null}>
+        <Viverse>
+          <Scene />
+        </Viverse>
+      </Suspense>
+    </Canvas>
+  )
+}`}}
+/>
+
 First, we use the `useViverseProfile()` hook to fetch the current user's profile from Viverse, including their name and avatar information. We provide a fallback for when the user isn't logged in:
 
 ```jsx
@@ -69,7 +240,7 @@ import { Root, Image, Text } from '@react-three/uikit'
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 
-function PlayerTag() {
+export function PlayerTag() {
   const profile = useViverseProfile() ?? {
     name: 'Anonymous',
     activeAvatar: { headIconUrl: 'https://picsum.photos/200' },

@@ -1,19 +1,31 @@
-import { AnimationClip, Object3D, Quaternion, QuaternionKeyframeTrack, Vector3, VectorKeyframeTrack } from 'three'
 import { VRM, VRMHumanBoneName } from '@pixiv/three-vrm'
-import { loadVrmModelGltfAnimations } from './gltf.js'
-import { loadVrmModelVrmaAnimations } from './vrma.js'
+import {
+  AnimationClip,
+  Euler,
+  Object3D,
+  Quaternion,
+  QuaternionKeyframeTrack,
+  Vector3,
+  VectorKeyframeTrack,
+} from 'three'
+import { loadVrmModelGltfAnimations as loadModelGltfAnimations } from './gltf.js'
+import { loadVrmModelMixamoAnimations as loadModelMixamoAnimations } from './mixamo.js'
 import { scaleAnimationClipTime, trimAnimationClip } from './utils.js'
-import { loadVrmModelMixamoAnimations } from './mixamo.js'
+import { loadVrmModelVrmaAnimations } from './vrma.js'
+import { loadCharacterModel } from '../model/index.js'
 import { cached } from '../utils.js'
 
 const parentWorldVector = new Vector3()
 const restRotationInverse = new Quaternion()
 const parentRestWorldRotation = new Quaternion()
+const parentRestWorldRotationInverse = new Quaternion()
 const quaternion = new Quaternion()
 const vector = new Vector3()
 
-export function fixVrmModelAnimationClip(
-  vrm: VRM,
+const nonVrmRotationOffset = new Quaternion().setFromEuler(new Euler(0, Math.PI, 0))
+
+export function fixModelAnimationClip(
+  model: Exclude<Awaited<ReturnType<typeof loadCharacterModel>>, undefined>,
   clip: AnimationClip,
   clipScene: Object3D,
   removeXZMovement: boolean,
@@ -27,7 +39,8 @@ export function fixVrmModelAnimationClip(
     )
   }
   const clipSceneHips = clipScene.getObjectByName(hipsBoneName)
-  const vrmHipsPosition = vrm.humanoid.normalizedRestPose.hips?.position
+  const vrmHipsPosition =
+    model instanceof VRM ? model.humanoid.normalizedRestPose.hips?.position : clipSceneHips?.position
   if (clipSceneHips == null || vrmHipsPosition == null) {
     throw new Error('Failed to load VRM animation: missing animation hips object or VRM hips position.')
   }
@@ -40,8 +53,9 @@ export function fixVrmModelAnimationClip(
   for (const track of clip.tracks) {
     // Convert each tracks for VRM use, and push to `tracks`
     const [boneName, propertyName] = track.name.split('.')
-    const vrmBoneName = boneMap?.[boneName] ?? (boneName as VRMHumanBoneName)
-    const vrmNodeName = vrm.humanoid.getNormalizedBoneNode(vrmBoneName)?.name
+    const vrmBoneName = boneMap?.[boneName] ?? (boneName as string)
+    const vrmNodeName =
+      model instanceof VRM ? model.humanoid.getNormalizedBoneNode(vrmBoneName as VRMHumanBoneName)?.name : vrmBoneName
     const bone = clipScene.getObjectByName(boneName)
 
     if (vrmNodeName == null || bone == null || bone.parent == null) {
@@ -50,16 +64,22 @@ export function fixVrmModelAnimationClip(
 
     bone.getWorldQuaternion(restRotationInverse).invert()
     bone.parent.getWorldQuaternion(parentRestWorldRotation)
+    parentRestWorldRotationInverse.copy(parentRestWorldRotation).invert()
     bone.parent.getWorldPosition(parentWorldVector)
 
     if (track instanceof QuaternionKeyframeTrack) {
       // Store rotations of rest-pose.
       for (let i = 0; i < track.values.length; i += 4) {
         quaternion.fromArray(track.values, i)
-        quaternion.premultiply(parentRestWorldRotation).multiply(restRotationInverse)
-        if (vrm.meta.metaVersion === '0') {
-          quaternion.x *= -1
-          quaternion.z *= -1
+        if (model instanceof VRM) {
+          quaternion.premultiply(parentRestWorldRotation).multiply(restRotationInverse)
+          if (model.meta.metaVersion === '0') {
+            quaternion.x *= -1
+            quaternion.z *= -1
+          }
+        }
+        if (vrmBoneName === 'root') {
+          quaternion.multiply(nonVrmRotationOffset)
         }
         if (removeXZMovement) {
           //TODO
@@ -75,9 +95,11 @@ export function fixVrmModelAnimationClip(
       for (let i = 0; i < track.values.length; i += 3) {
         vector.fromArray(track.values, i)
         vector.multiplyScalar(hipsPositionScale)
-        if (vrm.meta.metaVersion === '0') {
-          vector.negate()
-          vector.y *= -1
+        if (model instanceof VRM) {
+          if (model.meta.metaVersion === '0') {
+            vector.negate()
+            vector.y *= -1
+          }
         }
         if (vrmBoneName === 'hips' && removeXZMovement) {
           vector.x = 0
@@ -94,7 +116,7 @@ export * from './mixamo.js'
 export * from './vrma.js'
 export * from './utils.js'
 
-export type VrmModelAnimationOptions = {
+export type ModelAnimationOptions = {
   type: 'mixamo' | 'gltf' | 'vrma'
   url: string
   removeXZMovement?: boolean
@@ -102,9 +124,9 @@ export type VrmModelAnimationOptions = {
   scaleTime?: number
 }
 
-async function uncachedLoadVrmModelAnimation(
-  vrm: VRM,
-  type: VrmModelAnimationOptions['type'],
+async function uncachedLoadModelAnimation(
+  model: Exclude<Awaited<ReturnType<typeof loadCharacterModel>>, undefined>,
+  type: ModelAnimationOptions['type'],
   url: string,
   removeXZMovement: boolean,
   trimStartTime: number | undefined,
@@ -114,13 +136,16 @@ async function uncachedLoadVrmModelAnimation(
   let clips: Array<AnimationClip>
   switch (type) {
     case 'gltf':
-      clips = await loadVrmModelGltfAnimations(vrm, url, removeXZMovement)
+      clips = await loadModelGltfAnimations(model, url, removeXZMovement)
       break
     case 'mixamo':
-      clips = await loadVrmModelMixamoAnimations(vrm, url, removeXZMovement)
+      clips = await loadModelMixamoAnimations(model, url, removeXZMovement)
       break
     case 'vrma':
-      clips = await loadVrmModelVrmaAnimations(vrm, url, removeXZMovement)
+      if (!(model instanceof VRM)) {
+        throw new Error(`Model must be an instance of VRM to load VRMA animations`)
+      }
+      clips = await loadVrmModelVrmaAnimations(model, url, removeXZMovement)
       break
   }
   if (clips.length != 1) {
@@ -136,9 +161,12 @@ async function uncachedLoadVrmModelAnimation(
   return clip
 }
 
-export function loadVrmCharacterModelAnimation(vrm: VRM, options: VrmModelAnimationOptions) {
-  return cached(uncachedLoadVrmModelAnimation, [
-    vrm,
+export function loadCharacterModelAnimation(
+  model: Exclude<Awaited<ReturnType<typeof loadCharacterModel>>, undefined>,
+  options: ModelAnimationOptions,
+) {
+  return cached(uncachedLoadModelAnimation, [
+    model,
     options.type,
     options.url,
     options.removeXZMovement ?? false,
@@ -148,10 +176,10 @@ export function loadVrmCharacterModelAnimation(vrm: VRM, options: VrmModelAnimat
   ])
 }
 
-const extraOptions: Record<string, Partial<VrmModelAnimationOptions>> = {
+const extraOptions: Record<string, Partial<ModelAnimationOptions>> = {
   walk: { scaleTime: 0.5 },
   run: { scaleTime: 0.8 },
-  jumpForward: { scaleTime: 1.2 },
+  jumpForward: { scaleTime: 0.9 },
 }
 
 const simpleCharacterAnimationUrls = {
@@ -168,9 +196,9 @@ export const simpleCharacterAnimationNames = Object.keys(simpleCharacterAnimatio
   keyof typeof simpleCharacterAnimationUrls
 >
 
-export async function getSimpleCharacterVrmModelAnimationOptions(
+export async function getSimpleCharacterModelAnimationOptions(
   animationName: keyof typeof simpleCharacterAnimationUrls,
-): Promise<VrmModelAnimationOptions> {
+): Promise<ModelAnimationOptions> {
   return {
     type: 'gltf',
     ...extraOptions[animationName],

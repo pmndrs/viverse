@@ -1,6 +1,6 @@
 import { Object3D, Vector3, Euler, Vector3Tuple, Ray } from 'three'
-import { type InputSystem, DeltaYawField, DeltaPitchField, DeltaZoomField } from './input/index.js'
 import { clamp } from 'three/src/math/MathUtils.js'
+import { type InputSystem, DeltaYawField, DeltaPitchField, DeltaZoomField } from './input/index.js'
 
 export const FirstPersonCharacterCameraBehavior: SimpleCharacterCameraBehaviorOptions = {
   characterBaseOffset: [0, 1.6, 0],

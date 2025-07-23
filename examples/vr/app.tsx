@@ -1,11 +1,17 @@
-import { Canvas, useFrame } from '@react-three/fiber'
-import { SimpleCharacter, FixedBvhPhysicsBody, useViverseProfile, Viverse } from '@react-three/viverse'
 import { Sky } from '@react-three/drei'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { Root, Image, Text, Fullscreen } from '@react-three/uikit'
+import {
+  SimpleCharacter,
+  FixedBvhPhysicsBody,
+  useViverseProfile,
+  Viverse,
+  PrototypeBox,
+  useXRControllerInput,
+} from '@react-three/viverse'
+import { DefaultXRController, XR, XROrigin, createXRStore, useXRInputSourceState } from '@react-three/xr'
 import { Suspense, useRef } from 'react'
 import { Group } from 'three'
-import { PrototypeBox, useXRControllerInput } from '@react-three/viverse'
-import { DefaultXRController, XR, XROrigin, createXRStore, useXRInputSourceState } from '@react-three/xr'
 
 const store = createXRStore({
   offerSession: 'immersive-vr',

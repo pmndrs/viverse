@@ -1,5 +1,5 @@
-import { createVRMAnimationClip, VRMAnimation } from '@pixiv/three-vrm-animation'
 import { VRM } from '@pixiv/three-vrm'
+import { createVRMAnimationClip, VRMAnimation } from '@pixiv/three-vrm-animation'
 import { AnimationClip } from 'three'
 import { vrmaLoader } from '../index.js'
 

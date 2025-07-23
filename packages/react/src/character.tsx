@@ -1,3 +1,4 @@
+import { VRM } from '@pixiv/three-vrm'
 import {
   BvhPhysicsWorld as BvhPhysicsWorldImpl,
   SimpleCharacterOptions,
@@ -8,22 +9,25 @@ import {
   InputSystem,
   LocomotionKeyboardInput,
   PointerCaptureInput,
+  type loadCharacterModel,
 } from '@pmndrs/viverse'
+import { useFrame, useThree, extend, ThreeElement, createPortal } from '@react-three/fiber'
 import {
   createContext,
   forwardRef,
+  Fragment,
   ReactNode,
   useContext,
   useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
 } from 'react'
-import { useFrame, useThree, extend, ThreeElement } from '@react-three/fiber'
-import { Camera, Group, Object3D, OrthographicCamera } from 'three'
-import { useViverseActiveAvatar } from './index.js'
 import { clear, suspend } from 'suspend-react'
-import type {} from '@pmndrs/pointer-events'
+import { Group, Object3D, Quaternion } from 'three'
+import { create, StoreApi } from 'zustand'
+import { useViverseActiveAvatar } from './index.js'
 
 const BvhPhyiscsWorldContext = createContext<BvhPhysicsWorldImpl | undefined>(undefined)
 
@@ -33,6 +37,10 @@ declare module '@react-three/fiber' {
     simpleCharacterImpl: ThreeElement<typeof SimpleCharacterImpl>
   }
 }
+
+const CharacterModelStoreContext = createContext<
+  StoreApi<{ model: Awaited<ReturnType<typeof loadCharacterModel>> | undefined }> | undefined
+>(undefined)
 
 /**
  * provides the bvh physics world context
@@ -47,61 +55,82 @@ const PreloadSimpleCharacterAssetsSymbol = Symbol('preload-simple-character-asse
 /**
  * creates a simple character controller supporting running, walking, and jumping with a default avatar and animations with can be configutred
  */
-export const SimpleCharacter = forwardRef<Group, SimpleCharacterOptions & { children?: ReactNode }>(
-  ({ children, input, ...options }, ref) => {
-    const avatar = useViverseActiveAvatar()
-    const world = useContext(BvhPhyiscsWorldContext)
-    if (world == null) {
-      throw new Error('SimpleCharacter must be used within a BvhPhysicsWorld component')
+export const SimpleCharacter = forwardRef<
+  Group,
+  SimpleCharacterOptions & { useViverseAvatar?: boolean; children?: ReactNode }
+>(({ children, input, useViverseAvatar = true, ...options }, ref) => {
+  const avatar = useViverseActiveAvatar()
+  const world = useContext(BvhPhyiscsWorldContext)
+  if (world == null) {
+    throw new Error('SimpleCharacter must be used within a BvhPhysicsWorld component')
+  }
+  const camera = useThree((s) => s.camera)
+  const domElement = useThree((s) => s.gl.domElement)
+  const newOptions = {
+    ...options,
+    model:
+      options.model != false && avatar != null && useViverseAvatar
+        ? { url: avatar?.vrmUrl, ...(options.model === true ? undefined : options.model) }
+        : options.model,
+  } satisfies SimpleCharacterOptions
+  const preloadSimpleCharacterAssetsKeys = [
+    JSON.stringify(options.model),
+    ...simpleCharacterAnimationNames.map((name) => JSON.stringify(options.animation?.[name])),
+  ]
+  suspend(async () => {
+    const result = await preloadSimpleCharacterAssets(newOptions)
+    result.model?.scene.addEventListener('dispose', () =>
+      clear([PreloadSimpleCharacterAssetsSymbol, ...preloadSimpleCharacterAssetsKeys]),
+    )
+    return result
+  }, [PreloadSimpleCharacterAssetsSymbol, ...preloadSimpleCharacterAssetsKeys])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const currentOptions = useMemo<SimpleCharacterOptions>(() => ({}), preloadSimpleCharacterAssetsKeys)
+  Object.assign(currentOptions, newOptions)
+  const internalRef = useRef<SimpleCharacterImpl>(null)
+  const store = useMemo(
+    () => create<{ model: Awaited<ReturnType<typeof loadCharacterModel>> | undefined }>(() => ({ model: undefined })),
+    [],
+  )
+  useEffect(
+    () => {
+      if (internalRef.current == null) {
+        return
+      }
+      if (input == null || 'length' in input) {
+        internalRef.current.inputSystem = new InputSystem(
+          domElement,
+          input ?? [LocomotionKeyboardInput, PointerCaptureInput],
+        )
+        return
+      }
+      internalRef.current.inputSystem = input
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    Array.isArray(input) ? [...input, domElement] : [input, domElement],
+  )
+  useEffect(() => {
+    const simpleCharacter = internalRef.current
+    if (simpleCharacter == null) {
+      return
     }
-    const camera = useThree((s) => s.camera)
-    const domElement = useThree((s) => s.gl.domElement)
-    const newOptions = {
-      ...options,
-      model:
-        options.model != false && avatar != null
-          ? { url: avatar?.vrmUrl, ...(options.model === true ? undefined : options.model) }
-          : options.model,
-    } satisfies SimpleCharacterOptions
-    const preloadSimpleCharacterAssetsKeys = [
-      JSON.stringify(options.model),
-      ...simpleCharacterAnimationNames.map((name) => JSON.stringify(options.animation?.[name])),
-    ]
-    suspend(async () => {
-      const result = await preloadSimpleCharacterAssets(newOptions)
-      result.vrm?.scene.addEventListener('dispose', () =>
-        clear([PreloadSimpleCharacterAssetsSymbol, ...preloadSimpleCharacterAssetsKeys]),
-      )
-      return result
-    }, [PreloadSimpleCharacterAssetsSymbol, ...preloadSimpleCharacterAssetsKeys])
-    const currentOptions = useMemo<SimpleCharacterOptions>(() => ({}), preloadSimpleCharacterAssetsKeys)
-    Object.assign(currentOptions, newOptions)
-    const internalRef = useRef<SimpleCharacterImpl>(null)
-    useEffect(
-      () => {
-        if (internalRef.current == null) {
-          return
-        }
-        if (input == null || 'length' in input) {
-          internalRef.current.inputSystem = new InputSystem(
-            domElement,
-            input ?? [LocomotionKeyboardInput, PointerCaptureInput],
-          )
-          return
-        }
-        internalRef.current.inputSystem = input
-      },
-      Array.isArray(input) ? [...input, domElement] : [input, domElement],
-    )
-    useImperativeHandle(ref, () => internalRef.current!, [camera as any, world, domElement, currentOptions])
-    useFrame((_, delta) => internalRef.current?.update(delta))
-    return (
-      <simpleCharacterImpl args={[camera as any, world, domElement, currentOptions]} ref={internalRef}>
-        {children}
-      </simpleCharacterImpl>
-    )
-  },
-)
+    simpleCharacter.addEventListener('loaded', () => {
+      store.setState({ model: simpleCharacter.model })
+    })
+    if (simpleCharacter.model != null) {
+      store.setState({ model: simpleCharacter.model })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [camera as any, world, domElement, currentOptions])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useImperativeHandle(ref, () => internalRef.current!, [camera as any, world, domElement, currentOptions])
+  useFrame((_, delta) => internalRef.current?.update(delta))
+  return (
+    <simpleCharacterImpl args={[camera as any, world, domElement, currentOptions]} ref={internalRef}>
+      <CharacterModelStoreContext.Provider value={store}>{children}</CharacterModelStoreContext.Provider>
+    </simpleCharacterImpl>
+  )
+})
 
 /**
  * allows to add all children as static (non-moving) objects to the bvh physics world
@@ -126,4 +155,32 @@ export const FixedBvhPhysicsBody = forwardRef<Object3D, { children?: ReactNode }
   return <group ref={internalRef}>{children}</group>
 })
 
-export function VrmCharacterModelBone({ bone }: { bone: VRMHumanBoneName }) {}
+export function CharacterModelBone({ bone, children }: { bone: VRMHumanBoneName; children?: ReactNode }) {
+  const [state, setState] = useState<{ boneObject: Object3D; boneRotationOffset?: Quaternion } | undefined>(undefined)
+  const store = useContext(CharacterModelStoreContext)
+  useEffect(() => {
+    if (store == null) {
+      return
+    }
+    const updateContainer = ({ model }: { model: Awaited<ReturnType<typeof loadCharacterModel>> | undefined }) => {
+      if (model == null) {
+        return
+      }
+      const boneObject = model instanceof VRM ? model.humanoid.getRawBoneNode(bone) : model.scene.getObjectByName(bone)
+      if (boneObject == null) {
+        return
+      }
+      setState({ boneObject: boneObject as any, boneRotationOffset: model.boneRotationOffset })
+    }
+    updateContainer(store.getState())
+    return store.subscribe(updateContainer)
+  }, [bone, store])
+  if (state == null) {
+    return null
+  }
+  return (
+    <Fragment key={state.boneObject.id}>
+      {createPortal(<group quaternion={state.boneRotationOffset}>{children}</group>, state.boneObject)}
+    </Fragment>
+  )
+}

@@ -1,8 +1,8 @@
 import { ClientOptions, Client, checkAuthOptions } from '@viverse/sdk'
 import AvatarClient from '@viverse/sdk/avatar-client'
 import { createContext, ReactNode, useCallback, useContext } from 'react'
-import { BvhPhysicsWorld } from './character.js'
 import { suspend, clear } from 'suspend-react'
+import { BvhPhysicsWorld } from './character.js'
 
 // auth
 

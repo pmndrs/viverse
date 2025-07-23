@@ -1,12 +1,16 @@
 {
   "name": "@pmndrs/viverse",
-  "description": "Build 3D web games with threejs and viverse.",
+  "description": "Toolkit for building and publishing Threejs Apps to Viverse.",
   "author": "Bela Bohlender",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "generate": "node --loader ts-node/esm scripts/build-assets.ts",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "check:prettier": "prettier --check src",
+    "check:eslint": "eslint \"src/**/*.{ts,tsx}\"",
+    "fix:prettier": "prettier --write src",
+    "fix:eslint": "eslint \"src/**/*.{ts,tsx}\" --fix"
   },
   "dependencies": {
     "@pixiv/three-vrm": "^3.4.2",

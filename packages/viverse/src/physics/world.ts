@@ -1,4 +1,4 @@
-import { Object3D, Ray, Vector3 } from 'three'
+import { Object3D, Ray } from 'three'
 import { computeBoundsTree, MeshBVH, StaticGeometryGenerator } from 'three-mesh-bvh'
 
 export class BvhPhysicsWorld {
@@ -16,7 +16,7 @@ export class BvhPhysicsWorld {
   removeFixedBody(object: Object3D) {
     this.map.delete(object)
   }
-  
+
   raycast(ray: Ray, far: number) {
     let result: number | undefined
     for (const body of this.getBodies()) {

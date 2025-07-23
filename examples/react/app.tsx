@@ -1,10 +1,16 @@
+import { Gltf, Sky } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { SimpleCharacter, FixedBvhPhysicsBody, useViverseProfile, Viverse } from '@react-three/viverse'
-import { Sky } from '@react-three/drei'
 import { Root, Image, Text, Fullscreen } from '@react-three/uikit'
+import {
+  SimpleCharacter,
+  FixedBvhPhysicsBody,
+  useViverseProfile,
+  Viverse,
+  CharacterModelBone,
+  PrototypeBox,
+} from '@react-three/viverse'
 import { Suspense, useRef } from 'react'
 import { Group, Object3D } from 'three'
-import { PrototypeBox } from '@react-three/viverse'
 
 export function App() {
   return (
@@ -57,8 +63,19 @@ export function Scene() {
         shadow-camera-bottom={-10}
       />
       <ambientLight intensity={1} />
-      <SimpleCharacter model={{ url: 'avatar.vrm' }} ref={characterRef}>
+      <SimpleCharacter ref={characterRef}>
         <PlayerTag />
+        <CharacterModelBone bone="rightHand">
+          <Gltf
+            scale={0.5}
+            scale-y={0.65}
+            position-y={-0.02}
+            position-x={0.07}
+            rotation-z={-(0.2 * Math.PI) / 2}
+            rotation-x={-(1 * Math.PI) / 2}
+            src="sword.gltf"
+          />
+        </CharacterModelBone>
       </SimpleCharacter>
       <FixedBvhPhysicsBody>
         <PrototypeBox color="#cccccc" scale={[2, 1, 3]} position={[3.91, 0, 0]} />

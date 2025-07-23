@@ -1,3 +1,7 @@
+import { Container, withOpacity, Image, Text, reversePainterSortStable, Fullscreen } from '@pmndrs/uikit'
+import { BvhPhysicsWorld, SimpleCharacter } from '@pmndrs/viverse'
+import { Client } from '@viverse/sdk'
+import AvatarClient from '@viverse/sdk/avatar-client'
 import {
   AmbientLight,
   DirectionalLight,
@@ -9,11 +13,7 @@ import {
   MathUtils,
   Vector3,
 } from 'three'
-import { BvhPhysicsWorld, SimpleCharacter } from '@pmndrs/viverse'
 import { GLTFLoader, Sky } from 'three/examples/jsm/Addons.js'
-import { Container, withOpacity, Image, Text, reversePainterSortStable, Fullscreen } from '@pmndrs/uikit'
-import { Client } from '@viverse/sdk'
-import AvatarClient from '@viverse/sdk/avatar-client'
 
 const camera = new PerspectiveCamera(90)
 camera.position.z = 1
