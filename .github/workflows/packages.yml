@@ -31,8 +31,10 @@ jobs:
         with:
           versionSpec: '5.x'
 
-      - name: Install Dependencies
-        run: pnpm install
+      - name: Install Dependencies and generate assets
+        run: |
+          pnpm install
+          pnpm -r generate
 
       - name: Check
         run: |

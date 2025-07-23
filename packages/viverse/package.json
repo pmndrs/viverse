@@ -2,6 +2,28 @@
   "name": "@pmndrs/viverse",
   "description": "Toolkit for building and publishing Threejs Apps to Viverse.",
   "author": "Bela Bohlender",
+  "license": "SEE LICENSE IN LICENSE",
+  "homepage": "https://github.com/pmndrs/viverse",
+  "keywords": [
+    "viverse",
+    "character controller",
+    "three.js",
+    "typescript",
+    "web game"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:pmndrs/viverse.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "main": "dist/index.js"
+  },
+  "peerDependencies": {
+    "three": "*"
+  },
   "version": "0.0.0",
   "type": "module",
   "scripts": {
