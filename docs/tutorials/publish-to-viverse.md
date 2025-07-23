@@ -42,10 +42,10 @@ Next, we need to provide the app id to our Viverse component.
 > [!TIP]
 > Do not include the App ID in your local development environment. Keep it production-only to avoid conflicts during development.
 
-Create a production environment file (`.env.prod`) in your project root and use dotenvx when building your app (`dotenvx run -f .env.prod -- vite build`)
+Create a production environment file (`.env.production`) in your project root.
 
 ```bash
-# .env.prod
+# .env.production
 VITE_VIVERSE_APP_ID=your-app-id-here
 ```
 
@@ -61,7 +61,7 @@ This only works when using vite. If you don't use vite you need to manually make
 
 ## Step 5: Build Your Application
 
-Build your application for production. The exact command depends on your build tool.
+Build your application for production. The exact command depends on your build tool. For vite you need to run `vite build`.
 
 ## Step 6: Deploy to Viverse
 

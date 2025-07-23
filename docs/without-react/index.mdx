@@ -177,6 +177,10 @@ renderer.setAnimationLoop(() => {
 
 Connect to Viverse services to access user profiles and avatars:
 
+> [!NOTE]
+> The following assumes your are building your app with vite. If you are using a different built tool, you need manually assure that the viverse app id is provided only during the production built.
+
+
 ```typescript
 import { Client } from '@viverse/sdk'
 import AvatarClient from '@viverse/sdk/avatar-client'
@@ -208,16 +212,11 @@ const character = new SimpleCharacter(camera, world, canvas, {
 })
 ```
 
-Create a `.env.prod` file for your Viverse app ID:
+Create a `.env.production` file for your Viverse app ID:
 
 ```
 VITE_VIVERSE_APP_ID=your_viverse_app_id_here
 ```
-
- milliseconds
-
-> [!WARNING]
-> Only apply the `.env.prod` environment when building the application and not during local development
 
 ## Step 7: Player Tag UI
 

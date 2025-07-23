@@ -70,7 +70,11 @@ export const SimpleCharacter = forwardRef<
     ...options,
     model:
       options.model != false && avatar != null && useViverseAvatar
-        ? { url: avatar?.vrmUrl, ...(options.model === true ? undefined : options.model) }
+        ? {
+            type: avatar.vrmUrl != null ? 'vrm' : undefined,
+            url: avatar?.vrmUrl,
+            ...(options.model === true ? undefined : options.model),
+          }
         : options.model,
   } satisfies SimpleCharacterOptions
   const preloadSimpleCharacterAssetsKeys = [
