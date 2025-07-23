@@ -29,7 +29,7 @@ jobs:
           pnpm -r build
 
       - name: Deploying
-        run: pnpm -r deploy
+        run: pnpm -r run deploy
 
   docs:
     uses: pmndrs/docs/.github/workflows/build.yml@v2
