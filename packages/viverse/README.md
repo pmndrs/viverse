@@ -1,5 +1,5 @@
 <h1 align="center">@pmndrs/viverse</h1>
-<h3 align="center">Build 3D web games with threejs and viverse.</h3>
+<h3 align="center">Toolkit for building Three.js Apps for Viverse and beyond.</h3>
 <br/>
 
 <p align="center">

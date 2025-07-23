@@ -1,5 +1,5 @@
 <h1 align="center">@react-three/viverse</h1>
-<h3 align="center">Toolkit for building and publishing React Three Fiber Apps to Viverse.</h3>
+<h3 align="center">Toolkit for building Three.js and React Three Fiber Apps for Viverse and beyond.</h3>
 <br/>
 
 <p align="center">
@@ -68,3 +68,7 @@ Get started with **[building a simple game](https://pmndrs.github.io/viverse/tut
 > No Problem
 
 Check out how to build games using @pmndrs/viverse and only [vanilla three.js](https://pmndrs.github.io/viverse/without-react).
+
+## Acknowledgments
+
+This project would not be possible without the default model and default animations made by [Quaternius](https://quaternius.com/), the prototype texture from (kenney.nl)[https://www.kenney.nl/], and the [three-vrm project](https://github.com/pixiv/three-vrm) from the [pixiv team](https://github.com/pixiv)!

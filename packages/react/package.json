@@ -1,6 +1,6 @@
 {
   "name": "@react-three/viverse",
-  "description": "Toolkit for building and publishing React Three Fiber Apps to Viverse.",
+  "description": "Toolkit for building React Three Fiber Apps for Viverse and beyond.",
   "type": "module",
   "main": "src/index.tsx",
   "author": "Bela Bohlender",
