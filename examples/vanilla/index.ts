@@ -77,7 +77,9 @@ const profile = (await avatarClient?.getProfile()) ?? {
 // setup the simple character and physics
 const world = new BvhPhysicsWorld()
 world.addFixedBody(ground.scene)
-const character = new SimpleCharacter(camera, world, canvas, { model: { url: profile.activeAvatar?.vrmUrl } })
+const character = new SimpleCharacter(camera, world, canvas, {
+  model: { url: profile.activeAvatar?.vrmUrl, type: 'vrm' },
+})
 scene.add(character)
 
 // build the player tag ui

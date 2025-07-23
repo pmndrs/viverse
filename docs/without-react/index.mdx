@@ -204,7 +204,7 @@ const profile = (await avatarClient?.getProfile()) ?? {
 
 // Update character creation to use profile avatar
 const character = new SimpleCharacter(camera, world, canvas, { 
-  model: { url: profile.activeAvatar?.vrmUrl } 
+  model: { url: profile.activeAvatar?.vrmUrl, type: "vrm" } 
 })
 ```
 
