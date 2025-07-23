@@ -40,11 +40,11 @@ import { Scene } from './Scene'
 
 const store = createXRStore({ offerSession: 'immersive-ar' })
 
-export function App() {
+export default function App() {
   return (
     <Viverse>
       <Canvas
-        style={{ width: '100%', flexGrow: 1 }}
+        style={{ position: "absolute", inset: "0", touchAction: "none" }}
         camera={{ fov: 90, position: [0, 2, 2] }}
         shadows
         gl={{ antialias: true, localClippingEnabled: true }}
@@ -231,11 +231,11 @@ import { Scene } from './Scene'
 
 const store = createXRStore({ offerSession: 'immersive-vr' })
 
-export function App() {
+export default function App() {
   return (
     <Viverse>
       <Canvas
-        style={{ width: '100%', flexGrow: 1 }}
+        style={{ position: "absolute", inset: "0", touchAction: "none" }}
         camera={{ fov: 90, position: [0, 2, 2] }}
         shadows
         gl={{ antialias: true, localClippingEnabled: true }}
