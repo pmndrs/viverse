@@ -26,7 +26,7 @@ npm install three @react-three/fiber @react-three/viverse
 | A prototype map with the `SimpleCharacter` class and its default model. | ![render of the code below](../../docs/getting-started/basic-example.gif) |
 | --------------------------------------------------------------------------- | --------------------------------------------------------------------- |
 
-```jsx
+```tsx
 const world = new BvhPhysicsWorld()
 world.addFixedBody(ground.scene)
 const character = new SimpleCharacter(camera, world, canvas, { model: { url: profile.activeAvatar?.vrmUrl } })

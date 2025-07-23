@@ -11,7 +11,7 @@ import {
 } from '@react-three/viverse'
 import { XR, XROrigin, createXRStore } from '@react-three/xr'
 import { Suspense, useRef } from 'react'
-import { Group, Object3D } from 'three'
+import { Group } from 'three'
 
 const store = createXRStore({ offerSession: 'immersive-ar' })
 
@@ -91,7 +91,7 @@ function PlayerTag() {
     name: 'Anonymous',
     activeAvatar: { headIconUrl: 'https://picsum.photos/200' },
   }
-  const ref = useRef<Object3D>(null)
+  const ref = useRef<Group>(null)
   useFrame((state) => {
     if (ref.current == null) {
       return

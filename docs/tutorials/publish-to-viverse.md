@@ -51,7 +51,7 @@ VITE_VIVERSE_APP_ID=your-app-id-here
 
 this allows to provide the appId to your Viverse component using the environment variable `VITE_VIVERSE_APP_ID`
 
-```jsx
+```tsx
 <Viverse clientId={import.meta.env.VITE_VIVERSE_APP_ID}>
   <YourGame />
 </Viverse>

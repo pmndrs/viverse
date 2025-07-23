@@ -71,7 +71,7 @@ The `CharacterModelBone` component allows you to attach any 3D object to specifi
 
 First, import the `CharacterModelBone` component from `@react-three/viverse`:
 
-```jsx
+```tsx
 import { CharacterModelBone } from '@react-three/viverse'
 ```
 
@@ -79,7 +79,7 @@ import { CharacterModelBone } from '@react-three/viverse'
 
 Next, we place the CharacterModelBone inside the, attach it to the `"rightHand"`, and build a simple sword using two meshes. For better looks you probably want to import your own 3d model.
 
-```jsx
+```tsx
 <SimpleCharacter>
   <CharacterModelBone bone="rightHand">
     <group

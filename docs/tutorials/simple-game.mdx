@@ -30,9 +30,10 @@ import { Sky } from '@react-three/drei'
 import { SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Group } from 'three'
 
 export function Scene() {
-  const characterRef = useRef()
+  const characterRef = useRef<Group>(null)
   
   // Respawn logic - reset character position if they fall off the map
   useFrame(() => {
@@ -145,7 +146,7 @@ npm install three @react-three/fiber @react-three/viverse @react-three/drei
 
 First, let's create the basic Canvas setup with shadows and proper camera settings:
 
-```jsx
+```tsx
 import { Canvas } from '@react-three/fiber'
 import { Viverse } from '@react-three/viverse'
 import { Suspense } from 'react'
@@ -171,7 +172,7 @@ export function App() {
 
 Let's create another component called `Scene` and add the sky and basic lighting. Add the `Sky` import from `@react-three/drei`:
 
-```jsx
+```tsx
 import { Sky } from '@react-three/drei'
 
 export function Scene() {
@@ -198,7 +199,7 @@ At this point, you should see a beautiful sky gradient in your scene!
 
 Now add the level geometry. Import `FixedBvhPhysicsBody` and `PrototypeBox` from `@react-three/viverse`, and expand the directional light with shadow properties:
 
-```jsx
+```tsx
 import { Sky } from '@react-three/drei'
 import { FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 
@@ -266,7 +267,7 @@ Now you should see a colorful platformer level with various platforms at differe
 
 Add the character. Import `SimpleCharacter` from `@react-three/viverse`:
 
-```jsx
+```tsx
 import { Sky } from '@react-three/drei'
 import { SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 import { useRef } from 'react'
@@ -303,14 +304,15 @@ Great! Now you can move around with WASD keys, look around with the mouse, and j
 
 Finally, add the respawn system. Import `useRef` from `react` and `useFrame` from `@react-three/fiber` and add the respawn logic:
 
-```jsx
+```tsx
 import { Sky } from '@react-three/drei'
 import { SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 import { useRef } from 'react'
+import { Group } from 'three'
 import { useFrame } from '@react-three/fiber' // NEW
 
 export function Scene() {
-  const characterRef = useRef()
+  const characterRef = useRef<Group>(null)
   
   // Respawn logic - NEW
   useFrame(() => {

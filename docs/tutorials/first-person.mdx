@@ -59,7 +59,7 @@ export default function App() {
 
 First, we switch from third-person to first-person camera behavior and hide the character model to prevent the model from occluding the players view.
 
-```jsx
+```tsx
 <SimpleCharacter
   model={false}
   cameraBehavior={FirstPersonCharacterCameraBehavior}
@@ -73,7 +73,7 @@ First, we switch from third-person to first-person camera behavior and hide the 
 
 Next, you need to set up the appropriate input controls for first-person movement and looking around:
 
-```jsx
+```tsx
 <SimpleCharacter
   input={[LocomotionKeyboardInput, PointerLockInput]}
   // ... other props
@@ -86,7 +86,7 @@ Next, you need to set up the appropriate input controls for first-person movemen
 
 Finally, we need to enable pointer locking when the user clicks on the canvas for the `PointerLockInput` to work properly:
 
-```jsx
+```tsx
 <Canvas
   onClick={(e) => (e.target as HTMLElement).requestPointerLock()}
 >

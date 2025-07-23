@@ -26,7 +26,7 @@ npm install three @react-three/fiber @react-three/viverse
 | A prototype map with the `<SimpleCharacter/>` component and its default model. | ![render of the code below](./docs/getting-started/basic-example.gif) |
 | --------------------------------------------------------------------------- | --------------------------------------------------------------------- |
 
-```jsx
+```tsx
 import { createRoot } from 'react-dom/client'
 import { Sky } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'

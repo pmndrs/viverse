@@ -114,7 +114,7 @@ export function Scene() {
 
 Create an XR store configured for AR. Add these imports and create the store:
 
-```jsx
+```tsx
 import { XR, XROrigin, createXRStore } from '@react-three/xr'
 
 const store = createXRStore({ offerSession: 'immersive-ar' })
@@ -126,7 +126,7 @@ The `offerSession: 'immersive-ar'` option tells the XR system that we want to cr
 
 Wrap your scene content with the `XR` component and add an `XROrigin`:
 
-```jsx
+```tsx
 export function App() {
   return (
     <Viverse>
@@ -157,7 +157,7 @@ export function App() {
 
 For AR, you don't want a sky background since the camera feed should show through. Remove any `Sky` components from your scene:
 
-```jsx
+```tsx
 export function Scene() {
   return (
     <>
@@ -174,7 +174,7 @@ export function Scene() {
 
 Replace keyboard/mouse input with XR controller input using the `useXRControllerInput` hook:
 
-```jsx
+```tsx
 import { useXRControllerInput } from '@react-three/viverse'
 
 export function Scene() {
@@ -331,7 +331,7 @@ function SnapRotateXROrigin() {
 
 We can update the offer session to show the user a native "VR" enter button.
 
-```jsx
+```tsx
 const store = createXRStore({ 
   offerSession: 'immersive-vr',
 })
@@ -341,7 +341,7 @@ const store = createXRStore({
 
 Unlike AR, VR needs a sky background since there's no camera feed:
 
-```jsx
+```tsx
 import { Sky } from '@react-three/drei'
 
 export function Scene() {
@@ -360,7 +360,7 @@ export function Scene() {
 
 In VR, you typically don't want to see your own character model:
 
-```jsx
+```tsx
 <SimpleCharacter 
   input={[input]} 
   cameraBehavior={false} 
@@ -376,7 +376,7 @@ In VR, you typically don't want to see your own character model:
 
 As the XROrigin defines the player's position, we need to remove if from outside the Scene and add it into the SimpleCharacter.
 
-```jsx
+```tsx
 import { useXRInputSourceState } from '@react-three/xr'
 
 <SimpleCharacter ... >
@@ -386,7 +386,7 @@ import { useXRInputSourceState } from '@react-three/xr'
 
 For comfort in VR, you can add snap rotation using the right thumbstick by building a SnapRotateXROrigin which replaces the XROrigin component.
 
-```jsx
+```tsx
 import { useXRInputSourceState } from '@react-three/xr'
 
 <SimpleCharacter ... >

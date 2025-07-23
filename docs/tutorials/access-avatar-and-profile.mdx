@@ -24,6 +24,7 @@ This tutorial shows you how to display a player tag above the character by acces
 import { Root, Image, Text } from '@react-three/uikit'
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Group } from 'three'
 
 export function PlayerTag() {
   const profile = useViverseProfile() ?? {
@@ -31,7 +32,7 @@ export function PlayerTag() {
     activeAvatar: { headIconUrl: 'https://picsum.photos/200' },
   }
   
-  const ref = useRef()
+  const ref = useRef<Group>(null)
   
   // Make the tag always face the camera
   useFrame((state) => {
@@ -95,7 +96,7 @@ export default function App() {
 
 First, we use the `useViverseProfile()` hook to fetch the current user's profile from Viverse, including their name and avatar information. We provide a fallback for when the user isn't logged in:
 
-```jsx
+```tsx
 const profile = useViverseProfile() ?? {
   name: 'Anonymous',
   activeAvatar: { headIconUrl: 'https://picsum.photos/200' },
@@ -110,7 +111,7 @@ npm install @react-three/uikit
 
 UIKit provides HTML-like components (`Root`, `Image`, `Text`) that work in 3D space. We create a card-like layout with flexbox:
 
-```jsx
+```tsx
 <Root
   depthTest={false}
   renderOrder={1}
@@ -137,8 +138,11 @@ UIKit provides HTML-like components (`Root`, `Image`, `Text`) that work in 3D sp
 
 Next, we use `useFrame` to constantly update the tag's rotation to match the camera:
 
-```jsx
-const ref = useRef()
+```tsx
+import { Group } from 'three'
+
+
+const ref = useRef<Group>(null)
 
 useFrame((state) => {
   if (ref.current == null) {
@@ -150,11 +154,12 @@ useFrame((state) => {
 
 The full `PlayerTag` component looks like this:
 
-```jsx
+```tsx
 import { useViverseProfile } from '@react-three/viverse'
 import { Root, Image, Text } from '@react-three/uikit'
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Group } from 'three'
 
 export function PlayerTag() {
   const profile = useViverseProfile() ?? {
@@ -162,7 +167,7 @@ export function PlayerTag() {
     activeAvatar: { headIconUrl: 'https://picsum.photos/200' },
   }
   
-  const ref = useRef()
+  const ref = useRef<Group>(null)
   
   // Make the tag always face the camera
   useFrame((state) => {
@@ -203,7 +208,7 @@ export function PlayerTag() {
 
 Now finally lets add the PlayerTag as a child of SimpleCharacter to display it
 
-```jsx
+```tsx
 <SimpleCharacter>
   <PlayerTag />
 </SimpleCharacter>

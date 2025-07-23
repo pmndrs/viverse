@@ -213,6 +213,7 @@ export * from './character.js'
 export * from './material.js'
 export {
   FirstPersonCharacterCameraBehavior,
+  SimpleCharacter as SimpleCharacterImpl,
   LocomotionKeyboardInput,
   PointerCaptureInput,
   PointerLockInput,
