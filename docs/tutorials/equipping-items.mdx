@@ -4,4 +4,103 @@ description: Learn how to attach 3D objects onto the character's bones.
 nav: 7
 ---
 
-TBD
+This tutorial shows you how to equip your character with items by attaching 3D objects to specific bones. We'll create a simple sword using just two meshes and attach it to the character's right hand.
+
+*Here's a preview of what we'll build in this tutorial:*
+
+<Sandpack
+  template="react-ts"
+  customSetup={{
+    dependencies: {
+      'three': 'latest',
+      '@react-three/fiber': '<9',
+      '@react-three/viverse': 'latest',
+      '@react-three/drei': '<10'
+    },
+  }}
+  files={{
+    '/App.tsx': `
+import { Sky } from '@react-three/drei'
+import { Canvas } from '@react-three/fiber'
+import { Viverse, SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox, CharacterModelBone } from '@react-three/viverse'
+
+export default function App() {
+  return (
+    <Canvas shadows style={{ position: "absolute", inset: "0", touchAction: "none" }}>
+      <Viverse>
+        <Sky />
+        <directionalLight intensity={1.2} position={[-10, 10, -10]} castShadow />
+        <ambientLight intensity={1} />
+        <SimpleCharacter>
+          <CharacterModelBone bone="rightHand">
+            <group
+              scale={0.5}
+              position-y={-0.02}
+              position-x={0.07}
+              rotation-z={-(0.2 * Math.PI) / 2}
+              rotation-x={-(1 * Math.PI) / 2}
+            >
+              {/* Blade */}
+              <mesh position={[0, 0.4, 0]} castShadow>
+                <boxGeometry args={[0.05, 0.8, 0.01]} />
+                <meshStandardMaterial color="#c0c0c0" metalness={0.9} roughness={0.1} />
+              </mesh>
+              
+              {/* Handle */}
+              <mesh position={[0, -0.2, 0]} castShadow>
+                <boxGeometry args={[0.04, 0.4, 0.04]} />
+                <meshStandardMaterial color="#654321" metalness={0.1} roughness={0.8} />
+              </mesh>
+            </group>
+          </CharacterModelBone>
+        </SimpleCharacter>
+        <FixedBvhPhysicsBody>
+          <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
+        </FixedBvhPhysicsBody>
+      </Viverse>
+    </Canvas>
+  )
+}`}}
+/>
+
+## Understanding Bone Attachment
+
+The `CharacterModelBone` component allows you to attach any 3D object to specific bones in the character's skeleton. This is perfect for equipping weapons, accessories, or any items that should move with the character.
+
+### Step 1: Import the CharacterModelBone Component
+
+First, import the `CharacterModelBone` component from `@react-three/viverse`:
+
+```jsx
+import { CharacterModelBone } from '@react-three/viverse'
+```
+
+### Step 2: Add a Simple Sword to the `"rightHand"`
+
+Next, we place the CharacterModelBone inside the, attach it to the `"rightHand"`, and build a simple sword using two meshes. For better looks you probably want to import your own 3d model.
+
+```jsx
+<SimpleCharacter>
+    <CharacterModelBone bone="rightHand">
+        <group
+            scale={0.5}
+            position-y={-0.02}
+            position-x={0.07}
+            rotation-z={-(0.2 * Math.PI) / 2}
+            rotation-x={-(1 * Math.PI) / 2}
+        >
+            {/* Blade */}
+            <mesh position={[0, 0.4, 0]} castShadow>
+                <boxGeometry args={[0.05, 0.8, 0.01]} />
+                <meshStandardMaterial color="#c0c0c0" metalness={0.9} roughness={0.1} />
+            </mesh>
+            
+            {/* Handle */}
+            <mesh position={[0, -0.2, 0]} castShadow>
+                <boxGeometry args={[0.04, 0.4, 0.04]} />
+                <meshStandardMaterial color="#654321" metalness={0.1} roughness={0.8} />
+            </mesh>
+        </group>
+    </CharacterModelBone>
+</SimpleCharacter>
+```
