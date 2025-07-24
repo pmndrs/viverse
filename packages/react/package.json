@@ -30,10 +30,10 @@
     "@viverse/sdk": "^1.2.10-alpha.0",
     "suspend-react": "^0.1.3",
     "@pixiv/three-vrm": "^3.4.2",
-    "zustand": "^5.0.6"
+    "zustand": "^5.0.6",
+    "@react-three/xr": "^6.6.20"
   },
   "peerDependencies": {
-    "@react-three/xr": "*",
     "@react-three/fiber": "*"
   },
   "devDependencies": {
