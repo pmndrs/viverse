@@ -37,10 +37,10 @@ After creation, **note the App ID** - you'll need this for deployment.
 
 ## Step 4: Configure Your App ID
 
-Next, we need to provide the app id to our Viverse component.
+Next, we need to provide the App ID to our Viverse component.
 
 > [!TIP]
-> Do not include the App ID in your local development environment. Keep it production-only to avoid conflicts during development.
+> Do not include the app ID in your local development environment. Keep it production-only to avoid conflicts during development.
 
 Create a production environment file (`.env.production`) in your project root.
 
@@ -49,7 +49,7 @@ Create a production environment file (`.env.production`) in your project root.
 VITE_VIVERSE_APP_ID=your-app-id-here
 ```
 
-this allows to provide the appId to your Viverse component using the environment variable `VITE_VIVERSE_APP_ID`
+This allows you to provide the app ID to your Viverse component using the environment variable `VITE_VIVERSE_APP_ID`
 
 ```tsx
 <Viverse clientId={import.meta.env.VITE_VIVERSE_APP_ID}>
@@ -71,4 +71,4 @@ Deploy your built application to the Viverse platform:
 viverse-cli app publish your-build-output-directly-here --app-id your-app-id-here
 ```
 
-The CLI now shows you the URL with which you can preview your game in viverse and how to submit it for review
+The CLI now shows you the URL with which you can preview your game in Viverse and how to submit it for review.
