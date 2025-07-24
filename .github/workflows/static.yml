@@ -39,7 +39,7 @@ jobs:
       mdx: 'docs'
       libname: 'viverse'
       icon: '⟁'
-      home_redirect: '/getting-started/introduction'
+      home_redirect: '/getting-started/index'
       github: 'https://github.com/pmndrs/viverse'
       discord: 'https://discord.gg/viversecreators'
 
