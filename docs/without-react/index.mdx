@@ -6,7 +6,7 @@ nav: 11
 
 `@pmndrs/viverse` offers everything from `@react-three/viverse` (excluding the hooks) in case you don't want to use react.
 
-The following tutorial shows how to build a simple game and displaying a player tag from the [simple-game]() and [access-avatar-and-profile]() tutorials using only three.js.
+The following tutorial shows how to build a simple game and display a player tag from the [Simple Game](https://pmndrs.github.io/viverse/tutorials/simple-game) and [Access Avatar and Profile](https://pmndrs.github.io/viverse/tutorials/access-avatar-and-profile) tutorials using only Three.js.
 
 ## Setting up the project
 
@@ -85,7 +85,7 @@ window.addEventListener('resize', updateSize)
 
 ## Step 2: Adding the Sky
 
-Add a realistic sky background using Three.js Sky:
+Add a realistic sky background using the Three.js Sky class:
 
 ```typescript
 import { MathUtils, Vector3 } from 'three'
@@ -145,7 +145,7 @@ scene.add(new AmbientLight('white', 0.3))
 renderer.shadowMap.enabled = true
 ```
 
-## Step 5: Adding Physics and Character
+## Step 5: Adding Physics and the Character
 
 Integrate physics and a controllable character:
 
@@ -178,7 +178,7 @@ renderer.setAnimationLoop(() => {
 Connect to Viverse services to access user profiles and avatars:
 
 > [!NOTE]
-> The following assumes your are building your app with vite. If you are using a different built tool, you need manually assure that the viverse app id is provided only during the production built.
+> The following assumes your are building your app with vite. If you are using a different build tool, you need to manually insure that the Viverse app ID is provided only in production builds.
 
 
 ```typescript
