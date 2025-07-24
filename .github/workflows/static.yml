@@ -29,7 +29,9 @@ jobs:
           pnpm -r build
 
       - name: Deploying
-        run: pnpm -r run deploy
+        run: |
+          viverse-cli auth login -e \${{ secrets.VIVERSE_EMAIL }} -p \${{ secrets.VIVERSE_PASSWORD }}
+          pnpm -r run deploy
 
   docs:
     uses: pmndrs/docs/.github/workflows/build.yml@v2
