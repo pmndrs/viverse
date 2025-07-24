@@ -78,8 +78,8 @@ export const SimpleCharacter = forwardRef<
         : options.model,
   } satisfies SimpleCharacterOptions
   const preloadSimpleCharacterAssetsKeys = [
-    JSON.stringify(options.model),
-    ...simpleCharacterAnimationNames.map((name) => JSON.stringify(options.animation?.[name])),
+    JSON.stringify(newOptions.model),
+    ...simpleCharacterAnimationNames.map((name) => JSON.stringify(newOptions.animation?.[name])),
   ]
   suspend(async () => {
     const result = await preloadSimpleCharacterAssets(newOptions)

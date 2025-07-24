@@ -1,5 +1,5 @@
 <h1 align="center">@react-three/viverse</h1>
-<h3 align="center">Toolkit for building Three.js and React Three Fiber Apps for Viverse and beyond.</h3>
+<h3 align="center">Toolkit for building Three.js and React Three Fiber Apps for VIVERSE and beyond.</h3>
 <br/>
 
 <p align="center">
@@ -60,7 +60,7 @@ Get started with **[building a simple game](https://pmndrs.github.io/viverse/tut
 - [Equipping the character with items](https://pmndrs.github.io/viverse/tutorials/equipping-items)
 - [Using custom animations and models](https://pmndrs.github.io/viverse/tutorials/custom-models-and-animations)
 - [How to remove the viverse integrations](https://pmndrs.github.io/viverse/tutorials/remove-viverse-integrations)
-- [Publish to Viverse](https://pmndrs.github.io/viverse/tutorials/publish-to-viverse)
+- [Publish to VIVERSE](https://pmndrs.github.io/viverse/tutorials/publish-to-viverse)
 - Building your own character controller - _Coming Soon_
 
 ## Not into react?

@@ -26,7 +26,7 @@ Create an `index.html` file:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Viverse Vanilla Game</title>
+    <title>VIVERSE Vanilla Game</title>
     <script async type="module" src="./index.ts"></script>
 </head>
 <body style="touch-action: none; margin: 0; position: relative; width: 100dvw; height: 100dvh; overflow: hidden;">
@@ -173,12 +173,12 @@ renderer.setAnimationLoop(() => {
 })
 ```
 
-## Step 6: Viverse Client Integration
+## Step 6: VIVERSE Client Integration
 
-Connect to Viverse services to access user profiles and avatars:
+Connect to VIVERSE services to access user profiles and avatars:
 
 > [!NOTE]
-> The following assumes your are building your app with vite. If you are using a different build tool, you need to manually insure that the Viverse app ID is provided only in production builds.
+> The following assumes your are building your app with vite. If you are using a different build tool, you need to manually insure that the VIVERSE app ID is provided only in production builds.
 
 
 ```typescript
@@ -212,7 +212,7 @@ const character = new SimpleCharacter(camera, world, canvas, {
 })
 ```
 
-Create a `.env.production` file for your Viverse app ID:
+Create a `.env.production` file for your VIVERSE app ID:
 
 ```
 VITE_VIVERSE_APP_ID=your_viverse_app_id_here
@@ -304,4 +304,4 @@ Run your project:
 npm run dev
 ```
 
-Your vanilla Three.js game with Viverse integration is now complete! You should see a 3D environment with a controllable character that displays a floating player tag with the user's avatar and name.
+Your vanilla Three.js game with VIVERSE integration is now complete! You should see a 3D environment with a controllable character that displays a floating player tag with the user's avatar and name.

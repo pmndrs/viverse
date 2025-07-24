@@ -41,7 +41,7 @@ jobs:
       icon: '⟁'
       home_redirect: '/getting-started/introduction'
       github: 'https://github.com/pmndrs/viverse'
-      discord: 'https://discord.gg/poimandres'
+      discord: 'https://discord.gg/viversecreators'
 
   deploy-docs:
     needs: docs

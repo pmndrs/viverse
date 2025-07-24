@@ -1,21 +1,21 @@
 ---
 title: All Components and Hooks
 description: Complete reference for all available components and hooks in @react-three/viverse.
-nav: 2
+nav: 1
 ---
 
 ## Components
 
 ## `<Viverse>`
 
-The main provider component that sets up Viverse authentication and physics context. Must wrap your entire application or the parts that use Viverse features.
+The main provider component that sets up VIVERSE authentication and physics context. Must wrap your entire application or the parts that use VIVERSE features.
 
 **Props:**
 
 - `children?: ReactNode` - Child components
 - `loginRequired?: boolean` - Forces user to login before playing (default: `false`)
 - `checkAuth?: checkAuthOptions` - Authentication check options
-- `clientId?: string` - Viverse app client ID (can also be set via `VITE_VIVERSE_APP_ID` environment variable).
+- `clientId?: string` - VIVERSE app client ID (can also be set via `VITE_VIVERSE_APP_ID` environment variable).
 - `domain?: string` - Authentication domain (default: `'account.htcvive.com'`)
 - `authorizationParams?: object` - Additional authorization parameters
 - `cookieDomain?: string` - Cookie domain for authentication
@@ -34,7 +34,7 @@ The main provider component that sets up Viverse authentication and physics cont
 
 ### `<SimpleCharacter>`
 
-Creates a simple character controller with physics based on three-mesh-bvh, walking, running, jumping actions, and camera controls. Automatically uses the active Viverse avatar if authenticated.
+Creates a simple character controller with physics based on three-mesh-bvh, walking, running, jumping actions, and camera controls. Automatically uses the active VIVERSE avatar if authenticated.
 
 **Props:** See [SimpleCharacter Options](#simplecharacter-options) section below for complete details.
 
@@ -111,11 +111,11 @@ Component for placing content inside the in VRM character models.
 
 | Hook                             | Description                                                   | Returns                                                          |
 | -------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `useViverseClient()`             | Returns the Viverse client instance for making API calls      | `Client`                                                         |
+| `useViverseClient()`             | Returns the VIVERSE client instance for making API calls      | `Client`                                                         |
 | `useViverseAuth()`               | Returns the current authentication state                      | Auth object with access tokens, or `undefined`                   |
 | `useViverseAvatarClient()`       | Returns the avatar client for avatar-related operations       | `AvatarClient \| undefined`                                      |
-| `useViverseLogin()`              | Returns a function to initiate the Viverse login flow         | Login function                                                   |
-| `useViverseLogout()`             | Returns a function to initiate the Viverse logout flow        | Logout function                                                  |
+| `useViverseLogin()`              | Returns a function to initiate the VIVERSE login flow         | Login function                                                   |
+| `useViverseLogout()`             | Returns a function to initiate the VIVERSE logout flow        | Logout function                                                  |
 | `useViverseProfile()`            | Fetches the user's profile (name, avatar info) using Suspense | Profile object with `name`, `activeAvatar`, etc., or `undefined` |
 | `useViverseActiveAvatar()`       | Fetches the user's currently selected avatar using Suspense   | Avatar object with `vrmUrl`, `headIconUrl`, etc., or `undefined` |
 | `useViverseAvatarList()`         | Fetches the user's personal avatar collection using Suspense  | Array of avatar objects, or `undefined`                          |

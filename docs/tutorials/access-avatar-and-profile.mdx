@@ -1,10 +1,10 @@
 ---
 title: Accessing Avatar and Profile
-description: Learn how to display player information and use Viverse avatars in your game.
+description: Learn how to display player information and use VIVERSE avatars in your game.
 nav: 6
 ---
 
-This tutorial shows you how to display a player tag above the character by accessing the user profile information from Viverse.
+This tutorial shows you how to display a player tag above the character by accessing the user profile information from VIVERSE.
 
 *Here's a preview of what we'll build in this tutorial:*
 
@@ -94,7 +94,7 @@ export default function App() {
 }`}}
 />
 
-First, we use the `useViverseProfile()` hook to fetch the current user's profile from Viverse, including their name and avatar information. We provide a fallback for when the user isn't logged in:
+First, we use the `useViverseProfile()` hook to fetch the current user's profile from VIVERSE, including their name and avatar information. We provide a fallback for when the user isn't logged in:
 
 ```tsx
 const profile = useViverseProfile() ?? {
