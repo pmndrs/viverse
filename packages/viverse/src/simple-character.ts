@@ -179,6 +179,7 @@ async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleChara
   }
 
   function applyJumpForce() {
+    lastJump = performance.now() / 1000
     character.physics.applyVelocity(
       vector.set(
         0,
