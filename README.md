@@ -71,4 +71,4 @@ Check out how to build games using @pmndrs/viverse and only [vanilla three.js](h
 
 ## Acknowledgments
 
-This project would not be possible without the default model and default animations made by [Quaternius](https://quaternius.com/), the prototype texture from [kenney.nl](https://www.kenney.nl/), and the [three-vrm project](https://github.com/pixiv/three-vrm) from the [pixiv team](https://github.com/pixiv)!
+This project would not be possible without the default model and default animations made by [Quaternius](https://quaternius.com/), the prototype texture from [kenney.nl](https://www.kenney.nl/), the [three-vrm project](https://github.com/pixiv/three-vrm) from the [pixiv team](https://github.com/pixiv), [three-mesh-bvh](https://github.com/gkjohnson/three-mesh-bvh) from [Garrett Johnson](https://github.com/gkjohnson) and is based on prior work from [Felix Zhang](https://github.com/felixtrz) and [Erdong Chen](https://github.com/ErdongChen-Andrew)!

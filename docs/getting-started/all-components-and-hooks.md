@@ -179,7 +179,7 @@ Either a array of `Input` objects or a custom `InputSystem`
 - **capsuleHeight:** `number` - Character collision capsule height (default: `1.7`)
 - **gravity:** `number` - Gravity acceleration in m/s² (default: `-20`)
 - **linearDamping:** `number` - Air resistance coefficient (default: `0.1`)
-- **slopeGroundingThreshold:** `number` - Slope detection threshold (default: `0.25`)
+- **maxGroundSlope:** `number` - Max slope for a collider to be detected as a walkable ground (default: `1` which equals to 45°)
 
 ### `cameraBehavior` Options
 

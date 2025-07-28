@@ -292,7 +292,7 @@ async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleChara
                   actions.jumpForward.paused = true
                   actions.jumpForward.fadeIn(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
                 },
-                update: () => void character.physics.inputVelocity.multiplyScalar(DefaultCrossFadeDuration),
+                update: () => void character.physics.inputVelocity.multiplyScalar(0.3),
                 until: timePassed(
                   (typeof character.options.movement?.jump === 'object'
                     ? character.options.movement?.jump.delay
@@ -346,7 +346,7 @@ async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleChara
               }),
             transitionTo: {
               jumpDown: {
-                when: (_: unknown, clock: ActionClock) => clock.actionTime > 0.1 && character.physics.isGrounded,
+                when: (_: unknown, clock: ActionClock) => clock.actionTime > 0.3 && character.physics.isGrounded,
               },
               finally: 'jumpLoop',
             },
@@ -381,7 +381,7 @@ async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleChara
                 },
                 cleanup: () =>
                   actions.jumpDown.fadeOut(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration),
-                until: timePassed(50, 'milliseconds'),
+                until: timePassed(150, 'milliseconds'),
               }),
             transitionTo: { finally: 'moving' },
           },

@@ -26,9 +26,9 @@ export type BvhCharacterPhysicsOptions =
        */
       linearDamping?: number
       /**
-       * @default 0.25;
+       * @default 0.5;
        */
-      slopeGroundingThreshold?: number
+      maxGroundSlope?: number
     }
   | boolean
 
@@ -42,8 +42,9 @@ const capsulePoint = new Vector3()
 
 const collisionFreePosition = new Vector3()
 const position = new Vector3()
-const collisionDelta = new Vector3()
 const invertedParentMatrix = new Matrix4()
+
+const YAxis = new Vector3(0, 1, 0)
 
 /**
  * assumes the target object origin is at its bottom
@@ -52,7 +53,11 @@ export class BvhCharacterPhysics {
   private destroyed = false
   private readonly stateVelocity = new Vector3()
   public readonly inputVelocity = new Vector3()
-  public isGrounded = false
+  private notGroundedSeconds = 0
+
+  public get isGrounded() {
+    return this.notGroundedSeconds < 0.2
+  }
 
   constructor(
     private readonly character: Object3D,
@@ -97,13 +102,18 @@ export class BvhCharacterPhysics {
       }
 
       //compute new position based on the state velocity, the input velocity, and the delta
-      const yMovement = this.stateVelocity.y * partialDelta
-      position.addScaledVector(this.stateVelocity, partialDelta)
       position.addScaledVector(this.inputVelocity, partialDelta)
-      //compute collision and write the corrected position to the target
-      //TODO: rework - when are we on the ground and how to correct the shapecast
-      this.shapecastCapsule(collisionFreePosition.copy(position), options)
-      this.character.position.copy(collisionFreePosition).applyMatrix4(invertedParentMatrix)
+      position.addScaledVector(this.stateVelocity, partialDelta)
+      const isGrounded =
+        this.shapecastCapsule(collisionFreePosition.copy(position), options.maxGroundSlope ?? 1, options) &&
+        this.stateVelocity.y < 0
+      this.notGroundedSeconds += partialDelta
+      if (isGrounded) {
+        this.notGroundedSeconds = 0
+      }
+      if (!isGrounded || this.inputVelocity.lengthSq() > 0) {
+        this.character.position.copy(collisionFreePosition).applyMatrix4(invertedParentMatrix)
+      }
       //compute new velocity
       //  apply gravity
       this.stateVelocity.y += (options.gravity ?? -20) * partialDelta
@@ -111,13 +121,8 @@ export class BvhCharacterPhysics {
       const dampingFactor = 1.0 / (1.0 + partialDelta * (options.linearDamping ?? 0.1))
       this.stateVelocity.multiplyScalar(dampingFactor)
       //  apply collision to velocity
-      collisionDelta.copy(collisionFreePosition).sub(position)
-      this.isGrounded = collisionDelta.y >= Math.abs(yMovement * (options.slopeGroundingThreshold ?? 0.6))
-      if (this.isGrounded) {
-        this.stateVelocity.set(0, (options.gravity ?? -20) * partialDelta, 0)
-      } else if (collisionDelta.length() > 1e-5) {
-        collisionDelta.normalize()
-        this.stateVelocity.addScaledVector(collisionDelta, -collisionDelta.dot(this.stateVelocity))
+      if (isGrounded) {
+        this.stateVelocity.set(0, (options.gravity ?? -20) * 0.01, 0)
       }
     }
   }
@@ -126,7 +131,7 @@ export class BvhCharacterPhysics {
     this.destroyed = true
   }
 
-  shapecastCapsule(position: Vector3, options: Exclude<BvhCharacterPhysicsOptions, boolean>): void {
+  shapecastCapsule(position: Vector3, maxGroundSlope: number, options: Exclude<BvhCharacterPhysicsOptions, boolean>) {
     const radius = options.capsuleRadius ?? 0.4
     const height = options.capsuleHeight ?? 1.7
     segment.start.copy(position)
@@ -138,6 +143,7 @@ export class BvhCharacterPhysics {
     aabbox.expandByPoint(segment.end)
     aabbox.min.addScalar(-radius)
     aabbox.max.addScalar(radius)
+    let grounded = false
 
     for (const bvh of this.world.getBodies()) {
       bvh.shapecast({
@@ -146,17 +152,21 @@ export class BvhCharacterPhysics {
           // Use your existing triangle vs segment closestPointToSegment
           const distance = tri.closestPointToSegment(segment, triPoint, capsulePoint)
           if (distance === 0) {
-            const scaledDirection = capsulePoint.sub(
-              capsulePoint.distanceTo(segment.start) < capsulePoint.distanceTo(segment.end)
-                ? segment.start
-                : segment.end,
-            )
+            const isCloserToSegmentStart = capsulePoint.distanceTo(segment.start) < capsulePoint.distanceTo(segment.end)
+            if (isCloserToSegmentStart) {
+              grounded = true
+            }
+            const scaledDirection = capsulePoint.sub(isCloserToSegmentStart ? segment.start : segment.end)
             scaledDirection.y += radius
             segment.start.add(scaledDirection)
             segment.end.add(scaledDirection)
           } else if (distance < radius) {
             const depthInsideCapsule = radius - distance
             const direction = capsulePoint.sub(triPoint).divideScalar(distance)
+            const slope = Math.tan(Math.acos(direction.dot(YAxis)))
+            if (direction.y > 0 && slope <= maxGroundSlope) {
+              grounded = true
+            }
             segment.start.addScaledVector(direction, depthInsideCapsule)
             segment.end.addScaledVector(direction, depthInsideCapsule)
           }
@@ -165,6 +175,7 @@ export class BvhCharacterPhysics {
     }
     position.copy(segment.start)
     position.y -= radius
+    return grounded
   }
 }
 
