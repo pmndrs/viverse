@@ -28,7 +28,7 @@ export class LocomotionKeyboardInput implements Input {
         const now = performance.now() / 1000
         if (state == null) {
           this.keyState.set(event.code, (state = { pressTime: now }))
-        } else {
+        } else if (state.releaseTime != null && state.releaseTime > (state.pressTime ?? 0)) {
           state.pressTime = now
         }
       },
