@@ -57,84 +57,92 @@ const PreloadSimpleCharacterAssetsSymbol = Symbol('preload-simple-character-asse
  */
 export const SimpleCharacter = forwardRef<
   Group,
-  SimpleCharacterOptions & { useViverseAvatar?: boolean; children?: ReactNode }
->(({ children, input, useViverseAvatar = true, ...options }, ref) => {
-  const avatar = useViverseActiveAvatar()
-  const world = useContext(BvhPhyiscsWorldContext)
-  if (world == null) {
-    throw new Error('SimpleCharacter must be used within a BvhPhysicsWorld component')
-  }
-  const camera = useThree((s) => s.camera)
-  const domElement = useThree((s) => s.gl.domElement)
-  const newOptions = {
-    ...options,
-    model:
-      options.model != false && avatar != null && useViverseAvatar
-        ? {
-            type: avatar.vrmUrl != null ? 'vrm' : undefined,
-            url: avatar?.vrmUrl,
-            ...(options.model === true ? undefined : options.model),
-          }
-        : options.model,
-  } satisfies SimpleCharacterOptions
-  const preloadSimpleCharacterAssetsKeys = [
-    JSON.stringify(newOptions.model),
-    ...simpleCharacterAnimationNames.map((name) => JSON.stringify(newOptions.animation?.[name])),
-  ]
-  suspend(async () => {
-    const result = await preloadSimpleCharacterAssets(newOptions)
-    result.model?.scene.addEventListener('dispose', () =>
-      clear([PreloadSimpleCharacterAssetsSymbol, ...preloadSimpleCharacterAssetsKeys]),
+  SimpleCharacterOptions & { useViverseAvatar?: boolean; children?: ReactNode } & ThreeElement<typeof Group>
+>(
+  (
+    { children, useViverseAvatar = true, input, movement, model, physics, cameraBehavior, animation, ...groupProps },
+    ref,
+  ) => {
+    const avatar = useViverseActiveAvatar()
+    const world = useContext(BvhPhyiscsWorldContext)
+    if (world == null) {
+      throw new Error('SimpleCharacter must be used within a BvhPhysicsWorld component')
+    }
+    const camera = useThree((s) => s.camera)
+    const domElement = useThree((s) => s.gl.domElement)
+    const newOptions = {
+      movement,
+      physics,
+      cameraBehavior,
+      animation,
+      model:
+        model != false && avatar != null && useViverseAvatar
+          ? {
+              type: avatar.vrmUrl != null ? 'vrm' : undefined,
+              url: avatar?.vrmUrl,
+              ...(model === true ? undefined : model),
+            }
+          : model,
+    } satisfies SimpleCharacterOptions
+    const preloadSimpleCharacterAssetsKeys = [
+      JSON.stringify(newOptions.model),
+      ...simpleCharacterAnimationNames.map((name) => JSON.stringify(newOptions.animation?.[name])),
+    ]
+    suspend(async () => {
+      const result = await preloadSimpleCharacterAssets(newOptions)
+      result.model?.scene.addEventListener('dispose', () =>
+        clear([PreloadSimpleCharacterAssetsSymbol, ...preloadSimpleCharacterAssetsKeys]),
+      )
+      return result
+    }, [PreloadSimpleCharacterAssetsSymbol, ...preloadSimpleCharacterAssetsKeys])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const currentOptions = useMemo<SimpleCharacterOptions>(() => ({}), preloadSimpleCharacterAssetsKeys)
+    Object.assign(currentOptions, newOptions)
+    const internalRef = useRef<SimpleCharacterImpl>(null)
+    const store = useMemo(
+      () => create<{ model: Awaited<ReturnType<typeof loadCharacterModel>> | undefined }>(() => ({ model: undefined })),
+      [],
     )
-    return result
-  }, [PreloadSimpleCharacterAssetsSymbol, ...preloadSimpleCharacterAssetsKeys])
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const currentOptions = useMemo<SimpleCharacterOptions>(() => ({}), preloadSimpleCharacterAssetsKeys)
-  Object.assign(currentOptions, newOptions)
-  const internalRef = useRef<SimpleCharacterImpl>(null)
-  const store = useMemo(
-    () => create<{ model: Awaited<ReturnType<typeof loadCharacterModel>> | undefined }>(() => ({ model: undefined })),
-    [],
-  )
-  useEffect(
-    () => {
-      if (internalRef.current == null) {
+    useEffect(
+      () => {
+        if (internalRef.current == null) {
+          return
+        }
+        if (input == null || 'length' in input) {
+          internalRef.current.inputSystem = new InputSystem(
+            domElement,
+            input ?? [LocomotionKeyboardInput, PointerCaptureInput],
+          )
+          return
+        }
+        internalRef.current.inputSystem = input
+      },
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      Array.isArray(input) ? [...input, domElement] : [input, domElement],
+    )
+    useEffect(() => {
+      const simpleCharacter = internalRef.current
+      if (simpleCharacter == null) {
         return
       }
-      if (input == null || 'length' in input) {
-        internalRef.current.inputSystem = new InputSystem(
-          domElement,
-          input ?? [LocomotionKeyboardInput, PointerCaptureInput],
-        )
-        return
+      simpleCharacter.addEventListener('loaded', () => {
+        store.setState({ model: simpleCharacter.model })
+      })
+      if (simpleCharacter.model != null) {
+        store.setState({ model: simpleCharacter.model })
       }
-      internalRef.current.inputSystem = input
-    },
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [camera as any, world, domElement, currentOptions])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    Array.isArray(input) ? [...input, domElement] : [input, domElement],
-  )
-  useEffect(() => {
-    const simpleCharacter = internalRef.current
-    if (simpleCharacter == null) {
-      return
-    }
-    simpleCharacter.addEventListener('loaded', () => {
-      store.setState({ model: simpleCharacter.model })
-    })
-    if (simpleCharacter.model != null) {
-      store.setState({ model: simpleCharacter.model })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [camera as any, world, domElement, currentOptions])
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useImperativeHandle(ref, () => internalRef.current!, [camera as any, world, domElement, currentOptions])
-  useFrame((_, delta) => internalRef.current?.update(delta))
-  return (
-    <simpleCharacterImpl args={[camera as any, world, domElement, currentOptions]} ref={internalRef}>
-      <CharacterModelStoreContext.Provider value={store}>{children}</CharacterModelStoreContext.Provider>
-    </simpleCharacterImpl>
-  )
-})
+    useImperativeHandle(ref, () => internalRef.current!, [camera as any, world, domElement, currentOptions])
+    useFrame((_, delta) => internalRef.current?.update(delta))
+    return (
+      <simpleCharacterImpl {...groupProps} args={[camera as any, world, domElement, currentOptions]} ref={internalRef}>
+        <CharacterModelStoreContext.Provider value={store}>{children}</CharacterModelStoreContext.Provider>
+      </simpleCharacterImpl>
+    )
+  },
+)
 
 /**
  * allows to add all children as static (non-moving) objects to the bvh physics world

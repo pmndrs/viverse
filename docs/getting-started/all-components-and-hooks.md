@@ -127,7 +127,7 @@ Component for placing content inside the in VRM character models.
 
 ## SimpleCharacter Options
 
-The `SimpleCharacter` component accepts detailed configuration options for customizing character behavior:
+The `SimpleCharacter` component can be configured with a variety of props but also supports all the default group props, such as position, rotation, and scale.
 
 ### `useViverseAvatar` flag
 
