@@ -67,7 +67,7 @@ Get started with **[building a simple game](https://pmndrs.github.io/viverse/tut
 
 > No Problem
 
-Check out how to build games using @pmndrs/viverse and only [vanilla three.js](https://pmndrs.github.io/viverse/without-react).
+Check out how to build games using @pmndrs/viverse and only [vanilla three.js](https://pmndrs.github.io/viverse/without-react/introduction).
 
 ## Acknowledgments
 
