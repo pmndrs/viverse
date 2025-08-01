@@ -9,15 +9,18 @@ import {
   RunField,
 } from './index.js'
 
-const MoveForwardKeys = ['KeyW']
-const MoveBackwardKeys = ['KeyS']
-const MoveLeftKeys = ['KeyA']
-const MoveRightKeys = ['KeyD']
-const RunKeys = ['ShiftRight', 'ShiftLeft']
+const defaultKeymapping = {
+  moveForward: ['KeyW'],
+  moveBackward: ['KeyS'],
+  moveLeft: ['KeyA'],
+  moveRight: ['KeyD'],
+  run: ['ShiftRight', 'ShiftLeft']
+}
 
 export class LocomotionKeyboardInput implements Input {
   private readonly abortController = new AbortController()
   private readonly keyState = new Map<string, { pressTime?: number; releaseTime?: number }>()
+  protected keyMapping = defaultKeymapping
 
   constructor(domElement: HTMLElement) {
     domElement.tabIndex = 0
@@ -66,19 +69,19 @@ export class LocomotionKeyboardInput implements Input {
     let keys: Array<string> | undefined
     switch (field) {
       case MoveForwardField:
-        keys = MoveForwardKeys
+        keys = this.keyMapping.moveForward
         break
       case MoveBackwardField:
-        keys = MoveBackwardKeys
+        keys = this.keyMapping.moveBackward
         break
       case MoveLeftField:
-        keys = MoveLeftKeys
+        keys = this.keyMapping.moveLeft
         break
       case MoveRightField:
-        keys = MoveRightKeys
+        keys = this.keyMapping.moveRight
         break
       case RunField:
-        keys = RunKeys
+        keys = this.keyMapping.run
         break
     }
     if (keys == null) {
