@@ -154,7 +154,7 @@ import { BvhPhysicsWorld, SimpleCharacter } from '@pmndrs/viverse'
 
 // Add after loading the map
 const world = new BvhPhysicsWorld()
-world.addFixedBody(ground.scene)
+world.addBody(ground.scene, false)
 const character = new SimpleCharacter(camera, world, canvas, { 
   model: { url: undefined } // We'll add avatar URL later
 })

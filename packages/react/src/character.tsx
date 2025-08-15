@@ -160,7 +160,7 @@ export const FixedBvhPhysicsBody = forwardRef<Object3D, { children?: ReactNode }
     if (body == null) {
       return
     }
-    world.addFixedBody(body)
+    world.addBody(body, false)
     return () => world.removeFixedBody(body)
   }, [world])
   useImperativeHandle(ref, () => internalRef.current!, [])

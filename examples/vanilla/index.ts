@@ -1,5 +1,5 @@
 import { Container, withOpacity, Image, Text, reversePainterSortStable, Fullscreen } from '@pmndrs/uikit'
-import { BvhPhysicsWorld, SimpleCharacter } from '@pmndrs/viverse'
+import { BvhPhysicsWorld, PrototypeMaterial, SimpleCharacter } from '@pmndrs/viverse'
 import { Client } from '@viverse/sdk'
 import AvatarClient from '@viverse/sdk/avatar-client'
 import {
@@ -12,6 +12,9 @@ import {
   Group,
   MathUtils,
   Vector3,
+  InstancedMesh,
+  BoxGeometry,
+  Object3D,
 } from 'three'
 import { GLTFLoader, Sky } from 'three/examples/jsm/Addons.js'
 
@@ -76,7 +79,31 @@ const profile = (await avatarClient?.getProfile()) ?? {
 
 // setup the simple character and physics
 const world = new BvhPhysicsWorld()
-world.addFixedBody(ground.scene)
+world.addBody(ground.scene, false)
+// add some instanced cubes as static obstacles
+const cubeCountPerSide = 8
+const cubeSpacing = 2
+const half = (cubeCountPerSide - 1) * cubeSpacing * 0.5
+const boxGeometry = new BoxGeometry(1, 1, 1)
+const boxMaterial = new PrototypeMaterial()
+boxMaterial.repeat.setScalar(1)
+const cubes = new InstancedMesh(boxGeometry, boxMaterial, cubeCountPerSide * cubeCountPerSide)
+cubes.position.y = 2
+cubes.castShadow = true
+cubes.receiveShadow = true
+const dummy = new Object3D()
+let i = 0
+for (let x = 0; x < cubeCountPerSide; x++) {
+  for (let z = 0; z < cubeCountPerSide; z++) {
+    dummy.position.set(x * cubeSpacing - half, Math.random() * 5, z * cubeSpacing - half)
+    dummy.rotation.y = (x + z) * 0.2
+    dummy.updateMatrix()
+    cubes.setMatrixAt(i++, dummy.matrix)
+  }
+}
+cubes.instanceMatrix.needsUpdate = true
+scene.add(cubes)
+world.addBody(cubes, false)
 const character = new SimpleCharacter(camera, world, canvas, {
   model: { url: profile.activeAvatar?.vrmUrl, type: 'vrm' },
 })

@@ -145,34 +145,32 @@ export class BvhCharacterPhysics {
     aabbox.max.addScalar(radius)
     let grounded = false
 
-    for (const bvh of this.world.getBodies()) {
-      bvh.shapecast({
-        intersectsBounds: (bounds) => bounds.intersectsBox(aabbox),
-        intersectsTriangle: (tri) => {
-          // Use your existing triangle vs segment closestPointToSegment
-          const distance = tri.closestPointToSegment(segment, triPoint, capsulePoint)
-          if (distance === 0) {
-            const isCloserToSegmentStart = capsulePoint.distanceTo(segment.start) < capsulePoint.distanceTo(segment.end)
-            if (isCloserToSegmentStart) {
-              grounded = true
-            }
-            const scaledDirection = capsulePoint.sub(isCloserToSegmentStart ? segment.start : segment.end)
-            scaledDirection.y += radius
-            segment.start.add(scaledDirection)
-            segment.end.add(scaledDirection)
-          } else if (distance < radius) {
-            const depthInsideCapsule = radius - distance
-            const direction = capsulePoint.sub(triPoint).divideScalar(distance)
-            const slope = Math.tan(Math.acos(direction.dot(YAxis)))
-            if (direction.y > 0 && slope <= maxGroundSlope) {
-              grounded = true
-            }
-            segment.start.addScaledVector(direction, depthInsideCapsule)
-            segment.end.addScaledVector(direction, depthInsideCapsule)
+    this.world.shapecast(
+      (bounds) => bounds.intersectsBox(aabbox),
+      (tri) => {
+        // Use your existing triangle vs segment closestPointToSegment
+        const distance = tri.closestPointToSegment(segment, triPoint, capsulePoint)
+        if (distance === 0) {
+          const isCloserToSegmentStart = capsulePoint.distanceTo(segment.start) < capsulePoint.distanceTo(segment.end)
+          if (isCloserToSegmentStart) {
+            grounded = true
           }
-        },
-      })
-    }
+          const scaledDirection = capsulePoint.sub(isCloserToSegmentStart ? segment.start : segment.end)
+          scaledDirection.y += radius
+          segment.start.add(scaledDirection)
+          segment.end.add(scaledDirection)
+        } else if (distance < radius) {
+          const depthInsideCapsule = radius - distance
+          const direction = capsulePoint.sub(triPoint).divideScalar(distance)
+          const slope = Math.tan(Math.acos(direction.dot(YAxis)))
+          if (direction.y > 0 && slope <= maxGroundSlope) {
+            grounded = true
+          }
+          segment.start.addScaledVector(direction, depthInsideCapsule)
+          segment.end.addScaledVector(direction, depthInsideCapsule)
+        }
+      },
+    )
     position.copy(segment.start)
     position.y -= radius
     return grounded

@@ -28,7 +28,7 @@ npm install three @react-three/fiber @react-three/viverse
 
 ```tsx
 const world = new BvhPhysicsWorld()
-world.addFixedBody(ground.scene)
+world.addBody(ground.scene, false)
 const character = new SimpleCharacter(camera, world, canvas, { model: { url: profile.activeAvatar?.vrmUrl } })
 scene.add(character)
 ```
