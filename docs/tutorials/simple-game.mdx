@@ -27,7 +27,7 @@ In this tutorial, we'll build the following simple 3D platformer game using `@re
   files={{
     '/Scene.tsx': `
 import { Sky } from '@react-three/drei'
-import { SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+import { SimpleCharacter, BvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Group } from 'three'
@@ -68,7 +68,7 @@ export function Scene() {
       <SimpleCharacter ref={characterRef} />
       
       {/* Level Geometry */}
-      <FixedBvhPhysicsBody>
+      <BvhPhysicsBody>
         {/* Main ground */}
         <PrototypeBox 
           color="#ffffff" 
@@ -107,7 +107,7 @@ export function Scene() {
           scale={[4, 1, 1]} 
           position={[0, 3.5, 0]} 
         />
-      </FixedBvhPhysicsBody>
+      </BvhPhysicsBody>
     </>
   )
 }`,
@@ -197,11 +197,11 @@ At this point, you should see a beautiful sky gradient in your scene!
 
 ## Step 3: Building the Level
 
-Now add the level geometry. Import `FixedBvhPhysicsBody` and `PrototypeBox` from `@react-three/viverse`, and expand the directional light with shadow properties:
+Now add the level geometry. Import `BvhPhysicsBody` and `PrototypeBox` from `@react-three/viverse`, and expand the directional light with shadow properties:
 
 ```tsx
 import { Sky } from '@react-three/drei'
-import { FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+import { BvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 
 export function Scene() {
   return (
@@ -217,7 +217,7 @@ export function Scene() {
       />
       <ambientLight intensity={1} />
       
-      <FixedBvhPhysicsBody>
+      <BvhPhysicsBody>
         <PrototypeBox 
           color="#ffffff" 
           scale={[10, 0.5, 10]} 
@@ -255,7 +255,7 @@ export function Scene() {
           scale={[4, 1, 1]} 
           position={[0, 3.5, 0]} 
         />
-      </FixedBvhPhysicsBody>
+      </BvhPhysicsBody>
     </>
   )
 }
@@ -269,7 +269,7 @@ Next we will add the character. Import `SimpleCharacter` from `@react-three/vive
 
 ```tsx
 import { Sky } from '@react-three/drei'
-import { SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+import { SimpleCharacter, BvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 import { useRef } from 'react'
 
 export function Scene() {
@@ -290,9 +290,9 @@ export function Scene() {
       <SimpleCharacter/>
       
       {/* Level Geometry */}
-      <FixedBvhPhysicsBody>
+      <BvhPhysicsBody>
         {/* ... platforms remain the same ... */}
-      </FixedBvhPhysicsBody>
+      </BvhPhysicsBody>
     </>
   )
 }
@@ -306,7 +306,7 @@ Finally, we will add the respawn system. Import `useRef` from `react` and `useFr
 
 ```tsx
 import { Sky } from '@react-three/drei'
-import { SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+import { SimpleCharacter, BvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 import { useRef } from 'react'
 import { Group } from 'three'
 import { useFrame } from '@react-three/fiber' // NEW

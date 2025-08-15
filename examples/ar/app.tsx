@@ -3,7 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { Root, Image, Text, Fullscreen } from '@react-three/uikit'
 import {
   SimpleCharacter,
-  FixedBvhPhysicsBody,
+  BvhPhysicsBody,
   useViverseProfile,
   Viverse,
   PrototypeBox,
@@ -73,7 +73,7 @@ export function Scene() {
       <SimpleCharacter input={[input]} cameraBehavior={false} ref={characterRef}>
         <PlayerTag />
       </SimpleCharacter>
-      <FixedBvhPhysicsBody>
+      <BvhPhysicsBody>
         <PrototypeBox color="#cccccc" scale={[2, 1, 3]} position={[3.91, 0, 0]} />
         <PrototypeBox color="#ffccff" scale={[3, 1, 3]} position={[2.92, 1.5, -1.22]} />
         <PrototypeBox color="#ccffff" scale={[2, 0.5, 3]} position={[1.92, 2.5, -3.22]} />
@@ -81,7 +81,7 @@ export function Scene() {
         <PrototypeBox color="#ccffff" scale={[1, 1, 4]} position={[0.08, -1, 0]} />
         <PrototypeBox color="#ffffcc" scale={[4, 1, 1]} position={[0.08, 3.5, 0]} />
         <PrototypeBox color="#ffffff" scale={[10, 0.5, 10]} position={[0.08, -2, 0]} />
-      </FixedBvhPhysicsBody>
+      </BvhPhysicsBody>
     </>
   )
 }

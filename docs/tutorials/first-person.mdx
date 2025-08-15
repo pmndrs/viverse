@@ -26,7 +26,7 @@ import { Canvas } from '@react-three/fiber'
 import {
   Viverse,
   SimpleCharacter,
-  FixedBvhPhysicsBody,
+  BvhPhysicsBody,
   PrototypeBox,
   FirstPersonCharacterCameraBehavior,
   PointerLockInput,
@@ -48,9 +48,9 @@ export default function App() {
           input={[LocomotionKeyboardInput, PointerLockInput]}
           cameraBehavior={FirstPersonCharacterCameraBehavior}
         />
-        <FixedBvhPhysicsBody>
+        <BvhPhysicsBody>
           <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
-        </FixedBvhPhysicsBody>
+        </BvhPhysicsBody>
       </Viverse>
     </Canvas>
   )

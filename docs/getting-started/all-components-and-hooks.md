@@ -54,26 +54,27 @@ Provides physics context for collision detection. Usually wrapped automatically 
 
 - `children?: ReactNode` - Child components
 
-### `<FixedBvhPhysicsBody>`
+### `<BvhPhysicsBody>`
 
 Adds child meshes as static collision objects to the physics world.
 
 > [!WARNING]
-> Content must not be dynamic.
+> Content inside the object can not change.
 
 **Props:**
 
 - `children?: ReactNode` - Static mesh objects for collision
+- `kinematic?: boolean` - whether the objects world transformation can change - default: false
 
 **Example:**
 
 ```tsx
-<FixedBvhPhysicsBody>
+<BvhPhysicsBody>
   <mesh>
     <boxGeometry />
     <meshStandardMaterial />
   </mesh>
-</FixedBvhPhysicsBody>
+</BvhPhysicsBody>
 ```
 
 ### `<PrototypeBox>`

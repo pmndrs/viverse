@@ -8,7 +8,7 @@ const triangleHelper = new ExtendedTriangle()
 const matrixHelper = new Matrix4()
 
 export class BvhPhysicsWorld {
-  private map: Array<{ object: Object3D; dynamic: boolean; bvh: MeshBVH; instanceIndex?: number }> = []
+  private map: Array<{ object: Object3D; kinematic: boolean; bvh: MeshBVH; instanceIndex?: number }> = []
 
   /**
    * @deprecated use addBody(object, false) instead
@@ -17,17 +17,17 @@ export class BvhPhysicsWorld {
     this.addBody(object, false)
   }
 
-  addBody(object: Object3D, dynamic: boolean) {
+  addBody(object: Object3D, kinematic: boolean) {
     object.updateWorldMatrix(true, true)
     if (!(object instanceof InstancedMesh)) {
       const parent = object.parent
-      if (dynamic) {
+      if (kinematic) {
         object.parent = null
         object.updateMatrixWorld(true)
       }
       const geometry = new StaticGeometryGenerator(object).generate()
-      this.map.push({ object, bvh: computeBoundsTree.apply(geometry), dynamic })
-      if (dynamic) {
+      this.map.push({ object, bvh: computeBoundsTree.apply(geometry), kinematic })
+      if (kinematic) {
         object.parent = parent
         object.updateMatrixWorld(true)
       }
@@ -44,16 +44,16 @@ export class BvhPhysicsWorld {
         object,
         bvh,
         instanceIndex: i,
-        dynamic,
+        kinematic,
       })
     }
   }
-  removeFixedBody(object: Object3D) {
+  removeBody(object: Object3D) {
     this.map = this.map.filter((entry) => entry.object != object)
   }
 
-  private computeMatrix({ dynamic, object, instanceIndex }: (typeof this.map)[number], target: Matrix4): boolean {
-    if (!dynamic && instanceIndex == null) {
+  private computeMatrix({ kinematic, object, instanceIndex }: (typeof this.map)[number], target: Matrix4): boolean {
+    if (!kinematic && instanceIndex == null) {
       return false
     }
     if (instanceIndex == null) {

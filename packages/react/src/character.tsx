@@ -145,27 +145,36 @@ export const SimpleCharacter = forwardRef<
 )
 
 /**
+ * @deprecated use <BvhPhysicsBody kinematic={false} /> instead (kinematic={false} can be skipped as its the default)
+ */
+export const FixedBvhPhysicsBody = forwardRef<Object3D, { children?: ReactNode }>(({ children }, ref) => {
+  return <BvhPhysicsBody> {children}</BvhPhysicsBody>
+})
+
+/**
  * allows to add all children as static (non-moving) objects to the bvh physics world
  * @requires that the inner content is not dynamic
  * do not wrap the content inside in a suspense!
  */
-export const FixedBvhPhysicsBody = forwardRef<Object3D, { children?: ReactNode }>(({ children }, ref) => {
-  const world = useContext(BvhPhyiscsWorldContext)
-  if (world == null) {
-    throw new Error('FixedPhysicsBody must be used within a BvhPhysicsWorld component')
-  }
-  const internalRef = useRef<Object3D>(null)
-  useEffect(() => {
-    const body = internalRef.current
-    if (body == null) {
-      return
+export const BvhPhysicsBody = forwardRef<Object3D, { children?: ReactNode; kinematic?: boolean }>(
+  ({ children, kinematic = false }, ref) => {
+    const world = useContext(BvhPhyiscsWorldContext)
+    if (world == null) {
+      throw new Error('FixedPhysicsBody must be used within a BvhPhysicsWorld component')
     }
-    world.addBody(body, false)
-    return () => world.removeFixedBody(body)
-  }, [world])
-  useImperativeHandle(ref, () => internalRef.current!, [])
-  return <group ref={internalRef}>{children}</group>
-})
+    const internalRef = useRef<Object3D>(null)
+    useEffect(() => {
+      const body = internalRef.current
+      if (body == null) {
+        return
+      }
+      world.addBody(body, kinematic)
+      return () => world.removeBody(body)
+    }, [world, kinematic])
+    useImperativeHandle(ref, () => internalRef.current!, [])
+    return <group ref={internalRef}>{children}</group>
+  },
+)
 
 export function CharacterModelBone({ bone, children }: { bone: VRMHumanBoneName; children?: ReactNode }) {
   const [state, setState] = useState<{ boneObject: Object3D; boneRotationOffset?: Quaternion } | undefined>(undefined)

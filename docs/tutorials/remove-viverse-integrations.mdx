@@ -20,7 +20,7 @@ To remove the VIVERSE integrations replace the `<Viverse>` component with `<BvhP
     '/App.tsx': `
 import { Sky } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { BvhPhysicsWorld, SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+import { BvhPhysicsWorld, SimpleCharacter, BvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 
 export default function App() {
   return (
@@ -30,9 +30,9 @@ export default function App() {
         <directionalLight intensity={1.2} position={[-10, 10, -10]} castShadow />
         <ambientLight intensity={1} />
         <SimpleCharacter />
-        <FixedBvhPhysicsBody>
+        <BvhPhysicsBody>
           <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
-        </FixedBvhPhysicsBody>
+        </BvhPhysicsBody>
       </BvhPhysicsWorld>
     </Canvas>
   )

@@ -30,7 +30,7 @@ npm install three @react-three/fiber @react-three/viverse
 import { createRoot } from 'react-dom/client'
 import { Sky } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { Viverse, SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+import { Viverse, SimpleCharacter, BvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 
 createRoot(document.getElementById('root')!).render(
   <Canvas shadows>
@@ -39,9 +39,9 @@ createRoot(document.getElementById('root')!).render(
       <directionalLight intensity={1.2} position={[5, 10, 10]} castShadow />
       <ambientLight intensity={1} />
       <SimpleCharacter />
-      <FixedBvhPhysicsBody>
+      <BvhPhysicsBody>
         <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
-      </FixedBvhPhysicsBody>
+      </BvhPhysicsBody>
     </Viverse>
   </Canvas>,
 )

@@ -72,7 +72,7 @@ export function PlayerTag() {
     '/App.tsx': `
 import { Sky } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { Viverse, SimpleCharacter, FixedBvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+import { Viverse, SimpleCharacter, BvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
 import { PlayerTag } from "./Playertag"
 
 export default function App() {
@@ -85,9 +85,9 @@ export default function App() {
         <SimpleCharacter>
           <PlayerTag />
         </SimpleCharacter>
-        <FixedBvhPhysicsBody>
+        <BvhPhysicsBody>
           <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
-        </FixedBvhPhysicsBody>
+        </BvhPhysicsBody>
       </Viverse>
     </Canvas>
   )
