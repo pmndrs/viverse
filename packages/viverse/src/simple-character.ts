@@ -2,7 +2,7 @@ import { VRM, VRMUtils } from '@pixiv/three-vrm'
 import {
   action,
   animationFinished,
-  build,
+  start,
   timePassed,
   forever,
   parallel,
@@ -479,7 +479,7 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
       this.actions.jumpForward.clampWhenFinished = true
     }
 
-    this.updateTimeline = build(SimpleCharacterTimeline(camera, this))
+    this.updateTimeline = start(SimpleCharacterTimeline(camera, this))
     this.dispatchEvent({ type: 'loaded' })
   }
 

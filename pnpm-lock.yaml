@@ -245,8 +245,8 @@ importers:
         specifier: ^3.4.2
         version: 3.4.2(three@0.178.0)
       '@pmndrs/timeline':
-        specifier: ^0.1.10
-        version: 0.1.10(three@0.178.0)
+        specifier: ^0.1.15
+        version: 0.1.15(three@0.178.0)
       '@viverse/sdk':
         specifier: 1.2.10-alpha.0
         version: 1.2.10-alpha.0
@@ -844,8 +844,8 @@ packages:
   '@pmndrs/pointer-events@6.6.20':
     resolution: {integrity: sha512-Jf5eNS8VREZ4d/lGX/TVxJrNNxQSUM94cd0RjlXfxwXQt10faETQW0j9u0jTOjsW7EtwjM/lTsjUsjbvxwPGlw==}
 
-  '@pmndrs/timeline@0.1.10':
-    resolution: {integrity: sha512-B7Uw8tUesPox1BcNY/IiybodYcShqvosRe0wrUHNYssBOqQl/4wK8VNJwJIb15+oJVrD2gWcWAS/nmDm1ZU6fw==}
+  '@pmndrs/timeline@0.1.15':
+    resolution: {integrity: sha512-WAhLO0pmAAtFwIUSV81vy/nNI5RhldR5DeSG5/+Cnh8rGyVTzkUyznRN9F8Zr1MDqv2HJ18OxEKlUbUGSZxPHQ==}
     peerDependencies:
       three: '*'
 
@@ -4006,7 +4006,7 @@ snapshots:
 
   '@pmndrs/pointer-events@6.6.20': {}
 
-  '@pmndrs/timeline@0.1.10(three@0.178.0)':
+  '@pmndrs/timeline@0.1.15(three@0.178.0)':
     dependencies:
       three: 0.178.0
 
