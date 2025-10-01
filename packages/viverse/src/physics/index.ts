@@ -36,6 +36,8 @@ export type BvhCharacterPhysicsOptions =
 const triPoint = new Vector3()
 const capsulePoint = new Vector3()
 
+const centerHelper = new Vector3()
+
 const collisionFreePosition = new Vector3()
 const position = new Vector3()
 const invertedParentMatrix = new Matrix4()
@@ -126,7 +128,9 @@ export class BvhCharacterPhysics {
       }
     }
     this.updateBoundingShapes(options)
+    centerHelper.addVectors(this.segment.start, this.segment.end).multiplyScalar(0.5)
     this.world.updateSensors(
+      centerHelper,
       (bounds) => bounds.intersectsBox(this.aabbox),
       (triangle) => triangle.closestPointToSegment(this.segment) < this.radius,
     )

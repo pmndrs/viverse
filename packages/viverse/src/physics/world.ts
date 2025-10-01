@@ -1,4 +1,4 @@
-import { Box3, InstancedMesh, Matrix4, Object3D, Ray, Vector3 } from 'three'
+import { Box3, DoubleSide, InstancedMesh, Matrix4, Object3D, Ray, Vector3 } from 'three'
 import { computeBoundsTree, MeshBVH, StaticGeometryGenerator, ExtendedTriangle } from 'three-mesh-bvh'
 
 const rayHelper = new Ray()
@@ -90,11 +90,24 @@ export class BvhPhysicsWorld {
     return true
   }
 
-  updateSensors(intersectsBounds: (box: Box3) => boolean, intersectsTriangle: (triangle: ExtendedTriangle) => boolean) {
-    console.log('update sensors', this.sensors.length)
+  updateSensors(
+    playerCenter: Vector3,
+    intersectsBounds: (box: Box3) => boolean,
+    intersectsTriangle: (triangle: ExtendedTriangle) => boolean,
+  ) {
     for (const entry of this.sensors) {
-      const intersected = this.shapecastEntry(entry, intersectsBounds, intersectsTriangle)
-      console.log(intersected)
+      //check surface intersection
+      let intersected = this.shapecastEntry(entry, intersectsBounds, intersectsTriangle)
+      if (!intersected) {
+        //check if we are entirely inside
+        rayHelper.origin.copy(playerCenter)
+        rayHelper.direction.set(0, -1, 0)
+        if (this.computeMatrix(entry, matrixHelper)) {
+          matrixHelper.invert()
+          rayHelper.applyMatrix4(matrixHelper)
+        }
+        intersected = entry.bvh.raycast(rayHelper, DoubleSide).length % 2 == 1
+      }
       if (entry.intersected === intersected) {
         continue
       }
