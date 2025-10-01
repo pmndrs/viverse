@@ -124,7 +124,7 @@ Component for placing content inside the in VRM character models.
 | `useViversePublicAvatarByID(id)` | Fetches a specific public avatar by ID using Suspense         | Avatar object, or `undefined`                                    |
 
 > [!NOTE]
-> `useViverseClient()` throws an error if not within a `<Viverse>` provider. All avatar-related hooks return `undefined` when the user is not authenticated.
+> `useViverseClient()` returns `undefined` if not within a `<Viverse>` provider or if no `clientId` is provided. Also all avatar-related hooks return `undefined` when the user is not authenticated.
 
 ## SimpleCharacter Options
 

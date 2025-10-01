@@ -105,14 +105,8 @@ export function Viverse({
 /**
  * Hook to access the Viverse client instance for making API calls.
  */
-export function useViverseClient(): Client {
-  const client = useContext(ViverseClientContext)
-  if (client == null) {
-    throw new Error(
-      'Viverse client is not available in context. Did you forget to wrap your component tree with <Viverse>?',
-    )
-  }
-  return client
+export function useViverseClient(): Client | undefined {
+  return useContext(ViverseClientContext)
 }
 
 /**
@@ -146,6 +140,12 @@ export function useViverseLogin() {
   const client = useViverseClient()
   return useCallback(
     (...params: Parameters<Client['loginWithWorlds']>) => {
+      if (client == null) {
+        console.warn(
+          `useViverseLogin was called without an available client either because not Viverse provider is available or because no client id was provided to the Viverse provider`,
+        )
+        return
+      }
       clearViverseAuthCheck()
       client.loginWithWorlds(...params)
     },
@@ -160,6 +160,12 @@ export function useViverseLogout() {
   const client = useViverseClient()
   return useCallback(
     (...params: Parameters<Client['logoutWithWorlds']>) => {
+      if (client == null) {
+        console.warn(
+          `useViverseLogout was called without an available client either because not Viverse provider is available or because no client id was provided to the Viverse provider`,
+        )
+        return
+      }
       clearViverseAuthCheck()
       client.logoutWithWorlds(...params)
     },
