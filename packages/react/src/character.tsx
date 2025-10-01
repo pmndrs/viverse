@@ -152,8 +152,36 @@ export const FixedBvhPhysicsBody = forwardRef<Object3D, { children?: ReactNode }
 })
 
 /**
- * allows to add all children as static (non-moving) objects to the bvh physics world
- * @requires that the inner content is not dynamic
+ * allows to add all children as static (non-moving) objects as sensors to the bvh physics world
+ * @requires that the structure of the inner content is not changing or has a suspense boundary
+ * do not wrap the content inside in a suspense!
+ */
+export const BvhPhysicsSensor = forwardRef<
+  Object3D,
+  { children?: ReactNode; isStatic?: boolean; onIntersectedChanged?: (intersected: boolean) => void }
+>(({ children, isStatic = true, onIntersectedChanged }, ref) => {
+  const world = useContext(BvhPhyiscsWorldContext)
+  if (world == null) {
+    throw new Error('BvhPhysicsSensor must be used within a BvhPhysicsWorld component')
+  }
+  const internalRef = useRef<Object3D>(null)
+  const listenerRef = useRef(onIntersectedChanged)
+  listenerRef.current = onIntersectedChanged
+  useEffect(() => {
+    const body = internalRef.current
+    if (body == null) {
+      return
+    }
+    world.addSensor(body, isStatic, (intersected) => listenerRef.current?.(intersected))
+    return () => world.removeSensor(body)
+  }, [world, isStatic])
+  useImperativeHandle(ref, () => internalRef.current!, [])
+  return <group ref={internalRef}>{children}</group>
+})
+
+/**
+ * allows to add all children as static (non-moving) or kinematic (moving) objects as obstacles to the bvh physics world
+ * @requires that the structure of the inner content is not changing or has a suspense boundary
  * do not wrap the content inside in a suspense!
  */
 export const BvhPhysicsBody = forwardRef<Object3D, { children?: ReactNode; kinematic?: boolean }>(

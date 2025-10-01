@@ -33,10 +33,6 @@ export type BvhCharacterPhysicsOptions =
   | boolean
 
 //for this is a kinematic character controller
-
-//helper variables
-const aabbox = new Box3()
-const segment = new Line3()
 const triPoint = new Vector3()
 const capsulePoint = new Vector3()
 
@@ -54,6 +50,10 @@ export class BvhCharacterPhysics {
   private readonly stateVelocity = new Vector3()
   public readonly inputVelocity = new Vector3()
   private notGroundedSeconds = 0
+
+  private readonly segment = new Line3()
+  private readonly aabbox = new Box3()
+  private radius: number = 0
 
   public get isGrounded() {
     return this.notGroundedSeconds < 0.2
@@ -125,6 +125,26 @@ export class BvhCharacterPhysics {
         this.stateVelocity.set(0, (options.gravity ?? -20) * 0.01, 0)
       }
     }
+    this.updateBoundingShapes(options)
+    this.world.updateSensors(
+      (bounds) => bounds.intersectsBox(this.aabbox),
+      (triangle) => triangle.closestPointToSegment(this.segment) < this.radius,
+    )
+  }
+
+  private updateBoundingShapes(options: Exclude<BvhCharacterPhysicsOptions, boolean>) {
+    //compute the bounding capsule and bounding box
+    this.radius = options.capsuleRadius ?? 0.4
+    const height = options.capsuleHeight ?? 1.7
+    this.segment.start.copy(position)
+    this.segment.start.y += this.radius
+    this.segment.end.copy(position)
+    this.segment.end.y += height - this.radius
+    this.aabbox.makeEmpty()
+    this.aabbox.expandByPoint(this.segment.start)
+    this.aabbox.expandByPoint(this.segment.end)
+    this.aabbox.min.addScalar(-this.radius)
+    this.aabbox.max.addScalar(this.radius)
   }
 
   destroy(): void {
@@ -132,47 +152,38 @@ export class BvhCharacterPhysics {
   }
 
   shapecastCapsule(position: Vector3, maxGroundSlope: number, options: Exclude<BvhCharacterPhysicsOptions, boolean>) {
-    const radius = options.capsuleRadius ?? 0.4
-    const height = options.capsuleHeight ?? 1.7
-    segment.start.copy(position)
-    segment.start.y += radius
-    segment.end.copy(position)
-    segment.end.y += height - radius
-    aabbox.makeEmpty()
-    aabbox.expandByPoint(segment.start)
-    aabbox.expandByPoint(segment.end)
-    aabbox.min.addScalar(-radius)
-    aabbox.max.addScalar(radius)
+    this.updateBoundingShapes(options)
     let grounded = false
 
     this.world.shapecast(
-      (bounds) => bounds.intersectsBox(aabbox),
+      (bounds) => bounds.intersectsBox(this.aabbox),
       (tri) => {
         // Use your existing triangle vs segment closestPointToSegment
-        const distance = tri.closestPointToSegment(segment, triPoint, capsulePoint)
+        const distance = tri.closestPointToSegment(this.segment, triPoint, capsulePoint)
         if (distance === 0) {
-          const isCloserToSegmentStart = capsulePoint.distanceTo(segment.start) < capsulePoint.distanceTo(segment.end)
+          const isCloserToSegmentStart =
+            capsulePoint.distanceTo(this.segment.start) < capsulePoint.distanceTo(this.segment.end)
           if (isCloserToSegmentStart) {
             grounded = true
           }
-          const scaledDirection = capsulePoint.sub(isCloserToSegmentStart ? segment.start : segment.end)
-          scaledDirection.y += radius
-          segment.start.add(scaledDirection)
-          segment.end.add(scaledDirection)
-        } else if (distance < radius) {
-          const depthInsideCapsule = radius - distance
+          const scaledDirection = capsulePoint.sub(isCloserToSegmentStart ? this.segment.start : this.segment.end)
+          scaledDirection.y += this.radius
+          this.segment.start.add(scaledDirection)
+          this.segment.end.add(scaledDirection)
+        } else if (distance < this.radius) {
+          const depthInsideCapsule = this.radius - distance
           const direction = capsulePoint.sub(triPoint).divideScalar(distance)
           const slope = Math.tan(Math.acos(direction.dot(YAxis)))
           if (direction.y > 0 && slope <= maxGroundSlope) {
             grounded = true
           }
-          segment.start.addScaledVector(direction, depthInsideCapsule)
-          segment.end.addScaledVector(direction, depthInsideCapsule)
+          this.segment.start.addScaledVector(direction, depthInsideCapsule)
+          this.segment.end.addScaledVector(direction, depthInsideCapsule)
         }
       },
     )
-    position.copy(segment.start)
-    position.y -= radius
+    position.copy(this.segment.start)
+    position.y -= this.radius
     return grounded
   }
 }

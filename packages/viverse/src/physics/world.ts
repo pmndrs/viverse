@@ -7,8 +7,16 @@ const boxHelper = new Box3()
 const triangleHelper = new ExtendedTriangle()
 const matrixHelper = new Matrix4()
 
+type BvhEntry = { object: Object3D; isStatic: boolean; bvh: MeshBVH; instanceIndex?: number }
+
 export class BvhPhysicsWorld {
-  private map: Array<{ object: Object3D; kinematic: boolean; bvh: MeshBVH; instanceIndex?: number }> = []
+  private bodies: Array<BvhEntry> = []
+  private sensors: Array<
+    BvhEntry & {
+      onIntersectedChanged: (intersected: boolean) => void
+      intersected: boolean
+    }
+  > = []
 
   /**
    * @deprecated use addBody(object, false) instead
@@ -17,21 +25,39 @@ export class BvhPhysicsWorld {
     this.addBody(object, false)
   }
 
+  addSensor(object: Object3D, isStatic: boolean, onIntersectedChanged: (intersected: boolean) => void) {
+    this.sensors.push(
+      ...this.computeBvhEntries(object, isStatic).map((entry) => ({
+        ...entry,
+        onIntersectedChanged,
+        intersected: false,
+      })),
+    )
+  }
+
+  removeSensor(object: Object3D) {
+    this.sensors = this.sensors.filter((entry) => entry.object != object)
+  }
+
   addBody(object: Object3D, kinematic: boolean) {
+    this.bodies.push(...this.computeBvhEntries(object, !kinematic))
+  }
+
+  private computeBvhEntries(object: Object3D, isStatic: boolean): Array<BvhEntry> {
     object.updateWorldMatrix(true, true)
     if (!(object instanceof InstancedMesh)) {
       const parent = object.parent
-      if (kinematic) {
+      if (!isStatic) {
         object.parent = null
         object.updateMatrixWorld(true)
       }
       const geometry = new StaticGeometryGenerator(object).generate()
-      this.map.push({ object, bvh: computeBoundsTree.apply(geometry), kinematic })
-      if (kinematic) {
+      const bvh = computeBoundsTree.apply(geometry)
+      if (!isStatic) {
         object.parent = parent
         object.updateMatrixWorld(true)
       }
-      return
+      return [{ object, bvh, isStatic }]
     }
 
     if (object.children.length > 0) {
@@ -39,21 +65,20 @@ export class BvhPhysicsWorld {
     }
 
     const bvh = computeBoundsTree.apply(object.geometry)
-    for (let i = 0; i < object.instanceMatrix.count; i++) {
-      this.map.push({
-        object,
-        bvh,
-        instanceIndex: i,
-        kinematic,
-      })
-    }
-  }
-  removeBody(object: Object3D) {
-    this.map = this.map.filter((entry) => entry.object != object)
+    return new Array(object.instanceMatrix).fill(undefined as any).map((_, i) => ({
+      object,
+      bvh,
+      instanceIndex: i,
+      isStatic,
+    }))
   }
 
-  private computeMatrix({ kinematic, object, instanceIndex }: (typeof this.map)[number], target: Matrix4): boolean {
-    if (!kinematic && instanceIndex == null) {
+  removeBody(object: Object3D) {
+    this.bodies = this.bodies.filter((entry) => entry.object != object)
+  }
+
+  private computeMatrix({ isStatic, object, instanceIndex }: (typeof this.bodies)[number], target: Matrix4): boolean {
+    if (isStatic && instanceIndex == null) {
       return false
     }
     if (instanceIndex == null) {
@@ -65,32 +90,55 @@ export class BvhPhysicsWorld {
     return true
   }
 
-  shapecast(intersectsBounds: (box: Box3) => boolean, intersectsTriangle: (triangle: ExtendedTriangle) => void): void {
-    for (const entry of this.map) {
-      entry.bvh.shapecast({
-        intersectsBounds: (box) => {
-          boxHelper.copy(box)
-          if (this.computeMatrix(entry, matrixHelper)) {
-            boxHelper.applyMatrix4(matrixHelper)
-          }
-          return intersectsBounds(boxHelper)
-        },
-        intersectsTriangle: (triangle) => {
-          triangleHelper.copy(triangle)
-          if (this.computeMatrix(entry, matrixHelper)) {
-            triangleHelper.a.applyMatrix4(matrixHelper)
-            triangleHelper.b.applyMatrix4(matrixHelper)
-            triangleHelper.c.applyMatrix4(matrixHelper)
-          }
-          intersectsTriangle(triangleHelper)
-        },
-      })
+  updateSensors(intersectsBounds: (box: Box3) => boolean, intersectsTriangle: (triangle: ExtendedTriangle) => boolean) {
+    console.log('update sensors', this.sensors.length)
+    for (const entry of this.sensors) {
+      const intersected = this.shapecastEntry(entry, intersectsBounds, intersectsTriangle)
+      console.log(intersected)
+      if (entry.intersected === intersected) {
+        continue
+      }
+      entry.onIntersectedChanged(intersected)
+      entry.intersected = intersected
     }
+  }
+
+  shapecast(intersectsBounds: (box: Box3) => boolean, intersectsTriangle: (triangle: ExtendedTriangle) => void) {
+    for (const entry of this.bodies) {
+      this.shapecastEntry(entry, intersectsBounds, intersectsTriangle)
+    }
+  }
+
+  private shapecastEntry(
+    entry: BvhEntry,
+    intersectsBounds: (box: Box3) => boolean,
+    intersectsTriangle: (triangle: ExtendedTriangle) => void | boolean,
+  ) {
+    return entry.bvh.shapecast({
+      intersectsBounds: (box) => {
+        boxHelper.copy(box)
+        if (this.computeMatrix(entry, matrixHelper)) {
+          boxHelper.applyMatrix4(matrixHelper)
+        }
+        return intersectsBounds(boxHelper)
+      },
+      intersectsTriangle: (triangle) => {
+        triangleHelper.copy(triangle)
+        if (this.computeMatrix(entry, matrixHelper)) {
+          triangleHelper.a.applyMatrix4(matrixHelper)
+          triangleHelper.b.applyMatrix4(matrixHelper)
+          triangleHelper.c.applyMatrix4(matrixHelper)
+        }
+        if (intersectsTriangle(triangleHelper) === true) {
+          return true
+        }
+      },
+    })
   }
 
   raycast(ray: Ray, far: number) {
     let result: number | undefined
-    for (const entry of this.map.values()) {
+    for (const entry of this.bodies.values()) {
       rayHelper.copy(ray)
       let farHelper = far
       if (this.computeMatrix(entry, matrixHelper)) {

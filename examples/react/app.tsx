@@ -8,8 +8,9 @@ import {
   Viverse,
   CharacterModelBone,
   PrototypeBox,
+  BvhPhysicsSensor,
 } from '@react-three/viverse'
-import { Suspense, useRef } from 'react'
+import { Suspense, useRef, useState } from 'react'
 import { Group, Object3D } from 'three'
 
 export function App() {
@@ -48,6 +49,14 @@ export function Scene() {
       characterRef.current.position.set(0, 0, 0)
     }
   })
+  const swordRef = useRef<Group>(null)
+  useFrame((_, delta) => {
+    if (swordRef.current == null) {
+      return
+    }
+    swordRef.current.rotation.y += delta * 1
+  })
+  const [hasSword, setHasSword] = useState(false)
   return (
     <>
       <Sky />
@@ -65,17 +74,21 @@ export function Scene() {
       <ambientLight intensity={1} />
       <SimpleCharacter ref={characterRef}>
         <PlayerTag />
-        <CharacterModelBone bone="rightHand">
-          <Gltf
-            scale={0.5}
-            scale-y={0.65}
-            position-y={-0.02}
-            position-x={0.07}
-            rotation-z={-(0.2 * Math.PI) / 2}
-            rotation-x={-(1 * Math.PI) / 2}
-            src="sword.gltf"
-          />
-        </CharacterModelBone>
+        {hasSword && (
+          <CharacterModelBone bone="rightHand">
+            <Suspense>
+              <Gltf
+                scale={0.5}
+                scale-y={0.65}
+                position-y={-0.02}
+                position-x={0.07}
+                rotation-z={-(0.2 * Math.PI) / 2}
+                rotation-x={-(1 * Math.PI) / 2}
+                src="sword.gltf"
+              />
+            </Suspense>
+          </CharacterModelBone>
+        )}
       </SimpleCharacter>
       <BvhPhysicsBody>
         <PrototypeBox color="#cccccc" scale={[2, 1, 3]} position={[3.91, 0, 0]} />
@@ -86,6 +99,16 @@ export function Scene() {
         <PrototypeBox color="#ffffcc" scale={[4, 1, 1]} position={[0.08, 3.5, 0]} />
         <PrototypeBox color="#ffffff" scale={[10, 0.5, 10]} position={[0.08, -2, 0]} />
       </BvhPhysicsBody>
+      <group position-x={-1.3} position-y={4.6} rotation-z={Math.PI / 4} ref={swordRef}>
+        <Suspense>{!hasSword && <Gltf position-y={-0.3} scale={0.5} scale-y={0.65} src="sword.gltf" />}</Suspense>
+      </group>
+      <group visible={false}>
+        <BvhPhysicsSensor onIntersectedChanged={(intersected) => intersected && setHasSword(true)}>
+          <mesh position-y={5} position-x={-1.3} scale-y={2}>
+            <boxGeometry />
+          </mesh>
+        </BvhPhysicsSensor>
+      </group>
     </>
   )
 }

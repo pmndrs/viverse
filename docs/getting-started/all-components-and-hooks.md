@@ -56,10 +56,10 @@ Provides physics context for collision detection. Usually wrapped automatically 
 
 ### `<BvhPhysicsBody>`
 
-Adds child meshes as static collision objects to the physics world.
+Adds visible children as static (non-moving) or kinematic (moving) objects as obstacles to the physics world.
 
 > [!WARNING]
-> Content inside the object can not change.
+> Content inside the object can not structurally change.
 
 **Props:**
 
@@ -75,6 +75,29 @@ Adds child meshes as static collision objects to the physics world.
     <meshStandardMaterial />
   </mesh>
 </BvhPhysicsBody>
+```
+
+### `<BvhPhysicsSensor>`
+
+Adds visible children as static (non-moving) or kinematic (moving) objects as obstacles to the physics world.
+
+> [!WARNING]
+> Content inside the object can not structurally change; Hiding the sensors content requires to wrap it in `<group visible={false}>...</group>`.
+
+**Props:**
+
+- `children?: ReactNode` - Static mesh objects for collision
+- `isStatic?: boolean` - whether the objects world transformation is static - default: true
+- `onIntersectedChanged?: (intersected: boolean) => void` - callback that get's called when the player starts or stops intersecting with the sensor
+
+**Example:**
+
+```tsx
+<BvhPhysicsSensor onIntersectedChanged={(intersected) => console.log("currently intersected": intersected)}>
+  <mesh visible={false}>
+    <boxGeometry />
+  </mesh>
+</BvhPhysicsSensor>
 ```
 
 ### `<PrototypeBox>`
@@ -133,6 +156,7 @@ The `SimpleCharacter` component can be configured with a variety of props but al
 ### `useViverseAvatar` flag
 
 Allows to configure whether the users vrm avatar should be displayed as the character model.
+
 - **Default:** `true`
 
 ### `movement` Options
