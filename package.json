@@ -5,6 +5,9 @@
   "dependencies": {
     "three": "latest"
   },
+  "scripts": {
+    "docs:combine": "node scripts/combine-docs.mjs"
+  },
   "devDependencies": {
     "@pmndrs/pointer-events": "^6.6.20",
     "@react-three/eslint-plugin": "^0.1.2",

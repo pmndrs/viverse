@@ -4,3 +4,4 @@ package-lock.json
 .DS_Store
 .idea
 docs/API/*
+llm.txt

@@ -36,15 +36,74 @@ jobs:
   docs:
     uses: pmndrs/docs/.github/workflows/build.yml@v2
     with:
-      mdx: 'docs'
-      libname: 'viverse'
-      icon: '⟁'
-      home_redirect: '/getting-started/index'
-      github: 'https://github.com/pmndrs/viverse'
-      discord: 'https://discord.gg/viversecreators'
+      mdx: "docs"
+      libname: "viverse"
+      icon: "⟁"
+      home_redirect: "/getting-started/index"
+      github: "https://github.com/pmndrs/viverse"
+      discord: "https://discord.gg/viversecreators"
+
+  llm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        with:
+          version: 10
+          run_install: false
+
+      - name: Generate llm.txt
+        run: pnpm run docs:combine
+
+      - name: Upload llm artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm
+          path: ./llm.txt
+
+  bundle-artifacts:
+    runs-on: ubuntu-latest
+    needs:
+      - docs
+      - llm
+    steps:
+      - name: Download Docs Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: ./docs
+
+      - name: Extract Docs
+        run: tar -xf ./docs/artifact.tar -C ./docs/
+
+      - name: Download llm Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: llm
+          path: ./llm
+
+      - name: Add llm.txt to root
+        run: cp ./llm/llm.txt ./docs/
+
+      - name: Create deploy.tar
+        run: tar -cf deploy.tar -C ./docs .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy
+          path: ./deploy.tar
 
   deploy-docs:
-    needs: docs
+    needs: bundle-artifacts
     runs-on: ubuntu-latest
     permissions:
       pages: write # to deploy to Pages
@@ -58,4 +117,5 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-          
+        with:
+          artifact_name: deploy
