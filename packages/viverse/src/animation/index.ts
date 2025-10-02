@@ -15,10 +15,8 @@ import { loadVrmModelVrmaAnimations } from './vrma.js'
 import { loadCharacterModel } from '../model/index.js'
 import { cached } from '../utils.js'
 
-const parentWorldVector = new Vector3()
 const restRotationInverse = new Quaternion()
 const parentRestWorldRotation = new Quaternion()
-const parentRestWorldRotationInverse = new Quaternion()
 const quaternion = new Quaternion()
 const vector = new Vector3()
 
@@ -40,7 +38,9 @@ export function fixModelAnimationClip(
   }
   const clipSceneHips = clipScene.getObjectByName(hipsBoneName)
   const vrmHipsPosition =
-    model instanceof VRM ? model.humanoid.normalizedRestPose.hips?.position : clipSceneHips?.position
+    model instanceof VRM
+      ? model.humanoid.normalizedRestPose.hips?.position
+      : model.scene.getObjectByName('hips')?.position.toArray()
   if (clipSceneHips == null || vrmHipsPosition == null) {
     throw new Error('Failed to load VRM animation: missing animation hips object or VRM hips position.')
   }
@@ -58,16 +58,19 @@ export function fixModelAnimationClip(
       model instanceof VRM ? model.humanoid.getNormalizedBoneNode(vrmBoneName as VRMHumanBoneName)?.name : vrmBoneName
     const bone = clipScene.getObjectByName(boneName)
 
-    if (vrmNodeName == null || bone == null || bone.parent == null) {
+    if (vrmNodeName == null || bone == null) {
       continue
     }
 
-    bone.getWorldQuaternion(restRotationInverse).invert()
-    bone.parent.getWorldQuaternion(parentRestWorldRotation)
-    parentRestWorldRotationInverse.copy(parentRestWorldRotation).invert()
-    bone.parent.getWorldPosition(parentWorldVector)
-
     if (track instanceof QuaternionKeyframeTrack) {
+      if (bone.parent != null) {
+        bone.getWorldQuaternion(restRotationInverse).invert()
+        bone.parent.getWorldQuaternion(parentRestWorldRotation)
+      } else {
+        restRotationInverse.identity()
+        parentRestWorldRotation.identity()
+      }
+
       // Store rotations of rest-pose.
       for (let i = 0; i < track.values.length; i += 4) {
         quaternion.fromArray(track.values, i)

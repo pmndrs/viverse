@@ -100,7 +100,11 @@ export function Scene() {
         <PrototypeBox color="#ffffff" scale={[10, 0.5, 10]} position={[0.08, -2, 0]} />
       </BvhPhysicsBody>
       <group position-x={-1.3} position-y={4.6} rotation-z={Math.PI / 4} ref={swordRef}>
-        <Suspense>{!hasSword && <Gltf position-y={-0.3} scale={0.5} scale-y={0.65} src="sword.gltf" />}</Suspense>
+        {!hasSword && (
+          <Suspense>
+            <Gltf position-y={-0.3} scale={0.5} scale-y={0.65} src="sword.gltf" />
+          </Suspense>
+        )}
       </group>
       <group visible={false}>
         <BvhPhysicsSensor onIntersectedChanged={(intersected) => intersected && setHasSword(true)}>
