@@ -6,7 +6,7 @@ import url from 'node:url'
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '..')
 const docsDir = path.join(repoRoot, 'docs')
-const outputFile = path.join(repoRoot, 'llm.txt')
+const outputFile = path.join(repoRoot, 'llms.txt')
 
 /**
  * Recursively list files under a directory
