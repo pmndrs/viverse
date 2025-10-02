@@ -41,6 +41,7 @@ import {
   RunField,
   LastTimeJumpPressedField,
 } from './input/index.js'
+import { MobileControls } from './mobile/controls.js'
 import { clearCharacterModelCache, CharacterModelOptions, loadCharacterModel } from './model/index.js'
 import { BvhCharacterPhysicsOptions, BvhCharacterPhysics, BvhPhysicsWorld } from './physics/index.js'
 
@@ -427,6 +428,7 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
   public readonly cameraBehavior: SimpleCharacterCameraBehavior
   public readonly physics: BvhCharacterPhysics
   public readonly mixer = new AnimationMixer(this)
+  public readonly mobileControls: MobileControls
 
   //can be changed from the outside
   public inputSystem: InputSystem
@@ -445,11 +447,16 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
   ) {
     super()
 
+    this.mobileControls = new MobileControls(domElement.parentElement!)
+
     // input system
     this.inputSystem =
       options.input instanceof InputSystem
         ? options.input
-        : new InputSystem(domElement, options.input ?? [LocomotionKeyboardInput, PointerCaptureInput])
+        : new InputSystem(
+            domElement,
+            options.input ?? [this.mobileControls, LocomotionKeyboardInput, PointerCaptureInput],
+          )
     options.physics ??= {}
 
     // camera behavior
@@ -496,6 +503,7 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
   dispose(): void {
     this.parent?.remove(this)
     this.model?.scene.dispatchEvent({ type: 'dispose' })
+    this.mobileControls.dispose()
     VRMUtils.deepDispose(this)
   }
 }
