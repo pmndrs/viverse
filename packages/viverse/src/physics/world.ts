@@ -65,7 +65,7 @@ export class BvhPhysicsWorld {
     }
 
     const bvh = computeBoundsTree.apply(object.geometry)
-    return new Array(object.instanceMatrix).fill(undefined as any).map((_, i) => ({
+    return new Array(object.instanceMatrix.count).fill(undefined as any).map((_, i) => ({
       object,
       bvh,
       instanceIndex: i,
