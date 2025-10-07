@@ -185,6 +185,10 @@ async function* SimpleCharacterTimeline(character: SimpleCharacter) {
     if (lastJump > lastTimePressed) {
       return false
     }
+    //last jump must be more then 0.3 second ago, if not, we dont jump, this is to give the character time to get off the ground
+    if (lastJump > performance.now() / 1000 - 0.3) {
+      return false
+    }
     return performance.now() / 1000 - lastTimePressed < (jumpOptions?.bufferTime ?? 0.1)
   }
 
