@@ -90,7 +90,7 @@ export class SimpleCharacterCameraBehavior {
   private firstUpdate = true
 
   constructor(
-    public camera: Object3D,
+    public getCamera: () => Object3D,
     public character: SimpleCharacter,
     private readonly raycast?: (ray: Ray, far: number) => number | undefined,
   ) {}
@@ -101,7 +101,7 @@ export class SimpleCharacterCameraBehavior {
   ): void {
     if (delta.lengthSq() < 0.0001) {
       // use current camera rotation if very close to target
-      euler.setFromQuaternion(this.camera.quaternion, 'YXZ')
+      euler.setFromQuaternion(this.getCamera().quaternion, 'YXZ')
       this.rotationPitch = euler.x
       this.rotationYaw = euler.y
       return
@@ -179,7 +179,7 @@ export class SimpleCharacterCameraBehavior {
     this.computeCharacterBaseOffset(chracterBaseOffsetHelper, options.characterBaseOffset)
     this.character.getWorldPosition(characterWorldPosition)
     characterWorldPosition.add(chracterBaseOffsetHelper)
-    this.camera.getWorldPosition(deltaHelper)
+    this.getCamera().getWorldPosition(deltaHelper)
     deltaHelper.sub(characterWorldPosition)
 
     // apply rotation input to rotationYaw and rotationPitch if not disabled or first update
@@ -196,9 +196,9 @@ export class SimpleCharacterCameraBehavior {
     }
 
     // apply yaw and pitch to camera rotation
-    this.camera.rotation.set(this.rotationPitch, this.rotationYaw, 0, 'YXZ')
+    this.getCamera().rotation.set(this.rotationPitch, this.rotationYaw, 0, 'YXZ')
 
-    rayHelper.direction.set(0, 0, 1).applyEuler(this.camera.rotation)
+    rayHelper.direction.set(0, 0, 1).applyEuler(this.getCamera().rotation)
     rayHelper.origin.copy(characterWorldPosition)
 
     // apply zoom input to zoomDistance if not disabled or first update
@@ -232,7 +232,7 @@ export class SimpleCharacterCameraBehavior {
 
     // Calculate camera position using spherical coordinates from euler
     sphericalOffset.set(0, 0, this.collisionFreeZoomDistance)
-    sphericalOffset.applyEuler(this.camera.rotation)
+    sphericalOffset.applyEuler(this.getCamera().rotation)
 
     // Get target position with offset (reuse helper vector)
     this.character.getWorldPosition(characterWorldPosition)
@@ -241,6 +241,6 @@ export class SimpleCharacterCameraBehavior {
     characterWorldPosition.add(chracterBaseOffsetHelper)
 
     // Set camera position relative to target
-    this.camera.position.copy(characterWorldPosition).add(sphericalOffset)
+    this.getCamera().position.copy(characterWorldPosition).add(sphericalOffset)
   }
 }

@@ -1,6 +1,6 @@
-import { Gltf, Sky } from '@react-three/drei'
+import { Gltf, PerspectiveCamera, Sky } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Root, Image, Text, Fullscreen } from '@react-three/uikit'
+import { Image, Text, Fullscreen, Container } from '@react-three/uikit'
 import {
   SimpleCharacter,
   BvhPhysicsBody,
@@ -9,19 +9,16 @@ import {
   CharacterModelBone,
   PrototypeBox,
   BvhPhysicsSensor,
+  FirstPersonCharacterCameraBehavior,
 } from '@react-three/viverse'
+import { useControls } from 'leva'
 import { Suspense, useRef, useState } from 'react'
 import { Group, Object3D } from 'three'
 
 export function App() {
   return (
     <Viverse clientId={import.meta.env.VITE_VIVERSE_APP_ID}>
-      <Canvas
-        style={{ width: '100%', flexGrow: 1 }}
-        camera={{ fov: 90, position: [0, 2, 2] }}
-        shadows
-        gl={{ antialias: true, localClippingEnabled: true }}
-      >
+      <Canvas style={{ width: '100%', flexGrow: 1 }} shadows gl={{ antialias: true, localClippingEnabled: true }}>
         <Suspense
           fallback={
             <Fullscreen alignItems="center" justifyContent="center">
@@ -57,6 +54,7 @@ export function Scene() {
     swordRef.current.rotation.y += delta * 1
   })
   const [hasSword, setHasSword] = useState(false)
+  const { firstPerson } = useControls({ firstPerson: false })
   return (
     <>
       <Sky />
@@ -72,11 +70,22 @@ export function Scene() {
         shadow-camera-bottom={-10}
       />
       <ambientLight intensity={1} />
-      <SimpleCharacter ref={characterRef}>
+      <PerspectiveCamera makeDefault fov={90}>
+        {hasSword && firstPerson && (
+          <Suspense fallback={null}>
+            <Gltf position={[0.6, -0.75, -0.8]} rotation-y={Math.PI / 2} scale={0.5} scale-y={0.65} src="sword.gltf" />
+          </Suspense>
+        )}
+      </PerspectiveCamera>
+      <SimpleCharacter
+        model={!firstPerson}
+        cameraBehavior={firstPerson ? FirstPersonCharacterCameraBehavior : undefined}
+        ref={characterRef}
+      >
         <PlayerTag />
         {hasSword && (
           <CharacterModelBone bone="rightHand">
-            <Suspense>
+            <Suspense fallback={null}>
               <Gltf
                 scale={0.5}
                 scale-y={0.65}
@@ -131,23 +140,31 @@ function PlayerTag() {
   })
   return (
     <group ref={ref} position-y={2.15}>
-      <Root
-        depthTest={false}
-        renderOrder={1}
-        backgroundOpacity={0.5}
-        borderRadius={10}
-        paddingX={2}
-        height={20}
-        backgroundColor="white"
-        flexDirection="row"
-        alignItems="center"
-        gap={4}
-      >
-        <Image width={16} height={16} borderRadius={14} src={profile.activeAvatar?.headIconUrl} />
-        <Text fontWeight="bold" fontSize={12} marginRight={3}>
-          {profile.name}
-        </Text>
-      </Root>
+      <Suspense fallback={null}>
+        <Container
+          depthTest={false}
+          renderOrder={1}
+          borderRadius={10}
+          paddingX={2}
+          height={20}
+          backgroundColor="rgba(255, 255, 255, 0.5)"
+          flexDirection="row"
+          alignItems="center"
+          gap={4}
+        >
+          <Image
+            depthTest={false}
+            renderOrder={1}
+            width={16}
+            height={16}
+            borderRadius={14}
+            src={profile.activeAvatar?.headIconUrl}
+          />
+          <Text depthTest={false} renderOrder={1} fontWeight="bold" fontSize={12} marginRight={3}>
+            {profile.name}
+          </Text>
+        </Container>
+      </Suspense>
     </group>
   )
 }

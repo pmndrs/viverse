@@ -1,6 +1,6 @@
 import { OrbitControls } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Root, Image, Text, Fullscreen } from '@react-three/uikit'
+import { Container, Image, Text, Fullscreen } from '@react-three/uikit'
 import {
   SimpleCharacter,
   BvhPhysicsBody,
@@ -100,23 +100,29 @@ function PlayerTag() {
   })
   return (
     <group ref={ref} position-y={2.15}>
-      <Root
+      <Container
         depthTest={false}
         renderOrder={1}
-        backgroundOpacity={0.5}
         borderRadius={10}
         paddingX={2}
         height={20}
-        backgroundColor="white"
+        backgroundColor="rgba(255, 255, 255, 0.5)"
         flexDirection="row"
         alignItems="center"
         gap={4}
       >
-        <Image width={16} height={16} borderRadius={14} src={profile.activeAvatar?.headIconUrl} />
-        <Text fontWeight="bold" fontSize={12} marginRight={3}>
+        <Image
+          depthTest={false}
+          renderOrder={1}
+          width={16}
+          height={16}
+          borderRadius={14}
+          src={profile.activeAvatar?.headIconUrl}
+        />
+        <Text depthTest={false} renderOrder={1} fontWeight="bold" fontSize={12} marginRight={3}>
           {profile.name}
         </Text>
-      </Root>
+      </Container>
     </group>
   )
 }

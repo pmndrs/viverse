@@ -2,7 +2,7 @@
   "dependencies": {
     "@dotenvx/dotenvx": "^1.47.6",
     "@pixiv/three-vrm": "^3.4.2",
-    "@pmndrs/uikit": "^1.0.0",
+    "@pmndrs/uikit": "^1.0.41",
     "@pmndrs/viverse": "workspace:^",
     "@viverse/sdk": "^1.2.10-alpha.0"
   },

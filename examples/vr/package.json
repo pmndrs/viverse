@@ -3,7 +3,7 @@
     "@dotenvx/dotenvx": "^1.47.6",
     "@react-three/drei": "^10.5.1",
     "@react-three/fiber": "9.2.0",
-    "@react-three/uikit": "^0.8.21",
+    "@react-three/uikit": "^1.0.41",
     "@react-three/viverse": "workspace:~",
     "@react-three/xr": "^6.6.20",
     "@vitejs/plugin-basic-ssl": "^2.1.0",

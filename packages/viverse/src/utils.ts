@@ -36,3 +36,23 @@ export function clearCache(fn: Function, dependencies: Array<unknown>) {
   }
   cache.splice(index, 1)
 }
+
+export function extractProxy<K extends string, T extends { [key in K]?: {} }>(
+  value: T,
+  key: K,
+): Partial<Exclude<T[K], undefined>> {
+  return new Proxy({} as Partial<Exclude<T[K], undefined>>, {
+    get: (_, p) => value[key]?.[p as keyof {}],
+  })
+}
+
+export function getIsMobileMediaQuery() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return undefined
+  }
+  return window.matchMedia('(hover: none) and (pointer: coarse)')
+}
+
+export function isMobile(): boolean {
+  return getIsMobileMediaQuery()?.matches ?? false
+}

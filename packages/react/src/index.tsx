@@ -223,8 +223,18 @@ export {
   LocomotionKeyboardInput,
   PointerCaptureInput,
   PointerLockInput,
+  type InputField,
+  InputSystem,
+  type KeyboardInputOptions,
+  type PointerLockInputOptions,
+  type PointerCaptureInputOptions,
+  ScreenJoystickInput,
+  type ScreenJoystickInputOptions,
+  type SimpleCharacterInputOptions,
+  ScreenJumpButtonInput,
   VRMHumanBoneName,
 } from '@pmndrs/viverse'
 export * from '@viverse/sdk'
 export * from '@viverse/sdk/avatar-client'
 export * from './gamepad.js'
+export * from './mobile.js'

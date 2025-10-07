@@ -10,13 +10,17 @@ import {
   LocomotionKeyboardInput,
   PointerCaptureInput,
   type loadCharacterModel,
+  ScreenJoystickInput,
+  ScreenJumpButtonInput,
+  extractProxy,
 } from '@pmndrs/viverse'
-import { useFrame, useThree, extend, ThreeElement, createPortal } from '@react-three/fiber'
+import { useFrame, useThree, extend, ThreeElement, createPortal, useStore } from '@react-three/fiber'
 import {
   createContext,
   forwardRef,
   Fragment,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useImperativeHandle,
@@ -60,7 +64,18 @@ export const SimpleCharacter = forwardRef<
   SimpleCharacterOptions & { useViverseAvatar?: boolean; children?: ReactNode } & ThreeElement<typeof Group>
 >(
   (
-    { children, useViverseAvatar = true, input, movement, model, physics, cameraBehavior, animation, ...groupProps },
+    {
+      children,
+      useViverseAvatar = true,
+      input,
+      movement,
+      model,
+      physics,
+      cameraBehavior,
+      animation,
+      inputOptions,
+      ...groupProps
+    },
     ref,
   ) => {
     const avatar = useViverseActiveAvatar()
@@ -68,9 +83,9 @@ export const SimpleCharacter = forwardRef<
     if (world == null) {
       throw new Error('SimpleCharacter must be used within a BvhPhysicsWorld component')
     }
-    const camera = useThree((s) => s.camera)
     const domElement = useThree((s) => s.gl.domElement)
     const newOptions = {
+      inputOptions,
       movement,
       physics,
       cameraBehavior,
@@ -108,10 +123,12 @@ export const SimpleCharacter = forwardRef<
         if (internalRef.current == null) {
           return
         }
+        internalRef.current.inputSystem.dispose()
         if (input == null || 'length' in input) {
           internalRef.current.inputSystem = new InputSystem(
             domElement,
-            input ?? [LocomotionKeyboardInput, PointerCaptureInput],
+            input ?? [ScreenJoystickInput, ScreenJumpButtonInput, PointerCaptureInput, LocomotionKeyboardInput],
+            extractProxy(currentOptions, 'inputOptions'),
           )
           return
         }
@@ -132,12 +149,14 @@ export const SimpleCharacter = forwardRef<
         store.setState({ model: simpleCharacter.model })
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [camera as any, world, domElement, currentOptions])
+    }, [world, domElement, currentOptions])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useImperativeHandle(ref, () => internalRef.current!, [camera as any, world, domElement, currentOptions])
+    useImperativeHandle(ref, () => internalRef.current!, [world, domElement, currentOptions])
     useFrame((_, delta) => internalRef.current?.update(delta))
+    const r3fStore = useStore()
+    const getCamera = useCallback(() => r3fStore.getState().camera, [r3fStore])
     return (
-      <simpleCharacterImpl {...groupProps} args={[camera as any, world, domElement, currentOptions]} ref={internalRef}>
+      <simpleCharacterImpl {...groupProps} args={[getCamera, world, domElement, currentOptions]} ref={internalRef}>
         <CharacterModelStoreContext.Provider value={store}>{children}</CharacterModelStoreContext.Provider>
       </simpleCharacterImpl>
     )

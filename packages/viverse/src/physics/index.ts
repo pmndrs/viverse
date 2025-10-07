@@ -48,7 +48,7 @@ const YAxis = new Vector3(0, 1, 0)
  * assumes the target object origin is at its bottom
  */
 export class BvhCharacterPhysics {
-  private destroyed = false
+  private disposed = false
   private readonly stateVelocity = new Vector3()
   public readonly inputVelocity = new Vector3()
   private notGroundedSeconds = 0
@@ -80,7 +80,7 @@ export class BvhCharacterPhysics {
     if (options === true) {
       options = {}
     }
-    if (this.destroyed) {
+    if (this.disposed) {
       return
     }
     //at max catch up to 1 second of physics in one update call (running at less then 1fps is unplayable anyways)
@@ -151,8 +151,8 @@ export class BvhCharacterPhysics {
     this.aabbox.max.addScalar(this.radius)
   }
 
-  destroy(): void {
-    this.destroyed = true
+  dispose(): void {
+    this.disposed = true
   }
 
   shapecastCapsule(position: Vector3, maxGroundSlope: number, options: Exclude<BvhCharacterPhysicsOptions, boolean>) {

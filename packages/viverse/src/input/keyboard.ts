@@ -9,17 +9,30 @@ import {
   RunField,
 } from './index.js'
 
-const MoveForwardKeys = ['KeyW']
-const MoveBackwardKeys = ['KeyS']
-const MoveLeftKeys = ['KeyA']
-const MoveRightKeys = ['KeyD']
-const RunKeys = ['ShiftRight', 'ShiftLeft']
+export type KeyboardInputOptions = {
+  keyboardMoveForwardKeys?: Array<string>
+  keyboardMoveBackwardKeys?: Array<string>
+  keyboardMoveLeftKeys?: Array<string>
+  keyboardMoveRightKeys?: Array<string>
+  keyboardRunKeys?: Array<string>
+  keyboardJumpKeys?: Array<string>
+}
+
+const DefaultMoveForwardKeys = ['KeyW']
+const DefaultMoveBackwardKeys = ['KeyS']
+const DefaultMoveLeftKeys = ['KeyA']
+const DefaultMoveRightKeys = ['KeyD']
+const DefaultRunKeys = ['ShiftRight', 'ShiftLeft']
+const DefaultJumpKeys = ['Space']
 
 export class LocomotionKeyboardInput implements Input {
   private readonly abortController = new AbortController()
   private readonly keyState = new Map<string, { pressTime?: number; releaseTime?: number }>()
 
-  constructor(domElement: HTMLElement) {
+  constructor(
+    domElement: HTMLElement,
+    private readonly options: KeyboardInputOptions = {},
+  ) {
     domElement.tabIndex = 0
     domElement.addEventListener(
       'keydown',
@@ -61,24 +74,28 @@ export class LocomotionKeyboardInput implements Input {
 
   get<T>(field: InputField<T>): T | undefined {
     if (field === LastTimeJumpPressedField) {
-      return (this.keyState.get('Space')?.pressTime ?? null) as T
+      const jumpKeys = this.options.keyboardJumpKeys ?? DefaultJumpKeys
+      const pressed = jumpKeys
+        .map((key) => this.keyState.get(key)?.pressTime ?? null)
+        .filter((t): t is number => t != null)
+      return (pressed.length > 0 ? Math.max(...pressed) : null) as T
     }
     let keys: Array<string> | undefined
     switch (field) {
       case MoveForwardField:
-        keys = MoveForwardKeys
+        keys = this.options.keyboardMoveForwardKeys ?? DefaultMoveForwardKeys
         break
       case MoveBackwardField:
-        keys = MoveBackwardKeys
+        keys = this.options.keyboardMoveBackwardKeys ?? DefaultMoveBackwardKeys
         break
       case MoveLeftField:
-        keys = MoveLeftKeys
+        keys = this.options.keyboardMoveLeftKeys ?? DefaultMoveLeftKeys
         break
       case MoveRightField:
-        keys = MoveRightKeys
+        keys = this.options.keyboardMoveRightKeys ?? DefaultMoveRightKeys
         break
       case RunField:
-        keys = RunKeys
+        keys = this.options.keyboardRunKeys ?? DefaultRunKeys
         break
     }
     if (keys == null) {
@@ -93,7 +110,7 @@ export class LocomotionKeyboardInput implements Input {
     }) as T
   }
 
-  destroy(): void {
+  dispose(): void {
     this.abortController.abort()
   }
 }

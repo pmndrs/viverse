@@ -40,10 +40,16 @@ import {
   PointerCaptureInput,
   RunField,
   LastTimeJumpPressedField,
+  ScreenJoystickInput,
+  ScreenJoystickInputOptions,
+  KeyboardInputOptions,
+  PointerCaptureInputOptions,
+  PointerLockInputOptions,
+  ScreenJumpButtonInput,
 } from './input/index.js'
-import { MobileControls } from './mobile/controls.js'
 import { clearCharacterModelCache, CharacterModelOptions, loadCharacterModel } from './model/index.js'
 import { BvhCharacterPhysicsOptions, BvhCharacterPhysics, BvhPhysicsWorld } from './physics/index.js'
+import { extractProxy } from './utils.js'
 
 export type SimpleCharacterMovementOptions = {
   /**
@@ -100,11 +106,14 @@ export type SimpleCharacterAnimationOptions = {
 const DefaultCrossFadeDuration = 0.1
 const DefaultJumDelay = 0.2
 
+export type SimpleCharacterInputOptions = ScreenJoystickInputOptions &
+  PointerCaptureInputOptions &
+  PointerLockInputOptions &
+  KeyboardInputOptions
+
 export type SimpleCharacterOptions = {
-  /**
-   * @default [LocomotionKeyboardInput,PointerCaptureInput]
-   */
   readonly input?: ReadonlyArray<Input | { new (domElement: HTMLElement): Input }> | InputSystem
+  inputOptions?: SimpleCharacterInputOptions
   movement?: SimpleCharacterMovementOptions
   readonly model?: CharacterModelOptions
   physics?: BvhCharacterPhysicsOptions
@@ -155,7 +164,7 @@ export async function preloadSimpleCharacterAssets(options: Pick<SimpleCharacter
   }
 }
 
-async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleCharacter) {
+async function* SimpleCharacterTimeline(character: SimpleCharacter) {
   let lastJump = 0
 
   function shouldJump(): boolean {
@@ -200,7 +209,7 @@ async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleChara
     // character movement
     action({
       update() {
-        cameraEuler.setFromQuaternion(camera.getWorldQuaternion(cameraRotation), 'YXZ')
+        cameraEuler.setFromQuaternion(character.getCamera().getWorldQuaternion(cameraRotation), 'YXZ')
         cameraEuler.x = 0
         cameraEuler.z = 0
 
@@ -240,7 +249,7 @@ async function* SimpleCharacterTimeline(camera: Object3D, character: SimpleChara
 
           // compute goalTargetEuler
           if (basedOn === 'camera') {
-            goalTargetEuler.setFromQuaternion(camera.getWorldQuaternion(quaternion), 'YXZ')
+            goalTargetEuler.setFromQuaternion(character.getCamera().getWorldQuaternion(quaternion), 'YXZ')
           } else {
             //don't rotate if not moving
             if (character.physics.inputVelocity.lengthSq() === 0) {
@@ -428,7 +437,6 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
   public readonly cameraBehavior: SimpleCharacterCameraBehavior
   public readonly physics: BvhCharacterPhysics
   public readonly mixer = new AnimationMixer(this)
-  public readonly mobileControls: MobileControls
 
   //can be changed from the outside
   public inputSystem: InputSystem
@@ -440,14 +448,12 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
   private updateTimeline?: Update<unknown>
 
   constructor(
-    camera: Object3D,
+    private readonly camera: Object3D | (() => Object3D),
     world: BvhPhysicsWorld,
     domElement: HTMLElement,
     public readonly options: SimpleCharacterOptions = {},
   ) {
     super()
-
-    this.mobileControls = new MobileControls(domElement.parentElement!)
 
     // input system
     this.inputSystem =
@@ -455,20 +461,31 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
         ? options.input
         : new InputSystem(
             domElement,
-            options.input ?? [this.mobileControls, LocomotionKeyboardInput, PointerCaptureInput],
+            options.input ?? [ScreenJoystickInput, ScreenJumpButtonInput, PointerCaptureInput, LocomotionKeyboardInput],
+            extractProxy(options, 'inputOptions'),
           )
+
     options.physics ??= {}
 
     // camera behavior
-    this.cameraBehavior = new SimpleCharacterCameraBehavior(camera, this, world.raycast.bind(world))
+
+    this.cameraBehavior = new SimpleCharacterCameraBehavior(
+      typeof camera === 'function' ? camera : () => camera,
+      this,
+      world.raycast.bind(world),
+    )
 
     // physics
     this.physics = new BvhCharacterPhysics(this, world)
 
-    this.init(camera, options).catch(console.error)
+    this.init(options).catch(console.error)
   }
 
-  private async init(camera: Object3D, options: SimpleCharacterOptions) {
+  public getCamera() {
+    return typeof this.camera === 'function' ? this.camera() : this.camera
+  }
+
+  private async init(options: SimpleCharacterOptions) {
     const { model, animations } = await preloadSimpleCharacterAssets(options)
     this.model = model
 
@@ -486,7 +503,7 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
       this.actions.jumpForward.clampWhenFinished = true
     }
 
-    this.updateTimeline = start(SimpleCharacterTimeline(camera, this))
+    this.updateTimeline = start(SimpleCharacterTimeline(this))
     this.dispatchEvent({ type: 'loaded' })
   }
 
@@ -503,7 +520,8 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
   dispose(): void {
     this.parent?.remove(this)
     this.model?.scene.dispatchEvent({ type: 'dispose' })
-    this.mobileControls.dispose()
+    this.inputSystem.dispose()
+    this.physics.dispose()
     VRMUtils.deepDispose(this)
   }
 }

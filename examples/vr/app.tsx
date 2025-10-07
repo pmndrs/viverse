@@ -1,6 +1,6 @@
 import { Sky } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Root, Image, Text, Fullscreen } from '@react-three/uikit'
+import { Container, Image, Text, Fullscreen } from '@react-three/uikit'
 import {
   SimpleCharacter,
   BvhPhysicsBody,
@@ -124,15 +124,14 @@ function PlayerTag() {
   }
   return (
     <group rotation-x={-Math.PI / 4} rotation-y={-Math.PI / 2} position-y={-0.1} position-z={0.1}>
-      <Root
+      <Container
         pixelSize={0.0015}
         depthTest={false}
         renderOrder={1}
-        backgroundOpacity={0.5}
         borderRadius={10}
         paddingX={2}
         height={20}
-        backgroundColor="white"
+        backgroundColor="rgba(255, 255, 255, 0.5)"
         flexDirection="row"
         alignItems="center"
         gap={4}
@@ -141,7 +140,7 @@ function PlayerTag() {
         <Text fontWeight="bold" fontSize={12} marginRight={3}>
           {profile.name}
         </Text>
-      </Root>
+      </Container>
     </group>
   )
 }
