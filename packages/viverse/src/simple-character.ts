@@ -42,7 +42,7 @@ import {
   LastTimeJumpPressedField,
   ScreenJoystickInput,
   ScreenJoystickInputOptions,
-  KeyboardInputOptions,
+  LocomotionKeyboardInputOptions,
   PointerCaptureInputOptions,
   PointerLockInputOptions,
   ScreenJumpButtonInput,
@@ -109,7 +109,7 @@ const DefaultJumDelay = 0.2
 export type SimpleCharacterInputOptions = ScreenJoystickInputOptions &
   PointerCaptureInputOptions &
   PointerLockInputOptions &
-  KeyboardInputOptions
+  LocomotionKeyboardInputOptions
 
 export type SimpleCharacterOptions = {
   readonly input?: ReadonlyArray<Input | { new (domElement: HTMLElement): Input }> | InputSystem

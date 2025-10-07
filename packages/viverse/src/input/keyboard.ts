@@ -9,7 +9,7 @@ import {
   RunField,
 } from './index.js'
 
-export type KeyboardInputOptions = {
+export type LocomotionKeyboardInputOptions = {
   keyboardMoveForwardKeys?: Array<string>
   keyboardMoveBackwardKeys?: Array<string>
   keyboardMoveLeftKeys?: Array<string>
@@ -31,7 +31,7 @@ export class LocomotionKeyboardInput implements Input {
 
   constructor(
     domElement: HTMLElement,
-    private readonly options: KeyboardInputOptions = {},
+    private readonly options: LocomotionKeyboardInputOptions = {},
   ) {
     domElement.tabIndex = 0
     domElement.addEventListener(

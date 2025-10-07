@@ -225,7 +225,7 @@ export {
   PointerLockInput,
   type InputField,
   InputSystem,
-  type KeyboardInputOptions,
+  type LocomotionKeyboardInputOptions,
   type PointerLockInputOptions,
   type PointerCaptureInputOptions,
   ScreenJoystickInput,
