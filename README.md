@@ -17,6 +17,8 @@
   </a>
 </p>
 
+> Build character-based XR, Desktop, or Mobile web games, the easy way.
+
 ```bash
 npm install three @react-three/fiber @react-three/viverse
 ```

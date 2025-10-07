@@ -145,9 +145,23 @@ Component for placing content inside the in VRM character models.
 | `useViverseAvatarList()`         | Fetches the user's personal avatar collection using Suspense  | Array of avatar objects, or `undefined`                          |
 | `useViversePublicAvatarList()`   | Fetches publicly available avatars using Suspense             | Array of public avatar objects, or `undefined`                   |
 | `useViversePublicAvatarByID(id)` | Fetches a specific public avatar by ID using Suspense         | Avatar object, or `undefined`                                    |
+| `useIsMobile()`                  | Returns `true` on touch-centric/mobile devices (media query)  | `boolean`                                                        |
 
 > [!NOTE]
 > `useViverseClient()` returns `undefined` if not within a `<Viverse>` provider or if no `clientId` is provided. Also all avatar-related hooks return `undefined` when the user is not authenticated.
+
+### useIsMobile
+
+Lightweight media-query based mobile detection. It subscribes to `@media (hover: none) and (pointer: coarse)`.
+
+```tsx
+import { useIsMobile } from '@pmndrs/viverse/react'
+
+function MobileOnlyUI() {
+  const isMobile = useIsMobile()
+  return isMobile ? <div>Shown on mobile</div> : null
+}
+```
 
 ## SimpleCharacter Options
 
@@ -179,7 +193,7 @@ Allows to configure whether the users vrm avatar should be displayed as the char
 
 Either a array of `Input` objects or a custom `InputSystem`
 
-- **Default:** `[LocomotionKeyboardInput, PointerCaptureInput]`
+- **Default:** `[ScreenJoystickInput, ScreenJumpButtonInput, PointerCaptureInput, LocomotionKeyboardInput]`
 - Configure input handling with custom input classes
 
 **Available Input Classes provided by @pmndrs/viverse:**
@@ -187,6 +201,8 @@ Either a array of `Input` objects or a custom `InputSystem`
 - `LocomotionKeyboardInput` - WASD movement, Space for jump, Shift for run
 - `PointerCaptureInput` - Mouse look with pointer capture (requires manual `setPointerCapture`)
 - `PointerLockInput` - Mouse look with pointer lock (requires manual `requestPointerLock`)
+- `ScreenJoystickInput` - On-screen joystick for movement and run (mobile). Options: `{ screenJoystickDeadZonePx?, screenJoystickRunDistancePx? }`
+- `ScreenJumpButtonInput` - On-screen jump button (mobile-only). Visible only on mobile.
 
 ### `model` Options
 
