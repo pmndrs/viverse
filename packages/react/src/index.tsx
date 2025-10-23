@@ -218,8 +218,10 @@ export function useViversePublicAvatarByID(
 export * from './character.js'
 export * from './material.js'
 export {
+  mixamoBoneMap,
   FirstPersonCharacterCameraBehavior,
   SimpleCharacter as SimpleCharacterImpl,
+  type SimpleCharacterOptions,
   LocomotionKeyboardInput,
   PointerCaptureInput,
   PointerLockInput,

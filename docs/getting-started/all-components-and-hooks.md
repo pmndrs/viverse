@@ -249,7 +249,8 @@ Either a array of `Input` objects or a custom `InputSystem`
 
 The `SimpleCharacter` uses the following animations `walk`, `run`, `idle`, `jumpForward`, `jumpUp`, `jumpLoop`, `jumpDown` each with the following options:
 
-- **type:** `'mixamo' | 'gltf' | 'vrma'` - Animation file type
+- **type:** `'fbx' | 'gltf' | 'vrma'` - Animation file type
+- **boneMap** - Allows to map the bone names of the animation amature to the standard VRM bone names
 - **url:** `string` - Animation file URL
 - **removeXZMovement:** `boolean` - Remove horizontal movement from animation
 - **trimTime:** `{ start?: number; end?: number }` - Trim animation timing
