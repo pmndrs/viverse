@@ -77,11 +77,7 @@ export function Scene() {
           </Suspense>
         )}
       </PerspectiveCamera>
-      <SimpleCharacter
-        model={!firstPerson}
-        cameraBehavior={firstPerson ? FirstPersonCharacterCameraBehavior : undefined}
-        ref={characterRef}
-      >
+      <SimpleCharacter cameraBehavior={firstPerson ? FirstPersonCharacterCameraBehavior : undefined} ref={characterRef}>
         <PlayerTag />
         {hasSword && (
           <CharacterModelBone bone="rightHand">

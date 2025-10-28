@@ -8,7 +8,8 @@ import {
   parallel,
   Update,
   graph,
-  ActionClock,
+  TimelineClock,
+  NonReuseableTimeline,
 } from '@pmndrs/timeline'
 import {
   AnimationAction,
@@ -164,7 +165,7 @@ export async function preloadSimpleCharacterAssets(options: Pick<SimpleCharacter
   }
 }
 
-async function* SimpleCharacterTimeline(character: SimpleCharacter) {
+async function* SimpleCharacterTimeline(character: SimpleCharacter): NonReuseableTimeline {
   let lastJump = 0
 
   function shouldJump(): boolean {
@@ -333,11 +334,11 @@ async function* SimpleCharacterTimeline(character: SimpleCharacter) {
                 init: () => {
                   actions.jumpForward.paused = false
                   applyJumpForce()
+                  return () =>
+                    actions.jumpForward.fadeOut(
+                      character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration,
+                    )
                 },
-                cleanup: () =>
-                  void actions.jumpForward.fadeOut(
-                    character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration,
-                  ),
                 until: animationFinished(actions.jumpForward),
               })
               if (character.physics.isGrounded) {
@@ -352,16 +353,17 @@ async function* SimpleCharacterTimeline(character: SimpleCharacter) {
                 init: () => {
                   actions.jumpUp.paused = false
                   applyJumpForce()
+                  return () =>
+                    void actions.jumpUp.fadeOut(
+                      character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration,
+                    )
                 },
-                cleanup: () =>
-                  void actions.jumpUp.fadeOut(
-                    character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration,
-                  ),
                 until: animationFinished(actions.jumpUp),
               }),
             transitionTo: {
               jumpDown: {
-                when: (_: unknown, clock: ActionClock) => clock.actionTime > 0.3 && character.physics.isGrounded,
+                when: (_: unknown, _clock: TimelineClock, actionTime: number) =>
+                  actionTime > 0.3 && character.physics.isGrounded,
               },
               finally: 'jumpLoop',
             },
@@ -373,9 +375,9 @@ async function* SimpleCharacterTimeline(character: SimpleCharacter) {
                   actions.jumpLoop.reset()
                   actions.jumpLoop.play()
                   actions.jumpLoop.fadeIn(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
+                  return () =>
+                    actions.jumpLoop.fadeOut(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
                 },
-                cleanup: () =>
-                  actions.jumpLoop.fadeOut(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration),
                 until: forever(),
               }),
             transitionTo: {
@@ -393,9 +395,9 @@ async function* SimpleCharacterTimeline(character: SimpleCharacter) {
                   actions.jumpDown.reset()
                   actions.jumpDown.play()
                   actions.jumpDown.fadeIn(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
+                  return () =>
+                    actions.jumpDown.fadeOut(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
                 },
-                cleanup: () =>
-                  actions.jumpDown.fadeOut(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration),
                 until: timePassed(150, 'milliseconds'),
               }),
             transitionTo: { finally: 'moving' },
@@ -424,7 +426,7 @@ async function* SimpleCharacterTimeline(character: SimpleCharacter) {
                   nextAnimation.fadeIn(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration)
                   currentAnimation = nextAnimation
                 },
-                cleanup: () =>
+                init: () => () =>
                   currentAnimation?.fadeOut(character.options.animation?.crossFadeDuration ?? DefaultCrossFadeDuration),
               })
             },
@@ -450,6 +452,7 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
   public model?: Awaited<Exclude<ReturnType<typeof loadCharacterModel>, undefined>>
 
   private updateTimeline?: Update<unknown>
+  private readonly abortController = new AbortController()
 
   constructor(
     private readonly camera: Object3D | (() => Object3D),
@@ -507,7 +510,7 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
       this.actions.jumpForward.clampWhenFinished = true
     }
 
-    this.updateTimeline = start(SimpleCharacterTimeline(this))
+    this.updateTimeline = start(SimpleCharacterTimeline(this), this.abortController.signal)
     this.dispatchEvent({ type: 'loaded' })
   }
 
@@ -522,6 +525,7 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> {
   }
 
   dispose(): void {
+    this.abortController.abort()
     this.parent?.remove(this)
     this.model?.scene.dispatchEvent({ type: 'dispose' })
     this.inputSystem.dispose()
