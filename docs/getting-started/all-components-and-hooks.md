@@ -207,7 +207,7 @@ Either a array of `Input` objects or a custom `InputSystem`
 ### `model` Options
 
 - **url:** `string` - URL to VRM or GLTF model file
-- **type:** `"gltf" | "vrm"` - the type of file to be loaded
+- **type:** `"gltf" | "vrm"` - the type of file to be loaded (optional)
 - **castShadow:** `boolean` - Enable shadow casting (default: `true`)
 - **receiveShadow:** `boolean` - Enable shadow receiving (default: `true`)
 - **boneRotationOffset:** `Quaternion | undefined` - Allows to apply an rotation offset when placing objects as children of the character's bones (default: `undefined`)
@@ -249,9 +249,9 @@ Either a array of `Input` objects or a custom `InputSystem`
 
 The `SimpleCharacter` uses the following animations `walk`, `run`, `idle`, `jumpForward`, `jumpUp`, `jumpLoop`, `jumpDown` each with the following options:
 
-- **type:** `'fbx' | 'gltf' | 'vrma'` - Animation file type
-- **boneMap** - Allows to map the bone names of the animation amature to the standard VRM bone names
 - **url:** `string` - Animation file URL
+- **type:** `'fbx' | 'gltf' | 'vrma'` - Animation file type (optional)
+- **boneMap** - Allows to map the bone names of the animation amature to the standard VRM bone names
 - **removeXZMovement:** `boolean` - Remove horizontal movement from animation
 - **trimTime:** `{ start?: number; end?: number }` - Trim animation timing
 - **scaleTime:** `number` - Scale animation playback speed

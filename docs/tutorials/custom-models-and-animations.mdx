@@ -80,16 +80,7 @@ The following are the standard VRM 1.0 humanoid bone names your GLTF rig should 
 import { SimpleCharacter } from '@react-three/viverse'
 
 export function MyCharacter() {
-  return (
-    <SimpleCharacter
-      model={{
-        type: 'vrm',
-        url: '/path/to/your-model.vrm',
-        castShadow: true,
-        receiveShadow: true,
-      }}
-    />
-  )
+  return <SimpleCharacter model={{ url: '/path/to/your-model.vrm' }} />
 }
 ```
 
@@ -100,7 +91,7 @@ Your can replace the default animations of the `SimpleCharacter` component with 
 - **VRMA** (VRM Animation) - The native VRM animation format
 - **FBX** - Popular file format for character animations
 - **GLTF** - Standard 3D format with animations
-- **Mixamo** - **deprecated** - use `type: 'fbx'` in combination with `boneMap: mixamoBoneMap` instead
+- **Mixamo** - **deprecated** - use remove `type: 'mixamo'` and add `boneMap: mixamoBoneMap` instead
 
 Make sure to either use a bone map, e.g. when your bone names follow the mixamo naming conventions use the `mixamoBoneMap` or use the standard VRM bones for the animation amature as shown above under "VRM 1.0 humanoid bone names".
 
@@ -110,18 +101,15 @@ Each animation type can be configured individually:
 <SimpleCharacter
   animation={{
     walk: {
-      type: 'fbx',
       url: '/animations/walking.fbx',
       boneMap: mixamoBoneMap,
       removeXZMovement: true,
       scaleTime: 0.8,
     },
     run: {
-      type: 'vrma',
       url: '/animations/running.vrma',
     },
     idle: {
-      type: 'gltf',
       url: '/animations/idle.gltf',
       trimTime: { start: 0.5, end: 3.0 },
     },

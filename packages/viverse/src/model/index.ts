@@ -37,12 +37,25 @@ async function uncachedLoadCharacterModel(
     boneRotationOffset?: Quaternion
   }
 
-  if (type == null || url == null) {
+  if (url == null) {
     //prepare loading the default model
     type = 'gltf'
     url = (await import('../assets/mannequin.js')).url
     boneRotationOffset = new Quaternion().setFromEuler(new Euler(Math.PI, 0, Math.PI / 2, 'ZYX'))
   }
+
+  if (type == null) {
+    if (url.endsWith('.gltf') || url.endsWith('.glb')) {
+      type = 'gltf'
+    }
+    if (url.endsWith('.vrm')) {
+      type = 'vrm'
+    }
+    if (type == null) {
+      throw new Error(`Unable to infer model type from url "${url}. Please specify the type of the model manually."`)
+    }
+  }
+
   switch (type) {
     case 'vrm':
       result = await loadVrmCharacterModel(url)
@@ -61,6 +74,14 @@ async function uncachedLoadCharacterModel(
       obj.receiveShadow = true
     }
   })
+  const rootBone = result.scene.getObjectByName('root')
+  if (rootBone == null) {
+    throw new Error(`unable to load model - missing root bone`)
+  }
+  const restPose = rootBone.clone()
+  restPose.visible = false
+  restPose.traverse((bone) => (bone.name = `rest_${bone.name}`))
+  result.scene.add(restPose)
   return result
 }
 

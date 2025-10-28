@@ -10,10 +10,12 @@ import {
   PrototypeBox,
   BvhPhysicsSensor,
   FirstPersonCharacterCameraBehavior,
+  mixamoBoneMap,
 } from '@react-three/viverse'
 import { useControls } from 'leva'
 import { Suspense, useRef, useState } from 'react'
 import { Group, Object3D } from 'three'
+import { mix } from 'three/tsl'
 
 export function App() {
   return (
@@ -106,7 +108,7 @@ export function Scene() {
       </BvhPhysicsBody>
       <group position-x={-1.3} position-y={4.6} rotation-z={Math.PI / 4} ref={swordRef}>
         {!hasSword && (
-          <Suspense>
+          <Suspense fallback={null}>
             <Gltf position-y={-0.3} scale={0.5} scale-y={0.65} src="sword.gltf" />
           </Suspense>
         )}

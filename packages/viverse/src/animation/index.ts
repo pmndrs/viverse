@@ -1,4 +1,4 @@
-import { VRM, VRMHumanBoneName } from '@pixiv/three-vrm'
+import { VRM, VRMHumanBoneName, VRMPoseTransform } from '@pixiv/three-vrm'
 import {
   AnimationClip,
   Euler,
@@ -43,26 +43,38 @@ export function fixModelAnimationClip(
   removeXZMovement: boolean,
   boneMap?: Record<string, VRMHumanBoneName>,
 ): void {
-  const hipsBoneName =
+  const hipsClipBoneName =
     boneMap == null ? 'hips' : Object.entries(boneMap).find(([, vrmBoneName]) => vrmBoneName === 'hips')?.[0]
-  if (hipsBoneName == null) {
+  if (hipsClipBoneName == null) {
     throw new Error(
       'Failed to determine hips bone name for VRM animation. Please check the bone map or animation file.',
     )
+  }
+
+  let restRoot: Object3D | undefined
+  let restRootParent: Object3D | null | undefined
+
+  if (!(model instanceof VRM)) {
+    restRoot = model.scene.getObjectByName('rest_root')
+    if (restRoot == null) {
+      throw new Error(`Model rest root not found.`)
+    }
+    restRootParent = restRoot?.parent
+    restRoot.parent = null
   }
 
   let positionScale = 1
   let clipSceneHips: Object3D | undefined
 
   if (clipScene != null) {
-    clipSceneHips = clipScene.getObjectByName(hipsBoneName)
+    clipSceneHips = clipScene.getObjectByName(hipsClipBoneName)
     clipSceneHips?.parent?.updateMatrixWorld()
     const vrmHipsPosition =
       model instanceof VRM
         ? model.humanoid.normalizedRestPose.hips?.position
-        : model.scene.getObjectByName('hips')?.position.toArray()
+        : model.scene.getObjectByName('rest_hips')?.getWorldPosition(new Vector3()).toArray()
     if (clipSceneHips == null || vrmHipsPosition == null) {
-      throw new Error('Failed to load VRM animation: missing animation hips object or VRM hips position.')
+      throw new Error('Failed to load animation: missing animation hips object or VRM hips position.')
     }
 
     // Adjust with reference to hips height.
@@ -73,23 +85,37 @@ export function fixModelAnimationClip(
 
   for (const track of clip.tracks) {
     // Convert each tracks for VRM use, and push to `tracks`
-    const [boneName, propertyName] = track.name.split('.')
-    const vrmBoneName = boneMap?.[boneName] ?? (boneName as string)
-    const targetBone =
-      model instanceof VRM
-        ? model.humanoid.getNormalizedBoneNode(vrmBoneName as VRMHumanBoneName)
-        : model.scene.getObjectByName(vrmBoneName)
+    const [clipBoneName, propertyName] = track.name.split('.')
+    const vrmBoneName = (boneMap?.[clipBoneName] ?? clipBoneName) as VRMHumanBoneName | 'root'
+    const targetNormalizedBoneName =
+      model instanceof VRM ? model.humanoid.getNormalizedBoneNode(vrmBoneName as VRMHumanBoneName)?.name : vrmBoneName
+    if (targetNormalizedBoneName == null) {
+      continue
+    }
+    const trackName = `${targetNormalizedBoneName}.${propertyName}`
 
-    if (targetBone == null) {
+    let targetLocalBoneTransform: Omit<VRMPoseTransform, 'position'> | undefined
+    let targetParentWorldBoneTransform: Omit<VRMPoseTransform, 'position'> | undefined
+    //for vrm targetLocalBoneTransform and targetParentWorldBoneTransform are the identity quaternion
+    if (model instanceof VRM) {
+      targetLocalBoneTransform = { rotation: [0, 0, 0, 1] }
+      targetParentWorldBoneTransform = { rotation: [0, 0, 0, 1] }
+    } else {
+      const targetBone = model.scene.getObjectByName(`rest_${vrmBoneName}`)
+      if (targetBone != null) {
+        targetLocalBoneTransform = { rotation: targetBone.quaternion.toArray() }
+      }
+      if (targetBone?.parent != null) {
+        targetParentWorldBoneTransform = { rotation: targetBone.parent.getWorldQuaternion(new Quaternion()).toArray() }
+      }
+    }
+
+    if (targetLocalBoneTransform == null) {
       continue
     }
 
-    const vrmNodeName = model instanceof VRM ? targetBone.name : vrmBoneName
-    let baseBone = clipScene?.getObjectByName(boneName)
+    let baseBone = clipScene?.getObjectByName(clipBoneName)
     if (clipScene != null && baseBone == null) {
-      continue
-    }
-    if (vrmNodeName == null) {
       continue
     }
 
@@ -108,9 +134,9 @@ export function fixModelAnimationClip(
         baseParentWorldRestRotation_inverse.identity()
       }
 
-      targetThisLocalRestRotation.copy(targetBone.quaternion)
-      if (targetBone.parent != null) {
-        targetBone.parent.getWorldQuaternion(targetParentWorldRestRotation)
+      targetThisLocalRestRotation.fromArray(targetLocalBoneTransform.rotation ?? [0, 0, 0, 1])
+      if (targetParentWorldBoneTransform != null) {
+        targetParentWorldRestRotation.fromArray(targetParentWorldBoneTransform.rotation ?? [0, 0, 0, 1])
         targetParentWorldRestRotation_inverse.copy(targetParentWorldRestRotation).invert()
       } else {
         targetParentWorldRestRotation.identity()
@@ -145,7 +171,7 @@ export function fixModelAnimationClip(
         targetThisLocalCurrentRotation.toArray(track.values, i)
       }
 
-      track.name = `${vrmNodeName}.${propertyName}`
+      track.name = trackName
     } else if (track instanceof VectorKeyframeTrack) {
       if (vrmBoneName != 'hips' && vrmBoneName != 'root') {
         continue
@@ -153,7 +179,6 @@ export function fixModelAnimationClip(
       if (propertyName != 'position') {
         continue
       }
-      track.name = `${vrmNodeName}.${propertyName}`
       for (let i = 0; i < track.values.length; i += 3) {
         position.fromArray(track.values, i)
         if (clipSceneHips?.parent != null) {
@@ -179,7 +204,11 @@ export function fixModelAnimationClip(
         }
         position.toArray(track.values, i)
       }
+      track.name = trackName
     }
+  }
+  if (restRoot != null && restRootParent != null) {
+    restRoot.parent = restRootParent
   }
 }
 
@@ -189,7 +218,7 @@ export * from './vrma.js'
 export * from './utils.js'
 
 export type ModelAnimationOptions = {
-  type: 'mixamo' | 'gltf' | 'vrma' | 'fbx' | 'bvh'
+  type?: 'mixamo' | 'gltf' | 'vrma' | 'fbx' | 'bvh'
   url: string
   removeXZMovement?: boolean
   trimTime?: { start?: number; end?: number }
@@ -208,6 +237,26 @@ async function uncachedLoadModelAnimation(
   scaleTime: number | undefined,
 ) {
   let clips: Array<AnimationClip>
+  if (type == null) {
+    const lowerCaseUrl = url.toLocaleLowerCase()
+    if (lowerCaseUrl.endsWith('.glb') || lowerCaseUrl.endsWith('.gltf')) {
+      type = 'gltf'
+    }
+    if (lowerCaseUrl.endsWith('.fbx')) {
+      type = 'fbx'
+    }
+    if (lowerCaseUrl.endsWith('.bvh')) {
+      type = 'bvh'
+    }
+    if (lowerCaseUrl.endsWith('.vrma')) {
+      type = 'vrma'
+    }
+    if (type == null) {
+      throw new Error(
+        `Unable to infer animation type from url "${url}. Please specify the type of the animation manually."`,
+      )
+    }
+  }
   switch (type) {
     case 'gltf':
       clips = await loadVrmModelGltfAnimations(model, url, removeXZMovement, boneMap)
