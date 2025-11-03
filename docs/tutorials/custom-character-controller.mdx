@@ -1,0 +1,10 @@
+1. Minimal setup
+
+const model = useModelLoader()
+
+<CharacterModelProvider model={model}>
+    <RunTimeline>
+        <CharacterAnimationAction url={{ default: "idle" }}>
+    </RunTimeline>
+    <primitive object={model}>
+</CharacterModelProvider>

@@ -1,6 +1,6 @@
 import { Input, InputField, LastTimeJumpPressedField } from './index.js'
 
-export class ScreenJumpButtonInput implements Input {
+export class ScreenJumpButtonInput implements Input<{}> {
   public readonly root: HTMLDivElement
   private lastJumpTime: number | null = null
 

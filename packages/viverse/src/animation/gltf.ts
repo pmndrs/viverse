@@ -1,12 +1,12 @@
 import { AnimationClip } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/Addons.js'
 import { fixModelAnimationClip } from './index.js'
-import { loadCharacterModel, VRMHumanBoneName } from '../model/index.js'
+import type { CharacterModel, VRMHumanBoneName } from '../model/index.js'
 
 const loader = new GLTFLoader()
 
 export async function loadVrmModelGltfAnimations(
-  model: Exclude<Awaited<ReturnType<typeof loadCharacterModel>>, undefined>,
+  model: CharacterModel,
   url: string,
   removeXZMovement: boolean,
   boneMap?: Record<string, VRMHumanBoneName>,

@@ -34,7 +34,7 @@ The main provider component that sets up VIVERSE authentication and physics cont
 
 ### `<SimpleCharacter>`
 
-Creates a simple character controller with physics based on three-mesh-bvh, walking, running, jumping actions, and camera controls. Automatically uses the active VIVERSE avatar if authenticated.
+Creates a simple character controller with physics based on three-mesh-bvh, walking, running, jumping animations, and camera controls. Automatically uses the active VIVERSE avatar if authenticated.
 
 **Props:** See [SimpleCharacter Options](#simplecharacter-options) section below for complete details.
 
@@ -245,7 +245,7 @@ Either a array of `Input` objects or a custom `InputSystem`
 
 - **yawRotationBasedOn:** `'camera' | 'movement'` - Character rotation basis (default: `'movement'`)
 - **maxYawRotationSpeed:** `number` - Maximum rotation speed (default: `10`)
-- **crossFadeDuration:** `number` - Animation blend time in seconds (default: `0.3`)
+- **crossFadeDuration:** `number` - Animation blend time in seconds (default: `0.1`)
 
 The `SimpleCharacter` uses the following animations `walk`, `run`, `idle`, `jumpForward`, `jumpUp`, `jumpLoop`, `jumpDown` each with the following options:
 

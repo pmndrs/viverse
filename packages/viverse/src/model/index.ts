@@ -1,41 +1,53 @@
-import { Euler, Quaternion } from 'three'
-import { loadVrmCharacterModel } from './vrm.js'
-import { cached, clearCache } from '../utils.js'
+import { AnimationAction, AnimationMixer, Euler, Object3D, Quaternion } from 'three'
 import { loadGltfCharacterModel } from './gltf.js'
+import { loadVrmCharacterModel } from './vrm.js'
+import { CharacterAnimationMask } from '../animation/index.js'
 
 export { VRMHumanBoneName } from '@pixiv/three-vrm'
 export * from './vrm.js'
 
-export type CharacterModelOptions =
-  | {
-      readonly type?: 'vrm' | 'gltf'
-      readonly url?: string
-      /**
-       * allows to apply an rotation offset when placing objects as children of the character's bones
-       * @default undefined
-       */
-      readonly boneRotationOffset?: Quaternion
-      /**
-       * @default true
-       */
-      readonly castShadow?: boolean
-      /**
-       * @default true
-       */
-      readonly receiveShadow?: boolean
-    }
-  | boolean
+export type CharacterModelOptions = {
+  readonly type?: 'vrm' | 'gltf'
+  readonly url?: string
+  /**
+   * allows to apply an rotation offset when placing objects as children of the character's bones
+   * @default undefined
+   */
+  readonly boneRotationOffset?: Quaternion
+  /**
+   * @default true
+   */
+  readonly castShadow?: boolean
+  /**
+   * @default true
+   */
+  readonly receiveShadow?: boolean
+}
 
-async function uncachedLoadCharacterModel(
-  type: Exclude<CharacterModelOptions, boolean>['type'],
+export function flattenCharacterModelOptions(
+  options: Exclude<CharacterModelOptions, false> | undefined,
+): Parameters<typeof loadCharacterModel> {
+  if (options == null) {
+    return []
+  }
+  return [options.url, options.type, options.boneRotationOffset, options.castShadow, options.receiveShadow]
+}
+
+export type CharacterModel = {
+  mixer: AnimationMixer
+  scene: Object3D
+  currentAnimations: Map<CharacterAnimationMask | undefined, AnimationAction>
+  boneRotationOffset?: Quaternion
+}
+
+export async function loadCharacterModel(
   url?: string,
+  type?: Exclude<CharacterModelOptions, boolean>['type'],
   boneRotationOffset?: Quaternion,
   castShadow: boolean = true,
   receiveShadow: boolean = true,
-) {
-  let result: Awaited<ReturnType<typeof loadVrmCharacterModel | typeof loadGltfCharacterModel>> & {
-    boneRotationOffset?: Quaternion
-  }
+): Promise<CharacterModel> {
+  let result: Omit<CharacterModel, 'mixer' | 'currentAnimations'>
 
   if (url == null) {
     //prepare loading the default model
@@ -74,6 +86,7 @@ async function uncachedLoadCharacterModel(
       obj.receiveShadow = true
     }
   })
+  //TODO: "root" does not exist on all models (some VRMs)
   const rootBone = result.scene.getObjectByName('root')
   if (rootBone == null) {
     throw new Error(`unable to load model - missing root bone`)
@@ -82,33 +95,5 @@ async function uncachedLoadCharacterModel(
   restPose.visible = false
   restPose.traverse((bone) => (bone.name = `rest_${bone.name}`))
   result.scene.add(restPose)
-  return result
-}
-
-function getCharacterModelDependencies(
-  options: CharacterModelOptions = true,
-): Parameters<typeof uncachedLoadCharacterModel> | undefined {
-  if (options === false) {
-    return undefined
-  }
-  if (options === true) {
-    return [undefined, undefined, undefined, undefined, undefined]
-  }
-  return [options.type, options.url, options.boneRotationOffset, options.castShadow, options.receiveShadow] as const
-}
-
-export function clearCharacterModelCache(options?: CharacterModelOptions) {
-  const dependencies = getCharacterModelDependencies(options)
-  if (dependencies == null) {
-    return
-  }
-  clearCache(uncachedLoadCharacterModel, dependencies)
-}
-
-export function loadCharacterModel(options?: CharacterModelOptions) {
-  const dependencies = getCharacterModelDependencies(options)
-  if (dependencies == null) {
-    return undefined
-  }
-  return cached(uncachedLoadCharacterModel, dependencies as any)
+  return Object.assign(result, { mixer: new AnimationMixer(result.scene), currentAnimations: new Map() })
 }

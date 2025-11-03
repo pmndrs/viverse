@@ -15,25 +15,18 @@ export type ScreenJoystickInputOptions = {
 
 const DefaultDeadZonePx = 24
 const DefaultRunDistancePx = 46
+const JoystickRadius = 56
 
-export class ScreenJoystickInput implements Input {
+export class ScreenJoystickInput implements Input<ScreenJoystickInputOptions> {
   public readonly root: HTMLDivElement
   private readonly handle: HTMLDivElement
 
-  private moveX = 0
-  private moveY = 0
-  private running = false
-
-  private readonly joystickRadius = 56
-
-  private joyCenterX = 0
-  private joyCenterY = 0
   private pointerId: number | undefined
+  private distanceToCenter: number = 0
+  private clampedX: number = 0
+  private clampedY: number = 0
 
-  constructor(
-    domElement: HTMLElement,
-    private readonly options: ScreenJoystickInputOptions = {},
-  ) {
+  constructor(domElement: HTMLElement) {
     const parent = domElement.parentElement ?? domElement
 
     const joy = document.createElement('div')
@@ -81,9 +74,9 @@ export class ScreenJoystickInput implements Input {
       joy.setPointerCapture(e.pointerId)
       this.pointerId = e.pointerId
       const rect = joy.getBoundingClientRect()
-      this.joyCenterX = rect.left + rect.width / 2
-      this.joyCenterY = rect.top + rect.height / 2
-      this.updateHandle(e.clientX - this.joyCenterX, e.clientY - this.joyCenterY)
+      const joyCenterX = rect.left + rect.width / 2
+      const joyCenterY = rect.top + rect.height / 2
+      this.updateHandle(e.clientX - joyCenterX, e.clientY - joyCenterY)
     }
     const onPointerMove = (e: PointerEvent) => {
       if (this.pointerId == null) {
@@ -91,7 +84,10 @@ export class ScreenJoystickInput implements Input {
       }
       e.preventDefault()
       e.stopPropagation()
-      this.updateHandle(e.clientX - this.joyCenterX, e.clientY - this.joyCenterY)
+      const rect = joy.getBoundingClientRect()
+      const joyCenterX = rect.left + rect.width / 2
+      const joyCenterY = rect.top + rect.height / 2
+      this.updateHandle(e.clientX - joyCenterX, e.clientY - joyCenterY)
     }
     const onPointerEnd = (e: PointerEvent) => {
       if (this.pointerId != e.pointerId) {
@@ -108,18 +104,24 @@ export class ScreenJoystickInput implements Input {
     joy.addEventListener('pointercancel', onPointerEnd)
   }
 
-  get<T>(field: InputField<T>): T | undefined {
+  get<T>(field: InputField<T>, options: ScreenJoystickInputOptions): T | undefined {
     switch (field) {
       case MoveForwardField:
-        return Math.max(0, this.moveY) as T
       case MoveBackwardField:
-        return Math.max(0, -this.moveY) as T
+        const moveY =
+          this.distanceToCenter <= (options.screenJoystickDeadZonePx ?? DefaultDeadZonePx)
+            ? 0
+            : -this.clampedY / JoystickRadius
+        return field === MoveForwardField ? (Math.max(0, moveY) as T) : (Math.max(0, -moveY) as T)
       case MoveLeftField:
-        return Math.max(0, -this.moveX) as T
       case MoveRightField:
-        return Math.max(0, this.moveX) as T
+        const moveX =
+          this.distanceToCenter <= (options.screenJoystickDeadZonePx ?? DefaultDeadZonePx)
+            ? 0
+            : this.clampedX / JoystickRadius
+        return field === MoveLeftField ? (Math.max(0, moveX) as T) : (Math.max(0, moveX) as T)
       case RunField:
-        return this.running as T
+        return (this.distanceToCenter > (options.screenJoystickRunDistancePx ?? DefaultRunDistancePx)) as T
     }
     return undefined
   }
@@ -129,25 +131,16 @@ export class ScreenJoystickInput implements Input {
   }
 
   private updateHandle(dx: number, dy: number): void {
-    const len = Math.hypot(dx, dy) || 1
-    const max = this.joystickRadius
-    const clampedX = (dx / len) * Math.min(len, max)
-    const clampedY = (dy / len) * Math.min(len, max)
-    this.handle.style.transform = `translate(-50%,-50%) translate(${clampedX}px, ${clampedY}px)`
-    if (len <= (this.options.screenJoystickDeadZonePx ?? DefaultDeadZonePx)) {
-      this.moveX = 0
-      this.moveY = 0
-    } else {
-      this.moveX = clampedX / max
-      this.moveY = -clampedY / max
-    }
-    this.running = len > (this.options.screenJoystickRunDistancePx ?? DefaultRunDistancePx)
+    this.distanceToCenter = Math.hypot(dx, dy) || 1
+    this.clampedX = (dx / this.distanceToCenter) * Math.min(this.distanceToCenter, JoystickRadius)
+    this.clampedY = (dy / this.distanceToCenter) * Math.min(this.distanceToCenter, JoystickRadius)
+    this.handle.style.transform = `translate(-50%,-50%) translate(${this.clampedX}px, ${this.clampedY}px)`
   }
 
   private resetHandle(): void {
     this.handle.style.transform = 'translate(-50%,-50%)'
-    this.moveX = 0
-    this.moveY = 0
-    this.running = false
+    this.distanceToCenter = 0
+    this.clampedX = 0
+    this.clampedY = 0
   }
 }

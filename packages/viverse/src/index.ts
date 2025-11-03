@@ -1,10 +1,11 @@
-export { extractProxy, getIsMobileMediaQuery, isMobile } from './utils.js'
+export * from './utils.js'
 export * from './input/index.js'
+export * from './utils.js'
 export * from './camera.js'
 export * from './physics/index.js'
 export * from './animation/index.js'
 export * from './material.js'
-export * from './simple-character.js'
+export * from './simple-character/index.js'
 export * from './model/index.js'
 
 // Inject global CSS for `.mobile` visibility based on device capabilities

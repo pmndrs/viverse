@@ -1,5 +1,10 @@
 import { Container, withOpacity, Image, Text, reversePainterSortStable, Fullscreen } from '@pmndrs/uikit'
-import { BvhPhysicsWorld, PrototypeMaterial, SimpleCharacter } from '@pmndrs/viverse'
+import {
+  BvhPhysicsWorld,
+  FirstPersonCharacterCameraBehavior,
+  PrototypeMaterial,
+  SimpleCharacter,
+} from '@pmndrs/viverse'
 import { Client } from '@viverse/sdk'
 import AvatarClient from '@viverse/sdk/avatar-client'
 import {
@@ -105,7 +110,8 @@ cubes.instanceMatrix.needsUpdate = true
 scene.add(cubes)
 world.addBody(cubes, false)
 const character = new SimpleCharacter(camera, world, canvas, {
-  model: { url: profile.activeAvatar?.vrmUrl, type: 'vrm' },
+  model: false,
+  cameraBehavior: FirstPersonCharacterCameraBehavior,
 })
 scene.add(character)
 

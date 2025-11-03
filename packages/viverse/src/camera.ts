@@ -1,7 +1,6 @@
 import { Object3D, Vector3, Euler, Vector3Tuple, Ray } from 'three'
 import { clamp } from 'three/src/math/MathUtils.js'
-import { DeltaYawField, DeltaPitchField, DeltaZoomField } from './input/index.js'
-import { SimpleCharacter } from './simple-character.js'
+import { DeltaYawField, DeltaPitchField, DeltaZoomField, InputSystem } from './input/index.js'
 
 export const FirstPersonCharacterCameraBehavior: SimpleCharacterCameraBehaviorOptions = {
   characterBaseOffset: [0, 1.6, 0],
@@ -80,7 +79,7 @@ const characterWorldPosition = new Vector3()
 const euler = new Euler()
 const rayHelper = new Ray()
 
-export class SimpleCharacterCameraBehavior {
+export class CharacterCameraBehavior {
   public rotationPitch = (-20 * Math.PI) / 180
   public rotationYaw = 0
   public zoomDistance = 4 // Changed from zoom to distance for clearer semantics
@@ -89,19 +88,14 @@ export class SimpleCharacterCameraBehavior {
   private collisionFreeZoomDistance = this.zoomDistance
   private firstUpdate = true
 
-  constructor(
-    public getCamera: () => Object3D,
-    public character: SimpleCharacter,
-    private readonly raycast?: (ray: Ray, far: number) => number | undefined,
-  ) {}
-
   private setRotationFromDelta(
+    camera: Object3D,
     delta: Vector3,
     rotationOptions: Exclude<Exclude<SimpleCharacterCameraBehaviorOptions, boolean>['rotation'], undefined | boolean>,
   ): void {
     if (delta.lengthSq() < 0.0001) {
       // use current camera rotation if very close to target
-      euler.setFromQuaternion(this.getCamera().quaternion, 'YXZ')
+      euler.setFromQuaternion(camera.quaternion, 'YXZ')
       this.rotationPitch = euler.x
       this.rotationYaw = euler.y
       return
@@ -165,7 +159,14 @@ export class SimpleCharacterCameraBehavior {
   /**
    * @param delta in seconds
    */
-  update(deltaTime: number, options: SimpleCharacterCameraBehaviorOptions = true): void {
+  update(
+    camera: Object3D,
+    target: Object3D,
+    inputSystem: InputSystem,
+    deltaTime: number,
+    raycast?: (ray: Ray, far: number) => number | undefined,
+    options: SimpleCharacterCameraBehaviorOptions = true,
+  ): void {
     if (options === false) {
       this.firstUpdate = true
       return
@@ -177,9 +178,9 @@ export class SimpleCharacterCameraBehavior {
 
     //compute character->camera delta through offset
     this.computeCharacterBaseOffset(chracterBaseOffsetHelper, options.characterBaseOffset)
-    this.character.getWorldPosition(characterWorldPosition)
+    target.getWorldPosition(characterWorldPosition)
     characterWorldPosition.add(chracterBaseOffsetHelper)
-    this.getCamera().getWorldPosition(deltaHelper)
+    camera.getWorldPosition(deltaHelper)
     deltaHelper.sub(characterWorldPosition)
 
     // apply rotation input to rotationYaw and rotationPitch if not disabled or first update
@@ -187,18 +188,18 @@ export class SimpleCharacterCameraBehavior {
     if (!this.firstUpdate && rotationOptions !== false) {
       rotationOptions = rotationOptions === true ? {} : rotationOptions
       const rotationSpeed = rotationOptions.speed ?? 1000.0
-      const deltaYaw = this.character.inputSystem.get(DeltaYawField)
-      const deltaPitch = this.character.inputSystem.get(DeltaPitchField)
+      const deltaYaw = inputSystem.get(DeltaYawField)
+      const deltaPitch = inputSystem.get(DeltaPitchField)
       this.rotationYaw = this.clampYaw(this.rotationYaw + deltaYaw * rotationSpeed * deltaTime, rotationOptions)
       this.rotationPitch = this.clampPitch(this.rotationPitch + deltaPitch * rotationSpeed * deltaTime, rotationOptions)
     } else {
-      this.setRotationFromDelta(deltaHelper, typeof rotationOptions === 'boolean' ? {} : rotationOptions)
+      this.setRotationFromDelta(camera, deltaHelper, typeof rotationOptions === 'boolean' ? {} : rotationOptions)
     }
 
     // apply yaw and pitch to camera rotation
-    this.getCamera().rotation.set(this.rotationPitch, this.rotationYaw, 0, 'YXZ')
+    camera.rotation.set(this.rotationPitch, this.rotationYaw, 0, 'YXZ')
 
-    rayHelper.direction.set(0, 0, 1).applyEuler(this.getCamera().rotation)
+    rayHelper.direction.set(0, 0, 1).applyEuler(camera.rotation)
     rayHelper.origin.copy(characterWorldPosition)
 
     // apply zoom input to zoomDistance if not disabled or first update
@@ -206,7 +207,7 @@ export class SimpleCharacterCameraBehavior {
     if (!this.firstUpdate && zoomOptions !== false) {
       zoomOptions = zoomOptions === true ? {} : zoomOptions
       const zoomSpeed = zoomOptions.speed ?? 1000.0
-      const deltaZoom = this.character.inputSystem.get(DeltaZoomField)
+      const deltaZoom = inputSystem.get(DeltaZoomField)
       const zoomFactor = 1 + deltaZoom * zoomSpeed * deltaTime
       if (deltaZoom >= 0) {
         this.zoomDistance *= zoomFactor
@@ -224,7 +225,7 @@ export class SimpleCharacterCameraBehavior {
       if (collisionOptions === true) {
         collisionOptions = {}
       }
-      let distance = this.raycast?.(rayHelper, this.zoomDistance)
+      let distance = raycast?.(rayHelper, this.zoomDistance)
       if (distance != null) {
         this.collisionFreeZoomDistance = distance - (collisionOptions?.offset ?? 0.2)
       }
@@ -232,15 +233,15 @@ export class SimpleCharacterCameraBehavior {
 
     // Calculate camera position using spherical coordinates from euler
     sphericalOffset.set(0, 0, this.collisionFreeZoomDistance)
-    sphericalOffset.applyEuler(this.getCamera().rotation)
+    sphericalOffset.applyEuler(camera.rotation)
 
     // Get target position with offset (reuse helper vector)
-    this.character.getWorldPosition(characterWorldPosition)
+    target.getWorldPosition(characterWorldPosition)
 
     this.computeCharacterBaseOffset(chracterBaseOffsetHelper, options.characterBaseOffset)
     characterWorldPosition.add(chracterBaseOffsetHelper)
 
     // Set camera position relative to target
-    this.getCamera().position.copy(characterWorldPosition).add(sphericalOffset)
+    camera.position.copy(characterWorldPosition).add(sphericalOffset)
   }
 }

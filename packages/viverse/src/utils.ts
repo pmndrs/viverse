@@ -1,50 +1,8 @@
-function shallowEqual<T>(a: ReadonlyArray<T>, b: ReadonlyArray<T>): boolean {
-  if (a.length !== b.length) return false
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false
-  }
-  return true
-}
-
-const cacheMap = new Map<Function, Array<{ deps: ReadonlyArray<unknown>; result: Promise<unknown> }>>()
-
-export function cached<D extends ReadonlyArray<unknown>, T>(
-  fn: (...deps: D) => Promise<T>,
-  dependencies: D,
-): Promise<T> {
-  let cache = cacheMap.get(fn)
-  if (cache == null) {
-    cacheMap.set(fn, (cache = []))
-  }
-  const entry = cache.find(({ deps }) => shallowEqual(deps, dependencies))
-  if (entry != null) {
-    return entry.result as Promise<T>
-  }
-  const result = fn(...dependencies)
-  cache.push({ deps: dependencies, result })
-  return result
-}
-
-export function clearCache(fn: Function, dependencies: Array<unknown>) {
-  const cache = cacheMap.get(fn)
-  if (cache == null) {
-    return
-  }
-  const index = cache.findIndex(({ deps }) => shallowEqual(deps, dependencies))
-  if (index === -1) {
-    return
-  }
-  cache.splice(index, 1)
-}
-
-export function extractProxy<K extends string, T extends { [key in K]?: {} }>(
-  value: T,
-  key: K,
-): Partial<Exclude<T[K], undefined>> {
-  return new Proxy({} as Partial<Exclude<T[K], undefined>>, {
-    get: (_, p) => value[key]?.[p as keyof {}],
-  })
-}
+import { type InputSystem, LastTimeJumpPressedField } from './input/index.js'
+import type { CharacterAnimationMask } from './animation/index.js'
+import type { CharacterModel } from './model/index.js'
+import type { BvhCharacterPhysics } from './physics/index.js'
+import type { AnimationAction } from 'three'
 
 export function getIsMobileMediaQuery() {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -55,4 +13,47 @@ export function getIsMobileMediaQuery() {
 
 export function isMobile(): boolean {
   return getIsMobileMediaQuery()?.matches ?? false
+}
+
+export type StartAnimationOptions = {
+  fadeDuration?: number
+  paused?: boolean
+  mask?: CharacterAnimationMask
+}
+
+export function startAnimation(
+  animation: AnimationAction,
+  currentAnimations: CharacterModel['currentAnimations'],
+  { fadeDuration = 0.1, paused = false, mask }: StartAnimationOptions,
+) {
+  animation.reset()
+  animation.play()
+  animation.paused = paused
+  const currentAnimation = currentAnimations.get(mask)
+  if (currentAnimation != null) {
+    animation.crossFadeFrom(currentAnimation, fadeDuration)
+  } else {
+    animation.fadeIn(fadeDuration)
+  }
+  currentAnimations.set(mask, animation)
+}
+
+export function shouldJump(
+  physics: BvhCharacterPhysics,
+  inputSystem: InputSystem,
+  lastJump: number,
+  bufferTime = 0.1,
+): boolean {
+  if (!physics.isGrounded) {
+    return false
+  }
+  const lastTimePressed = inputSystem.get(LastTimeJumpPressedField)
+  if (lastTimePressed == null || lastJump > lastTimePressed) {
+    return false
+  }
+  //last jump must be more then 0.3 second ago, if not, we dont jump, this is to give the character time to get off the ground
+  if (lastJump > performance.now() / 1000 - 0.3) {
+    return false
+  }
+  return performance.now() / 1000 - lastTimePressed < bufferTime
 }

@@ -8,7 +8,7 @@ export type PointerCaptureInputOptions = {
 /**
  * @requires to manually execute `domElement.setPointerCapture(pointerId)` on pointerdown
  */
-export class PointerCaptureInput implements Input {
+export class PointerCaptureInput implements Input<PointerCaptureInputOptions> {
   private readonly abortController = new AbortController()
   private deltaZoom = 0
   private deltaYaw = 0
@@ -16,10 +16,7 @@ export class PointerCaptureInput implements Input {
   private activePointers: Map<number, { x: number; y: number }> = new Map()
   private lastPinchDist: number | null = null
 
-  constructor(
-    private readonly domElement: HTMLElement,
-    options: PointerCaptureInputOptions = {},
-  ) {
+  constructor(private readonly domElement: HTMLElement) {
     domElement.addEventListener(
       'pointerdown',
       (event: PointerEvent) => {
@@ -46,16 +43,14 @@ export class PointerCaptureInput implements Input {
           const pts = Array.from(this.activePointers.values())
           if (this.lastPinchDist != null) {
             const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y)
-            const zoomSpeed = options.pointerCaptureZoomSpeed ?? 0.0001
-            this.deltaZoom += (this.lastPinchDist - d) * zoomSpeed
+            this.deltaZoom += this.lastPinchDist - d
             this.lastPinchDist = d
           }
           event.preventDefault()
           return
         }
-        const rotationSpeed = options.pointerCaptureRotationSpeed ?? 0.4
-        this.deltaYaw -= (rotationSpeed * event.movementX) / window.innerHeight
-        this.deltaPitch -= (rotationSpeed * event.movementY) / window.innerHeight
+        this.deltaYaw -= event.movementX / window.innerHeight
+        this.deltaPitch -= event.movementY / window.innerHeight
       },
       {
         signal: this.abortController.signal,
@@ -94,8 +89,7 @@ export class PointerCaptureInput implements Input {
       'wheel',
       (event: WheelEvent) => {
         event.preventDefault()
-        const zoomSpeed = options.pointerCaptureZoomSpeed ?? 0.0001
-        this.deltaZoom += event.deltaY * zoomSpeed
+        this.deltaZoom += event.deltaY
       },
       {
         signal: this.abortController.signal,
@@ -103,19 +97,21 @@ export class PointerCaptureInput implements Input {
     )
   }
 
-  get<T>(field: InputField<T>): T | undefined {
+  get<T>(field: InputField<T>, options: PointerCaptureInputOptions): T | undefined {
+    const rotationSpeed = options.pointerCaptureRotationSpeed ?? 0.4
+    const zoomSpeed = options.pointerCaptureZoomSpeed ?? 0.0001
     let result: T | undefined
     switch (field) {
       case DeltaPitchField:
-        result = this.deltaPitch as T
+        result = (this.deltaPitch * rotationSpeed) as T
         this.deltaPitch = 0
         break
       case DeltaYawField:
-        result = this.deltaYaw as T
+        result = (this.deltaYaw * rotationSpeed) as T
         this.deltaYaw = 0
         break
       case DeltaZoomField:
-        result = this.deltaZoom as T
+        result = (this.deltaZoom * zoomSpeed) as T
         this.deltaZoom = 0
         break
     }

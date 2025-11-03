@@ -48,7 +48,6 @@ const YAxis = new Vector3(0, 1, 0)
  * assumes the target object origin is at its bottom
  */
 export class BvhCharacterPhysics {
-  private disposed = false
   private readonly stateVelocity = new Vector3()
   public readonly inputVelocity = new Vector3()
   private notGroundedSeconds = 0
@@ -61,10 +60,7 @@ export class BvhCharacterPhysics {
     return this.notGroundedSeconds < 0.2
   }
 
-  constructor(
-    private readonly character: Object3D,
-    private readonly world: BvhPhysicsWorld,
-  ) {}
+  constructor(private readonly world: BvhPhysicsWorld) {}
 
   applyVelocity(velocity: Vector3) {
     this.stateVelocity.add(velocity)
@@ -73,15 +69,12 @@ export class BvhCharacterPhysics {
   /**
    * @param delta in seconds
    */
-  update(fullDelta: number, options: BvhCharacterPhysicsOptions = true): void {
+  update(model: Object3D, fullDelta: number, options: BvhCharacterPhysicsOptions = true): void {
     if (options === false) {
       return
     }
     if (options === true) {
       options = {}
-    }
-    if (this.disposed) {
-      return
     }
     //at max catch up to 1 second of physics in one update call (running at less then 1fps is unplayable anyways)
     fullDelta = Math.min(1, fullDelta)
@@ -95,10 +88,10 @@ export class BvhCharacterPhysics {
       const partialDelta = Math.min(fullDelta, physicsDelta)
       fullDelta -= physicsDelta
       //compute global position and inverted parent matrix so that we can compute the position in global space and re-assign it to the local chracter space
-      if (this.character.parent != null) {
-        this.character.parent.updateWorldMatrix(true, false)
-        position.copy(this.character.position).applyMatrix4(this.character.parent.matrixWorld)
-        invertedParentMatrix.copy(this.character.parent.matrixWorld).invert()
+      if (model.parent != null) {
+        model.parent.updateWorldMatrix(true, false)
+        position.copy(model.position).applyMatrix4(model.parent.matrixWorld)
+        invertedParentMatrix.copy(model.parent.matrixWorld).invert()
       } else {
         invertedParentMatrix.identity()
       }
@@ -114,7 +107,7 @@ export class BvhCharacterPhysics {
         this.notGroundedSeconds = 0
       }
       if (!isGrounded || this.inputVelocity.lengthSq() > 0) {
-        this.character.position.copy(collisionFreePosition).applyMatrix4(invertedParentMatrix)
+        model.position.copy(collisionFreePosition).applyMatrix4(invertedParentMatrix)
       }
       //compute new velocity
       //  apply gravity
@@ -149,10 +142,6 @@ export class BvhCharacterPhysics {
     this.aabbox.expandByPoint(this.segment.end)
     this.aabbox.min.addScalar(-this.radius)
     this.aabbox.max.addScalar(this.radius)
-  }
-
-  dispose(): void {
-    this.disposed = true
   }
 
   shapecastCapsule(position: Vector3, maxGroundSlope: number, options: Exclude<BvhCharacterPhysicsOptions, boolean>) {

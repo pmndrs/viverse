@@ -2,7 +2,7 @@ import { ClientOptions, Client, checkAuthOptions } from '@viverse/sdk'
 import AvatarClient from '@viverse/sdk/avatar-client'
 import { createContext, ReactNode, useCallback, useContext } from 'react'
 import { suspend, clear } from 'suspend-react'
-import { BvhPhysicsWorld } from './character.js'
+import { BvhPhysicsWorld } from './physics.js'
 
 // auth
 
@@ -215,28 +215,15 @@ export function useViversePublicAvatarByID(
   return suspend(async () => avatarClient?.getPublicAvatarByID(id), [viversePublicAvatarByIDSymbol, avatarClient, id])
 }
 
-export * from './character.js'
 export * from './material.js'
-export {
-  mixamoBoneMap,
-  FirstPersonCharacterCameraBehavior,
-  SimpleCharacter as SimpleCharacterImpl,
-  type SimpleCharacterOptions,
-  LocomotionKeyboardInput,
-  PointerCaptureInput,
-  PointerLockInput,
-  type InputField,
-  InputSystem,
-  type LocomotionKeyboardInputOptions,
-  type PointerLockInputOptions,
-  type PointerCaptureInputOptions,
-  ScreenJoystickInput,
-  type ScreenJoystickInputOptions,
-  type SimpleCharacterInputOptions,
-  ScreenJumpButtonInput,
-  VRMHumanBoneName,
-} from '@pmndrs/viverse'
+export * as Vanilla from '@pmndrs/viverse'
 export * from '@viverse/sdk'
 export * from '@viverse/sdk/avatar-client'
 export * from './gamepad.js'
 export * from './mobile.js'
+export * from './physics.js'
+export * from './utils.js'
+export * from './model.js'
+export * from './animation.js'
+export * from './bone.js'
+export * from './simple.js'

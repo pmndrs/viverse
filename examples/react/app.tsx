@@ -2,20 +2,18 @@ import { Gltf, PerspectiveCamera, Sky } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Image, Text, Fullscreen, Container } from '@react-three/uikit'
 import {
-  SimpleCharacter,
   BvhPhysicsBody,
   useViverseProfile,
   Viverse,
-  CharacterModelBone,
   PrototypeBox,
   BvhPhysicsSensor,
-  FirstPersonCharacterCameraBehavior,
-  mixamoBoneMap,
+  Vanilla,
+  SimpleCharacter,
+  CharacterModelBone,
 } from '@react-three/viverse'
 import { useControls } from 'leva'
 import { Suspense, useRef, useState } from 'react'
 import { Group, Object3D } from 'three'
-import { mix } from 'three/tsl'
 
 export function App() {
   return (
@@ -79,9 +77,13 @@ export function Scene() {
           </Suspense>
         )}
       </PerspectiveCamera>
-      <SimpleCharacter cameraBehavior={firstPerson ? FirstPersonCharacterCameraBehavior : undefined} ref={characterRef}>
+      <SimpleCharacter
+        cameraBehavior={firstPerson ? Vanilla.FirstPersonCharacterCameraBehavior : undefined}
+        ref={characterRef}
+        model={!firstPerson}
+      >
         <PlayerTag />
-        {hasSword && (
+        {!firstPerson && hasSword && (
           <CharacterModelBone bone="rightHand">
             <Suspense fallback={null}>
               <Gltf

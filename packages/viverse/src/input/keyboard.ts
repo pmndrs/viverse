@@ -25,14 +25,11 @@ const DefaultMoveRightKeys = ['KeyD']
 const DefaultRunKeys = ['ShiftRight', 'ShiftLeft']
 const DefaultJumpKeys = ['Space']
 
-export class LocomotionKeyboardInput implements Input {
+export class LocomotionKeyboardInput implements Input<LocomotionKeyboardInputOptions> {
   private readonly abortController = new AbortController()
   private readonly keyState = new Map<string, { pressTime?: number; releaseTime?: number }>()
 
-  constructor(
-    domElement: HTMLElement,
-    private readonly options: LocomotionKeyboardInputOptions = {},
-  ) {
+  constructor(domElement: HTMLElement) {
     domElement.tabIndex = 0
     domElement.addEventListener(
       'keydown',
@@ -72,9 +69,9 @@ export class LocomotionKeyboardInput implements Input {
     })
   }
 
-  get<T>(field: InputField<T>): T | undefined {
+  get<T>(field: InputField<T>, options: LocomotionKeyboardInputOptions): T | undefined {
     if (field === LastTimeJumpPressedField) {
-      const jumpKeys = this.options.keyboardJumpKeys ?? DefaultJumpKeys
+      const jumpKeys = options.keyboardJumpKeys ?? DefaultJumpKeys
       const pressed = jumpKeys
         .map((key) => this.keyState.get(key)?.pressTime ?? null)
         .filter((t): t is number => t != null)
@@ -83,19 +80,19 @@ export class LocomotionKeyboardInput implements Input {
     let keys: Array<string> | undefined
     switch (field) {
       case MoveForwardField:
-        keys = this.options.keyboardMoveForwardKeys ?? DefaultMoveForwardKeys
+        keys = options.keyboardMoveForwardKeys ?? DefaultMoveForwardKeys
         break
       case MoveBackwardField:
-        keys = this.options.keyboardMoveBackwardKeys ?? DefaultMoveBackwardKeys
+        keys = options.keyboardMoveBackwardKeys ?? DefaultMoveBackwardKeys
         break
       case MoveLeftField:
-        keys = this.options.keyboardMoveLeftKeys ?? DefaultMoveLeftKeys
+        keys = options.keyboardMoveLeftKeys ?? DefaultMoveLeftKeys
         break
       case MoveRightField:
-        keys = this.options.keyboardMoveRightKeys ?? DefaultMoveRightKeys
+        keys = options.keyboardMoveRightKeys ?? DefaultMoveRightKeys
         break
       case RunField:
-        keys = this.options.keyboardRunKeys ?? DefaultRunKeys
+        keys = options.keyboardRunKeys ?? DefaultRunKeys
         break
     }
     if (keys == null) {

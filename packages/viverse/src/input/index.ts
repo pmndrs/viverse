@@ -1,13 +1,7 @@
-export class InputSystem {
-  private readonly inputs: Array<Input>
+export class InputSystem<T extends {} = {}> {
+  public readonly inputs: Array<Input> = []
 
-  constructor(
-    domElement: HTMLElement,
-    inputs: ReadonlyArray<Input | { new (element: HTMLElement, options?: {}): Input }>,
-    options?: {},
-  ) {
-    this.inputs = inputs.map((input) => (typeof input === 'function' ? new input(domElement, options) : input))
-  }
+  constructor(public options: T = {} as T) {}
 
   add(input: Input): void {
     this.inputs.push(input)
@@ -29,7 +23,7 @@ export class InputSystem {
   get<T>(field: InputField<T>): T {
     let current: T | undefined
     for (const input of this.inputs) {
-      const result = input.get(field)
+      const result = input.get(field, this.options)
       if (result == null) {
         continue
       }
@@ -93,8 +87,8 @@ export const DeltaPitchField: InputField<number> = {
   combine: Math.max,
 }
 
-export interface Input {
-  get<T>(field: InputField<T>): T | undefined
+export interface Input<O = {}> {
+  get<T>(field: InputField<T>, options: O): T | undefined
   dispose?(): void
 }
 

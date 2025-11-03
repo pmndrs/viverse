@@ -10,13 +10,13 @@ import {
 } from 'three'
 import _bvhBoneMap from './bvh-bone-map.json'
 import { loadVrmModelBvhAnimations } from './bvh.js'
+import { loadDefaultCharacterAnimationUrl } from './default.js'
 import { loadVrmModelFbxAnimations } from './fbx.js'
 import { loadVrmModelGltfAnimations } from './gltf.js'
 import _mixamoBoneMap from './mixamo-bone-map.json'
 import { scaleAnimationClipTime, trimAnimationClip } from './utils.js'
 import { loadVrmModelVrmaAnimations } from './vrma.js'
-import { loadCharacterModel } from '../model/index.js'
-import { cached } from '../utils.js'
+import type { CharacterModel } from '../model/index.js'
 
 //helper variables for the quaternion retargeting
 const baseThisLocalRestRotation_inverse = new Quaternion()
@@ -37,7 +37,7 @@ const nonVrmRotationOffset = new Quaternion().setFromEuler(new Euler(0, Math.PI,
 //TODO: currently assumes the model is not yet transformed - loaded for the first time
 
 export function fixModelAnimationClip(
-  model: Exclude<Awaited<ReturnType<typeof loadCharacterModel>>, undefined>,
+  model: CharacterModel,
   clip: AnimationClip,
   clipScene: Object3D | undefined,
   removeXZMovement: boolean,
@@ -217,25 +217,50 @@ export * from './fbx.js'
 export * from './vrma.js'
 export * from './utils.js'
 
-export type ModelAnimationOptions = {
+export type CharacterAnimationMask = (boneName: VRMHumanBoneName) => boolean
+
+export type CharacterAnimationOptions = {
+  url: string | { default: Parameters<typeof loadDefaultCharacterAnimationUrl>[0] }
   type?: 'mixamo' | 'gltf' | 'vrma' | 'fbx' | 'bvh'
-  url: string
   removeXZMovement?: boolean
   trimTime?: { start?: number; end?: number }
   boneMap?: Record<string, VRMHumanBoneName>
   scaleTime?: number
+  mask?: CharacterAnimationMask
 }
 
-async function uncachedLoadModelAnimation(
-  model: Exclude<Awaited<ReturnType<typeof loadCharacterModel>>, undefined>,
-  type: ModelAnimationOptions['type'],
-  url: string,
-  removeXZMovement: boolean,
-  trimStartTime: number | undefined,
-  trimEndTime: number | undefined,
-  boneMap: Record<string, VRMHumanBoneName> | undefined,
-  scaleTime: number | undefined,
+export type Tail<T extends any[]> = T extends [any, ...infer Rest] ? Rest : never
+
+export function flattenCharacterAnimationOptions(
+  options: Exclude<CharacterAnimationOptions, false>,
+): Tail<Parameters<typeof loadCharacterAnimation>> {
+  return [
+    options.url,
+    options.type,
+    options.removeXZMovement,
+    options.trimTime?.start,
+    options.trimTime?.end,
+    options.boneMap,
+    options.scaleTime,
+    options.mask,
+  ]
+}
+
+export async function loadCharacterAnimation(
+  model: CharacterModel,
+  url: string | { default: Parameters<typeof loadDefaultCharacterAnimationUrl>[0] },
+  type?: CharacterAnimationOptions['type'],
+  removeXZMovement: boolean = false,
+  trimStartTime?: number | undefined,
+  trimEndTime?: number | undefined,
+  boneMap?: Record<string, VRMHumanBoneName> | undefined,
+  scaleTime?: number | undefined,
+  mask?: CharacterAnimationMask,
 ) {
+  if (typeof url === 'object') {
+    url = await loadDefaultCharacterAnimationUrl(url.default)
+    type = 'gltf'
+  }
   let clips: Array<AnimationClip>
   if (type == null) {
     const lowerCaseUrl = url.toLocaleLowerCase()
@@ -288,52 +313,6 @@ async function uncachedLoadModelAnimation(
     scaleAnimationClipTime(clip, scaleTime)
   }
   return clip
-}
-
-export function loadCharacterModelAnimation(
-  model: Exclude<Awaited<ReturnType<typeof loadCharacterModel>>, undefined>,
-  options: ModelAnimationOptions,
-) {
-  return cached(uncachedLoadModelAnimation, [
-    model,
-    options.type,
-    options.url,
-    options.removeXZMovement ?? false,
-    options.trimTime?.start,
-    options.trimTime?.end,
-    options.boneMap,
-    options.scaleTime,
-  ])
-}
-
-const extraOptions: Record<string, Partial<ModelAnimationOptions>> = {
-  walk: { scaleTime: 0.5 },
-  run: { scaleTime: 0.8 },
-  jumpForward: { scaleTime: 0.9 },
-}
-
-const simpleCharacterAnimationUrls = {
-  walk: () => import('../assets/walk.js'),
-  run: () => import('../assets/run.js'),
-  idle: () => import('../assets/idle.js'),
-  jumpUp: () => import('../assets/jump-up.js'),
-  jumpLoop: () => import('../assets/jump-loop.js'),
-  jumpDown: () => import('../assets/jump-down.js'),
-  jumpForward: () => import('../assets/jump-forward.js'),
-}
-
-export const simpleCharacterAnimationNames = Object.keys(simpleCharacterAnimationUrls) as Array<
-  keyof typeof simpleCharacterAnimationUrls
->
-
-export async function getSimpleCharacterModelAnimationOptions(
-  animationName: keyof typeof simpleCharacterAnimationUrls,
-): Promise<ModelAnimationOptions> {
-  return {
-    type: 'gltf',
-    ...extraOptions[animationName],
-    url: (await simpleCharacterAnimationUrls[animationName]()).url,
-  }
 }
 
 export const mixamoBoneMap = _mixamoBoneMap as Record<string, VRMHumanBoneName>
