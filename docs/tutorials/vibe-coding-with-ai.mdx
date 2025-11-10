@@ -17,16 +17,18 @@ Add the docs as a custom source so your AI can reference them while coding.
 https://pmndrs.github.io/viverse/llms.txt
 ```
 
+and name then name the docs `Viverse`
+
 ## Step 2: Reference the docs in your prompts
 
-When prompting, explicitly tell the AI to use the saved docs. If you saved them as “viverse”, write prompts like:
+When prompting, explicitly tell the AI to use the saved docs. If you saved them as “Viverse”, write prompts like:
 
-```text
-Using the viverse docs: create a simple game using @react-three/viverse.
-```
+![prompt: "Build a simple game using @viverse"](prompt.gif)
+
+> Build a simple game using @Viverse
 
 > [!IMPORTANT]
-> Keep referencing the docs in follow-up prompts (e.g., “Using the viverse docs, add jumping to the character”) so the AI sticks to official components and APIs.
+> Keep referencing the docs in follow-up prompts (e.g., “Using the @Viverse docs, add first person controls") so the AI sticks to official components and APIs.
 
 ## Step 3: Run and test the game
 
@@ -42,7 +44,7 @@ Open `http://localhost:5173` to test your game.
 
 ## Step 4: Publish
 
-Once you like your game, you can ask the AI to publish it by providing your VIVERSE email and password and referencing the VIVERSE docs so it follows the correct flow.
+Once you like your game, you can ask the AI to publish it by providing your VIVERSE email and password and referencing the VIVERSE docs (e.g., “Using the @Viverse docs, to publish the game using email: my-email and password: my-password").
 
 For a manual CLI-based workflow, see **[Publish to VIVERSE](../tutorials/publish-to-viverse.md)**.
 
