@@ -22,7 +22,7 @@ npm install -g @viverse/cli
 Before you can create apps or deploy, you need to authenticate with your VIVERSE account:
 
 ```bash
-viverse-cli auth login
+viverse-cli auth login -e <email> -p <password>
 ```
 
 ## Step 3: Create a VIVERSE App

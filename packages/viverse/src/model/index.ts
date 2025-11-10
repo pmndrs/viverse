@@ -86,14 +86,9 @@ export async function loadCharacterModel(
       obj.receiveShadow = true
     }
   })
-  //TODO: "root" does not exist on all models (some VRMs)
-  const rootBone = result.scene.getObjectByName('root')
-  if (rootBone == null) {
-    throw new Error(`unable to load model - missing root bone`)
-  }
-  const restPose = rootBone.clone()
+  const restPose = result.scene.clone()
   restPose.visible = false
-  restPose.traverse((bone) => (bone.name = `rest_${bone.name}`))
+  restPose.traverse((object) => (object.name = `rest_${object.name}`))
   result.scene.add(restPose)
   return Object.assign(result, { mixer: new AnimationMixer(result.scene), currentAnimations: new Map() })
 }
