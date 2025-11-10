@@ -1,4 +1,5 @@
 import { action, type GraphTimelineState } from '@pmndrs/timeline'
+import { JumpLoopAnimationUrl } from '../../animation/default.js'
 import { flattenCharacterAnimationOptions, loadCharacterAnimation } from '../../animation/index.js'
 import { startAnimation } from '../../utils.js'
 import { DefaultCrossFadeDuration } from '../defaults.js'
@@ -15,7 +16,7 @@ export async function loadSimpleCharacterJumpLoopState<T>(
   const jumpLoop = model.mixer.clipAction(
     await loadCharacterAnimation(
       model,
-      ...flattenCharacterAnimationOptions(options.animation?.jumpLoop ?? { url: { default: 'jumpLoop' } }),
+      ...flattenCharacterAnimationOptions({ url: JumpLoopAnimationUrl, ...options.animation?.jumpLoop }),
     ),
   )
   return {

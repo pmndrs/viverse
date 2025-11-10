@@ -1,7 +1,8 @@
 import { action, type GraphTimelineState } from '@pmndrs/timeline'
 import { AnimationAction } from 'three'
+import { IdleAnimationUrl, RunAnimationUrl, WalkAnimationUrl } from '../../animation/default.js'
 import { flattenCharacterAnimationOptions, loadCharacterAnimation } from '../../animation/index.js'
-import { RunField } from '../../input/index.js'
+import { RunAction } from '../../input/index.js'
 import { shouldJump, startAnimation } from '../../utils.js'
 import { DefaultCrossFadeDuration } from '../defaults.js'
 import type { SimpleCharacterOptions, SimpleCharacterState } from '../index.js'
@@ -17,31 +18,30 @@ export async function loadSimpleCharacterMovingState<T>(
   const idle = model.mixer.clipAction(
     await loadCharacterAnimation(
       model,
-      ...flattenCharacterAnimationOptions(
-        options.animation?.idle ?? {
-          url: { default: 'idle' },
-        },
-      ),
+      ...flattenCharacterAnimationOptions({
+        url: IdleAnimationUrl,
+        ...options.animation?.idle,
+      }),
     ),
   )
   const run = model.mixer.clipAction(
     await loadCharacterAnimation(
       model,
       ...flattenCharacterAnimationOptions({
-        url: { default: 'run' },
+        url: RunAnimationUrl,
         scaleTime: 0.8,
+        ...options.animation?.run,
       }),
     ),
   )
   const walk = model.mixer.clipAction(
     await loadCharacterAnimation(
       model,
-      ...flattenCharacterAnimationOptions(
-        options.animation?.walk ?? {
-          scaleTime: 0.5,
-          url: { default: 'walk' },
-        },
-      ),
+      ...flattenCharacterAnimationOptions({
+        scaleTime: 0.5,
+        url: WalkAnimationUrl,
+        ...options.animation?.walk,
+      }),
     ),
   )
   return {
@@ -52,7 +52,7 @@ export async function loadSimpleCharacterMovingState<T>(
           let nextAnimation: AnimationAction
           if (state.physics.inputVelocity.lengthSq() === 0) {
             nextAnimation = idle
-          } else if (state.inputSystem.get(RunField) && options.movement?.run != false) {
+          } else if (state.inputSystem.get(RunAction) && options.movement?.run != false) {
             nextAnimation = run
           } else if (options.movement?.walk != false) {
             nextAnimation = walk

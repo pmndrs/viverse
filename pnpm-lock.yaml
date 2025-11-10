@@ -107,6 +107,49 @@ importers:
         specifier: 0.9.5-beta.8
         version: 0.9.5-beta.8(@types/node@24.1.0)
 
+  examples/fortnite:
+    dependencies:
+      '@dotenvx/dotenvx':
+        specifier: ^1.47.6
+        version: 1.48.3
+      '@react-three/drei':
+        specifier: ^10.5.1
+        version: 10.5.1(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(@types/react@19.1.8)(@types/three@0.178.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0)
+      '@react-three/fiber':
+        specifier: 9.2.0
+        version: 9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0)
+      '@react-three/timeline':
+        specifier: ^0.3.5
+        version: 0.3.5(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(three@0.178.0)
+      '@react-three/uikit':
+        specifier: ^1.0.41
+        version: 1.0.41(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(@types/react@19.1.8)(react@19.1.0)(three@0.178.0)(use-sync-external-store@1.5.0(react@19.1.0))
+      '@react-three/viverse':
+        specifier: workspace:~
+        version: link:../../packages/react
+      '@vitejs/plugin-react':
+        specifier: ^4.6.0
+        version: 4.7.0(vite@5.4.19(@types/node@24.1.0))
+      leva:
+        specifier: ^0.10.0
+        version: 0.10.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react:
+        specifier: ^19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.1.0(react@19.1.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.8
+        version: 19.1.8
+      '@types/react-dom':
+        specifier: ^19.1.6
+        version: 19.1.6(@types/react@19.1.8)
+      '@viverse/cli':
+        specifier: 0.9.5-beta.8
+        version: 0.9.5-beta.8(@types/node@24.1.0)
+
   examples/react:
     dependencies:
       '@dotenvx/dotenvx':

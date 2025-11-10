@@ -1,5 +1,6 @@
 import { type GraphTimelineState, action, animationFinished } from '@pmndrs/timeline'
 import { AnimationAction, LoopOnce, Vector3 } from 'three'
+import { JumpForwardAnimationUrl } from '../../animation/default.js'
 import { flattenCharacterAnimationOptions, loadCharacterAnimation } from '../../animation/index.js'
 import { startAnimation } from '../../utils.js'
 import { DefaultCrossFadeDuration } from '../defaults.js'
@@ -16,12 +17,11 @@ export async function loadSimpleCharacterJumpForwardAction(
   const jumpForward = model.mixer.clipAction(
     await loadCharacterAnimation(
       model,
-      ...flattenCharacterAnimationOptions(
-        options.animation?.jumpForward ?? {
-          url: { default: 'jumpForward' },
-          scaleTime: 0.9,
-        },
-      ),
+      ...flattenCharacterAnimationOptions({
+        url: JumpForwardAnimationUrl,
+        scaleTime: 0.9,
+        ...options.animation?.jumpForward,
+      }),
     ),
   )
   jumpForward.loop = LoopOnce

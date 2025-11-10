@@ -1,4 +1,4 @@
-import { DeltaPitchField, DeltaYawField, DeltaZoomField, Input, InputField } from './index.js'
+import { DeltaPitchField, DeltaYawField, ZoomAction, Input, InputField } from './index.js'
 
 export type PointerLockInputOptions = {
   pointerLockRotationSpeed?: number // default 0.4
@@ -58,7 +58,7 @@ export class PointerLockInput implements Input<PointerLockInputOptions> {
         result = (this.deltaYaw * rotationSpeed) as T
         this.deltaYaw = 0
         break
-      case DeltaZoomField:
+      case ZoomAction:
         result = (this.deltaZoom * zoomSpeed) as T
         this.deltaZoom = 0
         break

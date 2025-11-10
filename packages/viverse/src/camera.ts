@@ -1,6 +1,6 @@
 import { Object3D, Vector3, Euler, Vector3Tuple, Ray } from 'three'
 import { clamp } from 'three/src/math/MathUtils.js'
-import { DeltaYawField, DeltaPitchField, DeltaZoomField, InputSystem } from './input/index.js'
+import { DeltaYawField, DeltaPitchField, ZoomAction, InputSystem } from './input/index.js'
 
 export const FirstPersonCharacterCameraBehavior: SimpleCharacterCameraBehaviorOptions = {
   characterBaseOffset: [0, 1.6, 0],
@@ -207,7 +207,7 @@ export class CharacterCameraBehavior {
     if (!this.firstUpdate && zoomOptions !== false) {
       zoomOptions = zoomOptions === true ? {} : zoomOptions
       const zoomSpeed = zoomOptions.speed ?? 1000.0
-      const deltaZoom = inputSystem.get(DeltaZoomField)
+      const deltaZoom = inputSystem.get(ZoomAction)
       const zoomFactor = 1 + deltaZoom * zoomSpeed * deltaTime
       if (deltaZoom >= 0) {
         this.zoomDistance *= zoomFactor

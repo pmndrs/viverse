@@ -1,13 +1,63 @@
 import {
-  MoveForwardField,
-  MoveBackwardField,
-  MoveLeftField,
-  MoveRightField,
-  LastTimeJumpPressedField,
-  Input,
-  InputField,
-  RunField,
+  MoveForwardAction,
+  MoveBackwardAction,
+  MoveLeftAction,
+  MoveRightAction,
+  RunAction,
+  ValueInput,
+  EventInput,
+  ValueAction,
+  EventAction,
 } from './index.js'
+
+export class KeyboardValueInput implements ValueInput<{ keys: Array<string> }> {
+  private pressedKeys = new Set<string>()
+  private readonly abortController = new AbortController()
+
+  constructor(
+    domElement: HTMLElement,
+    private readonly valueAction: ValueAction<boolean>,
+  ) {
+    domElement.tabIndex = 0
+    domElement.addEventListener('keydown', (event: KeyboardEvent) => this.pressedKeys.add(event.code), {
+      signal: this.abortController.signal,
+    })
+    domElement.addEventListener('keyup', (event: KeyboardEvent) => this.pressedKeys.delete(event.code), {
+      signal: this.abortController.signal,
+    })
+    // Handle focus loss to clear pressed keys
+    domElement.addEventListener('blur', () => this.pressedKeys.clear(), {
+      signal: this.abortController.signal,
+    })
+  }
+
+  get<T>(field: ValueAction<T>, options: { keys: Array<string> }): T | undefined {
+    if (field != this.valueAction || options.keys == null) {
+      return undefined
+    }
+    return options.keys.some((key) => this.pressedKeys.has(key)) as T
+  }
+
+  dispose(): void {
+    this.abortController.abort()
+  }
+}
+
+export class KeyboardEventInput implements EventInput<{ keys: Array<string>; bufferTime: number }> {
+  options?: Record<string, unknown> | undefined
+  subscribe<T>(
+    eventAction: EventAction<T>,
+    callback: (value: T) => void,
+    options?:
+      | ({ abortSignal?: AbortSignal; once?: boolean } & Partial<{ keys: Array<string>; bufferTime: number }>)
+      | undefined,
+  ): void {
+    throw new Error('Method not implemented.')
+  }
+  dispose(): void {
+    throw new Error('Method not implemented.')
+  }
+}
 
 export type LocomotionKeyboardInputOptions = {
   keyboardMoveForwardKeys?: Array<string>
@@ -79,19 +129,19 @@ export class LocomotionKeyboardInput implements Input<LocomotionKeyboardInputOpt
     }
     let keys: Array<string> | undefined
     switch (field) {
-      case MoveForwardField:
+      case MoveForwardAction:
         keys = options.keyboardMoveForwardKeys ?? DefaultMoveForwardKeys
         break
-      case MoveBackwardField:
+      case MoveBackwardAction:
         keys = options.keyboardMoveBackwardKeys ?? DefaultMoveBackwardKeys
         break
-      case MoveLeftField:
+      case MoveLeftAction:
         keys = options.keyboardMoveLeftKeys ?? DefaultMoveLeftKeys
         break
-      case MoveRightField:
+      case MoveRightAction:
         keys = options.keyboardMoveRightKeys ?? DefaultMoveRightKeys
         break
-      case RunField:
+      case RunAction:
         keys = options.keyboardRunKeys ?? DefaultRunKeys
         break
     }

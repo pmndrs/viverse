@@ -1,6 +1,6 @@
 import { action, timePassed, GraphTimelineState } from '@pmndrs/timeline'
 import { AnimationAction } from 'three'
-import { RunField } from '../../input/index.js'
+import { RunAction } from '../../input/index.js'
 import { startAnimation } from '../../utils.js'
 import { DefaultCrossFadeDuration, DefaultJumDelay } from '../defaults.js'
 import type { SimpleCharacterOptions, SimpleCharacterState } from '../index.js'
@@ -36,7 +36,7 @@ export async function loadSimpleCharacterJumpStartState<T>(
       }),
     transitionTo: {
       jumpDown: { whenUpdate: () => !state.physics.isGrounded },
-      finally: () => (state.inputSystem.get(RunField) ? 'jumpForward' : 'jumpUp'),
+      finally: () => (state.inputSystem.get(RunAction) ? 'jumpForward' : 'jumpUp'),
     },
   }
 }
