@@ -85,7 +85,7 @@ function SimpleCharacterModel({
   model: modelOptions,
   movement,
   physics,
-  useViverseAvatar,
+  useViverseAvatar = true,
   inputSystem,
   animation,
 }: {
