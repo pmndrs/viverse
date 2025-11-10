@@ -101,6 +101,7 @@ function SimpleCharacterModel({
   const model = useCharacterModelLoader(
     avatar != null && useViverseAvatar
       ? {
+          type: 'vrm',
           url: avatar?.vrmUrl,
           ...modelOptions,
         }

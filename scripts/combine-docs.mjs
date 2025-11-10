@@ -8,6 +8,9 @@ const repoRoot = path.resolve(__dirname, '..')
 const docsDir = path.join(repoRoot, 'docs')
 const outputFile = path.join(repoRoot, 'llms.txt')
 
+// Exclude specific docs (relative to docsDir, POSIX-style)
+const excludedRelFiles = new Set(['tutorials/vibe-coding-with-ai.mdx'])
+
 /**
  * Recursively list files under a directory
  * @param {string} dir
@@ -415,8 +418,11 @@ function rewriteInternalLinks(md, fromFile) {
     if (!/\.(md|mdx)$/i.test(filePart)) return full
     const abs = path.resolve(path.dirname(fromFile), filePart)
     let rel = path.relative(docsDir, abs)
+    const relPosix = rel.split(path.sep).join('/')
     // If link goes outside docsDir, leave it as-is
     if (rel.startsWith('..')) return full
+    // If link points to an excluded file, keep as original link
+    if (excludedRelFiles.has(relPosix)) return full
     const anchor = anchorIdFromRelPath(rel)
     return `[${text}](#${anchor})`
   })
@@ -434,7 +440,12 @@ function compareByNavThenTitle(a, b) {
 async function main() {
   // discover mdx files
   const all = await listFilesRecursively(docsDir)
-  const mdxFiles = all.filter((p) => p.endsWith('.mdx') || p.endsWith('.md'))
+  const mdxFiles = all
+    .filter((p) => p.endsWith('.mdx') || p.endsWith('.md'))
+    .filter((p) => {
+      const rel = path.relative(docsDir, p).split(path.sep).join('/')
+      return !excludedRelFiles.has(rel)
+    })
 
   const entries = []
   for (const file of mdxFiles) {
