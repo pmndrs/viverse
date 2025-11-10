@@ -1,11 +1,11 @@
 import {
   Input,
   InputField,
-  MoveForwardField,
-  MoveBackwardField,
-  MoveLeftField,
-  MoveRightField,
-  RunField,
+  MoveForwardAction,
+  MoveBackwardAction,
+  MoveLeftAction,
+  MoveRightAction,
+  RunAction,
 } from './index.js'
 
 export type ScreenJoystickInputOptions = {
@@ -106,21 +106,21 @@ export class ScreenJoystickInput implements Input<ScreenJoystickInputOptions> {
 
   get<T>(field: InputField<T>, options: ScreenJoystickInputOptions): T | undefined {
     switch (field) {
-      case MoveForwardField:
-      case MoveBackwardField:
+      case MoveForwardAction:
+      case MoveBackwardAction:
         const moveY =
           this.distanceToCenter <= (options.screenJoystickDeadZonePx ?? DefaultDeadZonePx)
             ? 0
             : -this.clampedY / JoystickRadius
-        return field === MoveForwardField ? (Math.max(0, moveY) as T) : (Math.max(0, -moveY) as T)
-      case MoveLeftField:
-      case MoveRightField:
+        return field === MoveForwardAction ? (Math.max(0, moveY) as T) : (Math.max(0, -moveY) as T)
+      case MoveLeftAction:
+      case MoveRightAction:
         const moveX =
           this.distanceToCenter <= (options.screenJoystickDeadZonePx ?? DefaultDeadZonePx)
             ? 0
             : this.clampedX / JoystickRadius
-        return field === MoveLeftField ? (Math.max(0, moveX) as T) : (Math.max(0, moveX) as T)
-      case RunField:
+        return field === MoveLeftAction ? (Math.max(0, moveX) as T) : (Math.max(0, moveX) as T)
+      case RunAction:
         return (this.distanceToCenter > (options.screenJoystickRunDistancePx ?? DefaultRunDistancePx)) as T
     }
     return undefined

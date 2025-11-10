@@ -10,6 +10,15 @@ import {
   updateSimpleCharacterInputVelocity,
   updateSimpleCharacterRotation,
 } from '@pmndrs/viverse'
+import {
+  IdleAnimationUrl,
+  JumpDownAnimationUrl,
+  JumpForwardAnimationUrl,
+  JumpLoopAnimationUrl,
+  JumpUpAnimationUrl,
+  RunAnimationUrl,
+  WalkAnimationUrl,
+} from '@pmndrs/viverse/src/animation/default.js'
 import { ThreeElement, useFrame } from '@react-three/fiber'
 import { Graph, GrapthState, Parallel, RunTimeline, Switch, SwitchCase, timePassed } from '@react-three/timeline'
 import { forwardRef, ReactNode, Suspense, useImperativeHandle, useRef } from 'react'
@@ -130,7 +139,7 @@ function SimpleCharacterModel({
                     <CharacterAnimationAction
                       {...animation?.idle}
                       fadeDuration={animation?.crossFadeDuration}
-                      url={{ default: 'idle' }}
+                      url={IdleAnimationUrl}
                     />
                   </Suspense>
                 </SwitchCase>
@@ -141,7 +150,7 @@ function SimpleCharacterModel({
                         {...animation?.run}
                         fadeDuration={animation?.crossFadeDuration}
                         scaleTime={0.8}
-                        url={{ default: 'run' }}
+                        url={RunAnimationUrl}
                       />
                     </Suspense>
                   </SwitchCase>
@@ -153,7 +162,7 @@ function SimpleCharacterModel({
                         {...animation?.walk}
                         fadeDuration={animation?.crossFadeDuration}
                         scaleTime={0.5}
-                        url={{ default: 'walk' }}
+                        url={WalkAnimationUrl}
                       />
                     </Suspense>
                   </SwitchCase>
@@ -163,7 +172,7 @@ function SimpleCharacterModel({
                     <CharacterAnimationAction
                       {...animation?.idle}
                       fadeDuration={animation?.crossFadeDuration}
-                      url={{ default: 'idle' }}
+                      url={IdleAnimationUrl}
                     />
                   </Suspense>
                 </SwitchCase>
@@ -184,13 +193,13 @@ function SimpleCharacterModel({
                     until={() => timePassed(0.2, 'seconds')}
                     update={() => void physics.inputVelocity.multiplyScalar(0.3)}
                     paused
-                    url={{ default: 'jumpUp' }}
+                    url={JumpUpAnimationUrl}
                   />
                   <CharacterAnimationAction
                     {...animation?.jumpForward}
                     fadeDuration={animation?.crossFadeDuration ?? 0.1}
                     paused
-                    url={{ default: 'jumpForward' }}
+                    url={JumpForwardAnimationUrl}
                   />
                 </Suspense>
               </Parallel>
@@ -205,7 +214,7 @@ function SimpleCharacterModel({
                 <CharacterAnimationAction
                   {...animation?.jumpLoop}
                   fadeDuration={animation?.crossFadeDuration}
-                  url={{ default: 'jumpLoop' }}
+                  url={JumpLoopAnimationUrl}
                 />
               </Suspense>
             </GrapthState>
@@ -229,7 +238,7 @@ function SimpleCharacterModel({
                       new Vector3(0, (typeof movement?.jump === 'object' ? movement?.jump.speed : undefined) ?? 8, 0),
                     )
                   }}
-                  url={{ default: 'jumpUp' }}
+                  url={JumpUpAnimationUrl}
                 />
               </Suspense>
             </GrapthState>
@@ -247,7 +256,7 @@ function SimpleCharacterModel({
                     physics.applyVelocity(new Vector3(0, 8, 0))
                   }}
                   loop={LoopOnce}
-                  url={{ default: 'jumpForward' }}
+                  url={JumpForwardAnimationUrl}
                 />
               </Suspense>
             </GrapthState>
@@ -258,7 +267,7 @@ function SimpleCharacterModel({
                   fadeDuration={animation?.crossFadeDuration}
                   until={() => timePassed(150, 'milliseconds')}
                   loop={LoopOnce}
-                  url={{ default: 'jumpDown' }}
+                  url={JumpDownAnimationUrl}
                 />
               </Suspense>
             </GrapthState>

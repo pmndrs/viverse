@@ -1,5 +1,6 @@
 import { action, type GraphTimelineState, timePassed } from '@pmndrs/timeline'
 import { LoopOnce } from 'three'
+import { JumpDownAnimationUrl } from '../../animation/default.js'
 import { flattenCharacterAnimationOptions, loadCharacterAnimation } from '../../animation/index.js'
 import { startAnimation } from '../../utils.js'
 import { DefaultCrossFadeDuration } from '../defaults.js'
@@ -16,7 +17,7 @@ export async function loadSimpleCharacterJumpDownState<T>(
   const jumpDown = model.mixer.clipAction(
     await loadCharacterAnimation(
       model,
-      ...flattenCharacterAnimationOptions(options.animation?.jumpDown ?? { url: { default: 'jumpDown' } }),
+      ...flattenCharacterAnimationOptions({ url: JumpDownAnimationUrl, ...options.animation?.jumpDown }),
     ),
   )
   jumpDown.loop = LoopOnce

@@ -1,5 +1,6 @@
 import { GraphTimelineState, action, animationFinished, TimelineClock } from '@pmndrs/timeline'
 import { AnimationAction, LoopOnce, Vector3 } from 'three'
+import { JumpUpAnimationUrl } from '../../animation/default.js'
 import { flattenCharacterAnimationOptions, loadCharacterAnimation } from '../../animation/index.js'
 import { startAnimation } from '../../utils.js'
 import { SimpleCharacterState, SimpleCharacterOptions } from '../index.js'
@@ -12,11 +13,10 @@ export async function loadSimpleCharacterJumpUpAction(state: SimpleCharacterStat
   const jumpUp = model.mixer.clipAction(
     await loadCharacterAnimation(
       model,
-      ...flattenCharacterAnimationOptions(
-        options.animation?.jumpUp ?? {
-          url: { default: 'jumpUp' },
-        },
-      ),
+      ...flattenCharacterAnimationOptions({
+        url: JumpUpAnimationUrl,
+        ...options.animation?.jumpUp,
+      }),
     ),
   )
   jumpUp.loop = LoopOnce

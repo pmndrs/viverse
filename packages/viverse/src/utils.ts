@@ -17,6 +17,7 @@ export function isMobile(): boolean {
 
 export type StartAnimationOptions = {
   fadeDuration?: number
+  sync?: boolean
   paused?: boolean
   mask?: CharacterAnimationMask
 }
@@ -24,12 +25,15 @@ export type StartAnimationOptions = {
 export function startAnimation(
   animation: AnimationAction,
   currentAnimations: CharacterModel['currentAnimations'],
-  { fadeDuration = 0.1, paused = false, mask }: StartAnimationOptions,
+  { fadeDuration = 0.1, paused = false, mask, sync = false }: StartAnimationOptions,
 ) {
   animation.reset()
   animation.play()
   animation.paused = paused
   const currentAnimation = currentAnimations.get(mask)
+  if (currentAnimation != null && sync) {
+    animation.syncWith(currentAnimation)
+  }
   if (currentAnimation != null) {
     animation.crossFadeFrom(currentAnimation, fadeDuration)
   } else {

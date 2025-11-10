@@ -11,9 +11,10 @@ export function CharacterAnimationAction({
   init,
   dependencies,
   update,
-  fadeDuration = 0.1,
+  fadeDuration,
   paused,
   loop,
+  sync,
   ...animationOptions
 }: {
   dependencies?: Array<unknown>
@@ -30,7 +31,7 @@ export function CharacterAnimationAction({
   return (
     <Action
       init={() => {
-        startAnimation(animation, model.currentAnimations, { fadeDuration, paused })
+        startAnimation(animation, model.currentAnimations, { mask: animationOptions.mask, fadeDuration, paused, sync })
         return init?.()
       }}
       until={until ?? (() => animationFinished(animation))}
