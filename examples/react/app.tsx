@@ -80,7 +80,7 @@ export function Scene() {
       <SimpleCharacter
         cameraBehavior={firstPerson ? Vanilla.FirstPersonCharacterCameraBehavior : undefined}
         ref={characterRef}
-        model={!firstPerson}
+        model={firstPerson ? false : undefined}
       >
         <PlayerTag />
         {!firstPerson && hasSword && (
