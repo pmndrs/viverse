@@ -14,8 +14,7 @@ The main provider component that sets up VIVERSE authentication and physics cont
 
 - `children?: ReactNode` - Child components
 - `loginRequired?: boolean` - Forces user to login before playing (default: `false`)
-- `checkAuth?: checkAuthOptions` - Authentication check options
-- `clientId?: string` - VIVERSE app client ID (can also be set via `VITE_VIVERSE_APP_ID` environment variable).
+- `clientId?: string` - VIVERSE app client ID. Typically you pass this from your app’s environment (e.g. a `VITE_VIVERSE_APP_ID` env var you manage) into this prop.
 - `domain?: string` - Authentication domain (default: `'account.htcvive.com'`)
 - `authorizationParams?: object` - Additional authorization parameters
 - `cookieDomain?: string` - Cookie domain for authentication
@@ -79,7 +78,7 @@ Adds visible children as static (non-moving) or kinematic (moving) objects as ob
 
 ### `<BvhPhysicsSensor>`
 
-Adds visible children as static (non-moving) or kinematic (moving) objects as obstacles to the physics world.
+Adds visible children as sensors that detect player intersection and trigger callbacks (does not add obstacles).
 
 > [!WARNING]
 > Content inside the object can not structurally change; Hiding the sensors content requires to wrap it in `<group visible={false}>...</group>`.
@@ -93,7 +92,7 @@ Adds visible children as static (non-moving) or kinematic (moving) objects as ob
 **Example:**
 
 ```tsx
-<BvhPhysicsSensor onIntersectedChanged={(intersected) => console.log("currently intersected": intersected)}>
+<BvhPhysicsSensor onIntersectedChanged={(intersected) => console.log("currently intersected", intersected)}>
   <mesh visible={false}>
     <boxGeometry />
   </mesh>
@@ -115,9 +114,116 @@ A quick prototyping component that renders a textured box with the prototype mat
 <PrototypeBox position={[0, 1, 0]} scale={[2, 1, 3]} color="red" />
 ```
 
-### `<VrmCharacterModelBone>`
+### `<CharacterModelProvider>`
 
-Component for placing content inside the in VRM character models.
+Provides the active character model context so that animation and bone utilities can target the same model instance. Wrap any content that uses `<CharacterAnimationAction>`, `<AdditiveCharacterAnimationAction>`, `<CharacterAnimationLayer>`, or `<CharacterModelBone>`.
+
+**Props:**
+
+- `model: CharacterModel` - Model returned by `useCharacterModelLoader`
+- `children?: ReactNode` - Child components
+
+**Example:**
+
+```tsx
+const model = useCharacterModelLoader({ url: 'avatar.vrm', castShadow: true })
+
+return (
+  <CharacterModelProvider model={model}>
+    <RunTimeline>
+      <CharacterAnimationAction url="idle.glb" />
+    </RunTimeline>
+    <primitive object={model.scene} />
+  </CharacterModelProvider>
+)
+```
+
+### `<CharacterAnimationLayer>`
+
+Defines a logical animation layer (e.g., "lower-body", "upper-body"). All nested animation actions inherit this layer unless they provide their own `layer` prop. Layers allow to manage animations when managing e.g. additive animations or animations with masks.
+
+**Props:**
+
+- `name: string` - Layer name
+- `children?: ReactNode` - Nested timeline/animation content
+
+**Example:**
+
+```tsx
+<RunTimeline>
+  <CharacterAnimationLayer name="lower-body">
+    <CharacterAnimationAction url="walk.glb" mask={lowerBodyMask} />
+  </CharacterAnimationLayer>
+  <CharacterAnimationLayer name="upper-body">
+    <AdditiveCharacterAnimationAction
+      referenceClip={{ url: 'aim-forward.glb' }}
+      url="pistol-idle.glb"
+      mask={upperBodyMask}
+    />
+  </CharacterAnimationLayer>
+  <primitive object={model.scene} />
+  {/* ...lights, environment... */}
+  {/* masks can be created with @pmndrs/viverse animation masks */}
+</RunTimeline>
+```
+
+### `<CharacterAnimationAction>`
+
+Loads and plays a clip on the active character model, integrating with `@react-three/timeline` for lifecycle and transitions. Supports masking, cross-fading, syncing, and layering. The `ref` exposes the underlying Three.js `AnimationAction`.
+
+**Props:**
+
+- Clip options (from `@pmndrs/viverse`):
+  - `url: string | DefaultUrl` - Source of the animation
+  - `type?: 'mixamo' | 'gltf' | 'vrma' | 'fbx' | 'bvh'`
+  - `removeXZMovement?: boolean`
+  - `trimTime?: { start?: number; end?: number }`
+  - `boneMap?: Record<string, VRMHumanBoneName>`
+  - `scaleTime?: number`
+  - `mask?: CharacterAnimationMask` - Limit animation to specific bones/regions
+- Playback and blending:
+  - `fadeDuration?: number` - Cross-fade/fade time (default: `0.1`)
+  - `crossFade?: boolean` - Whether to cross-fade from current layer action (default: `true`)
+  - `sync?: boolean` - Sync time with current action on same layer (if any)
+  - `paused?: boolean`
+  - `loop?: AnimationActionLoopStyles` - Defaults to `LoopRepeat`
+  - `layer?: string` - Overrides the current `<CharacterAnimationLayer>`
+- Timeline control (from `@react-three/timeline`):
+  - `init?(): void | (() => void)` - Called when the action starts; return a cleanup
+  - `update?(state, delta): void` - Per-frame update
+  - `until?(): Promise<unknown>` - Resolve to stop; defaults to when the clip finishes
+  - `dependencies?: unknown[]` - Re-run when any dependency changes
+- Advanced:
+  - `additiveReferenceClip?: AnimationClip` - Use an additive version of the clip relative to this reference clip (prefer `<AdditiveCharacterAnimationAction>` for convenience)
+
+**Example:**
+
+```tsx
+<CharacterAnimationAction url="idle.glb" />
+```
+
+### `<AdditiveCharacterAnimationAction>`
+
+Convenience wrapper around `<CharacterAnimationAction>` that plays an additive version of the clip, using a provided reference pose/clip (e.g., aim offsets layered over locomotion).
+
+**Props:**
+
+- All `<CharacterAnimationAction>` props, except it uses:
+  - `referenceClip: CharacterAnimationOptions` - Clip used as the additive reference pose
+
+**Example:**
+
+```tsx
+<AdditiveCharacterAnimationAction
+  referenceClip={{ url: 'aim-forward.glb' }}
+  url="pistol-reload.glb"
+  mask={upperBodyMask}
+/>
+```
+
+### `<CharacterModelBone>`
+
+Component for placing content inside the character model at specific bones.
 
 **Props:**
 
@@ -125,9 +231,9 @@ Component for placing content inside the in VRM character models.
 
 ```tsx
 <SimpleCharacter>
-  <VrmCharacterModelBone bone="rightHand">
+  <CharacterModelBone bone="rightHand">
     <SwordModel />
-  </VrmCharacterModelBone>
+  </CharacterModelBone>
 </SimpleCharacter>
 ```
 
@@ -155,7 +261,7 @@ Component for placing content inside the in VRM character models.
 Lightweight media-query based mobile detection. It subscribes to `@media (hover: none) and (pointer: coarse)`.
 
 ```tsx
-import { useIsMobile } from '@pmndrs/viverse/react'
+import { useIsMobile } from '@react-three/viverse'
 
 function MobileOnlyUI() {
   const isMobile = useIsMobile()
@@ -176,22 +282,22 @@ Allows to configure whether the users vrm avatar should be displayed as the char
 ### `movement` Options
 
 - **walk:** `object | boolean` - Enable walking (default: `true`)
-  - **speed:** Movement speed in units per second (default: `2.5`)
+  - **speed:** Movement speed in units per second (default: `3`)
   - Set to `false` to disable walking
 
 - **run:** `object | boolean` - Enable running (default: `true`)
-  - **speed:** Running speed in units per second (default: `4.5`)
+  - **speed:** Running speed in units per second (default: `6`)
   - Set to `false` to disable running
 
-- **run:** `object | boolean` - Enable jumping (default: `true`)
-  - **delay:** Time before jump starts in seconds (default: `0.15`)
+- **jump:** `object | boolean` - Enable jumping (default: `true`)
+  - **delay:** Time before jump starts in seconds (default: `0.2`)
   - **bufferTime:** Jump input buffer time in seconds (default: `0.1`)
   - **speed:** Jump velocity in units per second (default: `8`)
   - Set to `false` to disable jumping
 
 ### `input` Options
 
-Either a array of `Input` objects or a custom `InputSystem`
+An array of input classes to instantiate for handling controls
 
 - **Default:** `[ScreenJoystickInput, ScreenJumpButtonInput, PointerCaptureInput, LocomotionKeyboardInput]`
 - Configure input handling with custom input classes
@@ -220,7 +326,7 @@ Either a array of `Input` objects or a custom `InputSystem`
 - **capsuleHeight:** `number` - Character collision capsule height (default: `1.7`)
 - **gravity:** `number` - Gravity acceleration in m/s² (default: `-20`)
 - **linearDamping:** `number` - Air resistance coefficient (default: `0.1`)
-- **maxGroundSlope:** `number` - Max slope for a collider to be detected as a walkable ground (default: `1` which equals to 45°)
+- **maxGroundSlope:** `number` - Max slope for a collider to be detected as walkable (default: `0.5`)
 
 ### `cameraBehavior` Options
 
@@ -243,14 +349,14 @@ Either a array of `Input` objects or a custom `InputSystem`
 
 ### `animation` Options
 
-- **yawRotationBasedOn:** `'camera' | 'movement'` - Character rotation basis (default: `'movement'`)
+- **yawRotationBasdOn:** `'camera' | 'movement'` - Character rotation basis (default: `'movement'`)
 - **maxYawRotationSpeed:** `number` - Maximum rotation speed (default: `10`)
 - **crossFadeDuration:** `number` - Animation blend time in seconds (default: `0.1`)
 
 The `SimpleCharacter` uses the following animations `walk`, `run`, `idle`, `jumpForward`, `jumpUp`, `jumpLoop`, `jumpDown` each with the following options:
 
 - **url:** `string` - Animation file URL
-- **type:** `'fbx' | 'gltf' | 'vrma'` - Animation file type (optional)
+- **type:** `'gltf' | 'vrma' | 'fbx' | 'bvh'` - Animation file type (optional)
 - **boneMap** - Allows to map the bone names of the animation amature to the standard VRM bone names
 - **removeXZMovement:** `boolean` - Remove horizontal movement from animation
 - **trimTime:** `{ start?: number; end?: number }` - Trim animation timing

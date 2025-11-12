@@ -1,6 +1,6 @@
-import { Object3D, Vector3, Euler, Vector3Tuple, Ray } from 'three'
+import { Object3D, Vector3, Euler, Vector3Tuple, Ray, Quaternion } from 'three'
 import { clamp } from 'three/src/math/MathUtils.js'
-import { DeltaYawField, DeltaPitchField, ZoomAction, InputSystem } from './input/index.js'
+import { RotatePitchAction, RotateYawAction, ZoomAction } from './input/index.js'
 
 export const FirstPersonCharacterCameraBehavior: SimpleCharacterCameraBehaviorOptions = {
   characterBaseOffset: [0, 1.6, 0],
@@ -78,6 +78,7 @@ const sphericalOffset = new Vector3()
 const characterWorldPosition = new Vector3()
 const euler = new Euler()
 const rayHelper = new Ray()
+const quaternionHelper = new Quaternion()
 
 export class CharacterCameraBehavior {
   public rotationPitch = (-20 * Math.PI) / 180
@@ -87,6 +88,10 @@ export class CharacterCameraBehavior {
   //internal state
   private collisionFreeZoomDistance = this.zoomDistance
   private firstUpdate = true
+  private readonly abortController = new AbortController()
+  private readonly yawReader = RotateYawAction.createReader(this.abortController.signal)
+  private readonly pitchReader = RotatePitchAction.createReader(this.abortController.signal)
+  private readonly zoomReader = ZoomAction.createReader(this.abortController.signal)
 
   private setRotationFromDelta(
     camera: Object3D,
@@ -162,7 +167,6 @@ export class CharacterCameraBehavior {
   update(
     camera: Object3D,
     target: Object3D,
-    inputSystem: InputSystem,
     deltaTime: number,
     raycast?: (ray: Ray, far: number) => number | undefined,
     options: SimpleCharacterCameraBehaviorOptions = true,
@@ -178,6 +182,8 @@ export class CharacterCameraBehavior {
 
     //compute character->camera delta through offset
     this.computeCharacterBaseOffset(chracterBaseOffsetHelper, options.characterBaseOffset)
+    target.getWorldQuaternion(quaternionHelper)
+    chracterBaseOffsetHelper.applyQuaternion(quaternionHelper)
     target.getWorldPosition(characterWorldPosition)
     characterWorldPosition.add(chracterBaseOffsetHelper)
     camera.getWorldPosition(deltaHelper)
@@ -188,8 +194,10 @@ export class CharacterCameraBehavior {
     if (!this.firstUpdate && rotationOptions !== false) {
       rotationOptions = rotationOptions === true ? {} : rotationOptions
       const rotationSpeed = rotationOptions.speed ?? 1000.0
-      const deltaYaw = inputSystem.get(DeltaYawField)
-      const deltaPitch = inputSystem.get(DeltaPitchField)
+      this.yawReader.update()
+      this.pitchReader.update()
+      const deltaYaw = this.yawReader.get()
+      const deltaPitch = this.pitchReader.get()
       this.rotationYaw = this.clampYaw(this.rotationYaw + deltaYaw * rotationSpeed * deltaTime, rotationOptions)
       this.rotationPitch = this.clampPitch(this.rotationPitch + deltaPitch * rotationSpeed * deltaTime, rotationOptions)
     } else {
@@ -207,7 +215,8 @@ export class CharacterCameraBehavior {
     if (!this.firstUpdate && zoomOptions !== false) {
       zoomOptions = zoomOptions === true ? {} : zoomOptions
       const zoomSpeed = zoomOptions.speed ?? 1000.0
-      const deltaZoom = inputSystem.get(ZoomAction)
+      this.zoomReader.update()
+      const deltaZoom = this.zoomReader.get()
       const zoomFactor = 1 + deltaZoom * zoomSpeed * deltaTime
       if (deltaZoom >= 0) {
         this.zoomDistance *= zoomFactor
@@ -236,12 +245,17 @@ export class CharacterCameraBehavior {
     sphericalOffset.applyEuler(camera.rotation)
 
     // Get target position with offset (reuse helper vector)
-    target.getWorldPosition(characterWorldPosition)
-
     this.computeCharacterBaseOffset(chracterBaseOffsetHelper, options.characterBaseOffset)
+    target.getWorldQuaternion(quaternionHelper)
+    chracterBaseOffsetHelper.applyQuaternion(quaternionHelper)
+    target.getWorldPosition(characterWorldPosition)
     characterWorldPosition.add(chracterBaseOffsetHelper)
 
     // Set camera position relative to target
     camera.position.copy(characterWorldPosition).add(sphericalOffset)
+  }
+
+  dispose(): void {
+    this.abortController.abort()
   }
 }

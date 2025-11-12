@@ -19,3 +19,8 @@ export function CharacterModelBone({ bone, children }: { bone: VRMHumanBoneName;
     </Fragment>
   )
 }
+
+/**
+ * @deprecated use CharacterModelBone instead
+ */
+export const VrmCharacterModelBone = CharacterModelBone

@@ -1,8 +1,8 @@
-import { Input, InputField, LastTimeJumpPressedField } from './index.js'
+import { JumpAction } from './index.js'
 
-export class ScreenJumpButtonInput implements Input<{}> {
+export class ScreenJumpButtonInput {
+  private readonly abortController = new AbortController()
   public readonly root: HTMLDivElement
-  private lastJumpTime: number | null = null
 
   constructor(domElement: HTMLElement) {
     const parent = domElement.parentElement ?? domElement
@@ -31,25 +31,19 @@ export class ScreenJumpButtonInput implements Input<{}> {
     const onPress = (e: Event) => {
       e.preventDefault()
       e.stopPropagation()
-      this.lastJumpTime = performance.now() / 1000
+      JumpAction.emit()
     }
     const stopPropagation = (e: Event) => {
       e.stopPropagation()
       e.preventDefault()
     }
-    this.root.addEventListener('pointerdown', onPress)
-    this.root.addEventListener('pointermove', stopPropagation)
-    this.root.addEventListener('pointerup', stopPropagation)
-  }
-
-  get<T>(field: InputField<T>): T | undefined {
-    if (field === LastTimeJumpPressedField) {
-      return this.lastJumpTime as T
-    }
-    return undefined
+    this.root.addEventListener('pointerdown', onPress, { signal: this.abortController.signal })
+    this.root.addEventListener('pointermove', stopPropagation, { signal: this.abortController.signal })
+    this.root.addEventListener('pointerup', stopPropagation, { signal: this.abortController.signal })
   }
 
   dispose(): void {
+    this.abortController.abort()
     this.root.remove()
   }
 }

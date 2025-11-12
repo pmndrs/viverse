@@ -36,7 +36,7 @@ export async function loadSimpleCharacterJumpStartState<T>(
       }),
     transitionTo: {
       jumpDown: { whenUpdate: () => !state.physics.isGrounded },
-      finally: () => (state.inputSystem.get(RunAction) ? 'jumpForward' : 'jumpUp'),
+      finally: () => (RunAction.get() ? 'jumpForward' : 'jumpUp'),
     },
   }
 }

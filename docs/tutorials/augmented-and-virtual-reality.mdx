@@ -79,7 +79,7 @@ export function Scene() {
       characterRef.current.position.set(0, 0, 0)
     }
   })
-  const input = useXRControllerInput()
+  useXRControllerInput()
   return (
     <>
       <directionalLight
@@ -94,7 +94,7 @@ export function Scene() {
         shadow-camera-bottom={-10}
       />
       <ambientLight intensity={1} />
-      <SimpleCharacter input={[input]} cameraBehavior={false} ref={characterRef} />
+      <SimpleCharacter cameraBehavior={false} ref={characterRef} />
       <BvhPhysicsBody>
         <PrototypeBox color="&#35;cccccc" scale={[2, 1, 3]} position={[3.91, 0, 0]} />
         <PrototypeBox color="&#35;ffccff" scale={[3, 1, 3]} position={[2.92, 1.5, -1.22]} />
@@ -172,7 +172,7 @@ export function Scene() {
 
 ### Step 4: Use XR Controller Input
 
-Replace keyboard/mouse input with XR controller input using the `useXRControllerInput` hook:
+Add XR controller input using the `useXRControllerInput` hook:
 
 ```tsx
 import { useXRControllerInput } from '@react-three/viverse'
@@ -183,7 +183,6 @@ export function Scene() {
   return (
     <>
       <SimpleCharacter 
-        input={[input]} 
         cameraBehavior={false} 
         ref={characterRef}
       >
@@ -196,7 +195,6 @@ export function Scene() {
 ```
 
 **Key changes:**
-- `input={[input]}` - Uses XR controller input instead of keyboard/mouse
 - `cameraBehavior={false}` - Disables automatic camera control (AR handles this)
 - `useXRControllerInput()` - Hook that provides controller input for movement
 
@@ -271,7 +269,7 @@ export function Scene() {
       characterRef.current.position.set(0, 0, 0)
     }
   })
-  const input = useXRControllerInput()
+  useXRControllerInput()
   return (
     <>
       <Sky />
@@ -287,7 +285,7 @@ export function Scene() {
         shadow-camera-bottom={-10}
       />
       <ambientLight intensity={1} />
-      <SimpleCharacter input={[input]} cameraBehavior={false} model={false} ref={characterRef}>
+      <SimpleCharacter cameraBehavior={false} model={false} ref={characterRef}>
         <SnapRotateXROrigin />
       </SimpleCharacter>
              <BvhPhysicsBody>

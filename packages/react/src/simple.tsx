@@ -1,8 +1,7 @@
 import {
   BvhCharacterPhysics,
   CharacterModelOptions,
-  InputSystem,
-  RunField,
+  RunAction,
   shouldJump,
   SimpleCharacterAnimationOptions,
   SimpleCharacterMovementOptions,
@@ -27,7 +26,7 @@ import { CharacterAnimationAction } from './animation.js'
 import { useViverseActiveAvatar } from './index.js'
 import { CharacterModelProvider } from './model.js'
 import { useBvhCharacterPhysics } from './physics.js'
-import { useCharacterCameraBehavior, useCharacterModelLoader, useInputSystem } from './utils.js'
+import { useCharacterCameraBehavior, useCharacterModelLoader, useSimpleCharacterInputs } from './utils.js'
 
 export const SimpleCharacter = forwardRef<
   Object3D,
@@ -48,18 +47,18 @@ export const SimpleCharacter = forwardRef<
     },
     ref,
   ) => {
+    useSimpleCharacterInputs(input, inputOptions)
     const internalRef = useRef<Object3D>(null)
-    const inputSystem = useInputSystem(input, inputOptions)
-    useCharacterCameraBehavior(internalRef, inputSystem, cameraBehavior)
+    useCharacterCameraBehavior(internalRef, cameraBehavior)
     const physics = useBvhCharacterPhysics(internalRef, physicsOptions)
     const lastJumpTimeRef = useRef(-Infinity)
-    useFrame((state) => updateSimpleCharacterInputVelocity(state.camera, inputSystem, physics, movement))
+    useFrame((state) => updateSimpleCharacterInputVelocity(state.camera, physics, movement))
     useFrame(() => {
       if (model != false || movement?.jump === false) {
         return
       }
       const bufferTime = movement?.jump === true ? undefined : movement?.jump?.bufferTime
-      if (shouldJump(physics, inputSystem, lastJumpTimeRef.current, bufferTime)) {
+      if (shouldJump(physics, lastJumpTimeRef.current, bufferTime)) {
         lastJumpTimeRef.current = performance.now() / 1000
         physics.applyVelocity(
           // eslint-disable-next-line @react-three/no-new-in-loop
@@ -75,7 +74,6 @@ export const SimpleCharacter = forwardRef<
         ) : (
           <SimpleCharacterModel
             animation={animation}
-            inputSystem={inputSystem}
             physics={physics}
             model={model == true ? undefined : model}
             movement={movement}
@@ -95,11 +93,9 @@ function SimpleCharacterModel({
   movement,
   physics,
   useViverseAvatar = true,
-  inputSystem,
   animation,
 }: {
   physics: BvhCharacterPhysics
-  inputSystem: InputSystem
   children?: ReactNode
   model?: CharacterModelOptions
   useViverseAvatar?: boolean
@@ -128,7 +124,7 @@ function SimpleCharacterModel({
               name="move"
               transitionTo={{
                 jumpStart: {
-                  whenUpdate: () => shouldJump(physics, inputSystem, lastJumpTimeRef.current),
+                  whenUpdate: () => shouldJump(physics, lastJumpTimeRef.current),
                 },
                 jumpLoop: { whenUpdate: () => !physics.isGrounded },
               }}
@@ -144,7 +140,7 @@ function SimpleCharacterModel({
                   </Suspense>
                 </SwitchCase>
                 {movement?.run != false && (
-                  <SwitchCase index={1} condition={() => inputSystem.get(RunField)}>
+                  <SwitchCase index={1} condition={() => RunAction.get()}>
                     <Suspense fallback={null}>
                       <CharacterAnimationAction
                         {...animation?.run}
@@ -182,7 +178,7 @@ function SimpleCharacterModel({
               name="jumpStart"
               transitionTo={{
                 jumpDown: { whenUpdate: () => !physics.isGrounded },
-                finally: () => (inputSystem.get(RunField) ? 'jumpForward' : 'jumpUp'),
+                finally: () => (RunAction.get() ? 'jumpForward' : 'jumpUp'),
               }}
             >
               <Parallel type="race">

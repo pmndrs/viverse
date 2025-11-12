@@ -5,29 +5,36 @@ import {
   CharacterModelOptions,
   flattenCharacterAnimationOptions,
   flattenCharacterModelOptions,
-  InputSystem,
   loadCharacterModel,
   loadCharacterAnimation,
   SimpleCharacterCameraBehaviorOptions,
   CharacterModel,
-  Input,
   ScreenJoystickInput,
   ScreenJumpButtonInput,
   PointerCaptureInput,
   LocomotionKeyboardInput,
+  SimpleCharacterInputOptions,
+  applySimpleCharacterInputOptions,
 } from '@pmndrs/viverse'
 import { useFrame, useThree } from '@react-three/fiber'
-import { RefObject, useEffect, useMemo } from 'react'
+import { RefObject, useEffect, useMemo, useRef } from 'react'
 import { suspend } from 'suspend-react'
 import { Object3D } from 'three'
 import { useBvhPhysicsWorld } from './physics.js'
 
 export function useCharacterCameraBehavior(
   model: Object3D | RefObject<Object3D | null>,
-  inputSystem: InputSystem,
   options?: SimpleCharacterCameraBehaviorOptions,
 ) {
-  const behavior = useMemo(() => new CharacterCameraBehavior(), [])
+  const behaviorRef = useRef<CharacterCameraBehavior>(undefined)
+  useEffect(() => {
+    const behavior = new CharacterCameraBehavior()
+    behaviorRef.current = behavior
+    return () => {
+      behaviorRef.current = undefined
+      behavior.dispose()
+    }
+  }, [])
   const world = useBvhPhysicsWorld()
   const raycast = useMemo(() => world.raycast.bind(world), [world])
   useFrame((state, delta) => {
@@ -35,8 +42,9 @@ export function useCharacterCameraBehavior(
     if (resolvedModel == null) {
       return
     }
-    behavior.update(state.camera, resolvedModel, inputSystem, delta, raycast, options)
+    behaviorRef.current?.update(state.camera, resolvedModel, delta, raycast, options)
   })
+  return behaviorRef
 }
 
 const loadCharacterModelSymbol = Symbol('loadCharacterModel')
@@ -62,41 +70,45 @@ export function useCharacterAnimationLoader(model: CharacterModel, options: Char
   )
 }
 
-export function useInputSystem<T extends object>(
-  inputs: ReadonlyArray<Input<T> | { new (domElement: HTMLElement): Input<T> }> = [
+/**
+ * @deprecated use inputs directly
+ */
+export function useSimpleCharacterInputs(
+  inputsClasses: ReadonlyArray<{ new (domElement: HTMLElement): { dispose(): void } }> = [
     ScreenJoystickInput,
     ScreenJumpButtonInput,
     PointerCaptureInput,
     LocomotionKeyboardInput,
   ],
-  options: T = {} as T,
-): InputSystem<T> {
+  options?: SimpleCharacterInputOptions,
+): void {
   const dom = useThree((s) => s.gl.domElement)
-  const optionsRef = useMemo(() => ({}) as T, [])
-  //clearing and copying the options to optionsRef
-  for (const key in optionsRef) {
-    delete optionsRef[key]
-  }
-  Object.assign(optionsRef, options)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const system = useMemo(() => new InputSystem<T>(optionsRef), [])
+  const inputs = useMemo<Array<{ dispose(): void }>>(() => [], [dom])
   useEffect(() => {
-    const removedInputs = new Set(system.inputs)
-    for (const input of inputs) {
-      const existingInput = system.inputs.find((existingInput) =>
-        typeof input === 'function' ? existingInput instanceof input.constructor : existingInput === input,
-      )
+    const removedInputs = new Set(inputs)
+    for (const inputClass of inputsClasses) {
+      const existingInput = inputs.find((existingInput) => existingInput instanceof inputClass)
       if (existingInput != null) {
         removedInputs.delete(existingInput)
         continue
       }
-      system.add(typeof input === 'function' ? new input(dom) : input)
+      inputs.push(new inputClass(dom))
     }
     for (const removedInput of removedInputs) {
-      system.remove(removedInput)
-      removedInput.dispose?.()
+      removedInput.dispose()
+      const index = inputs.indexOf(removedInput)
+      if (index != -1) {
+        inputs.splice(index, 1)
+      }
     }
+    applySimpleCharacterInputOptions(inputs, options)
   })
-  useEffect(() => () => system.inputs.forEach((input) => input.dispose?.()), [system])
-  return system
+  useEffect(
+    () => () => {
+      inputs.forEach((input) => input.dispose())
+      inputs.length = 0
+    },
+    [inputs],
+  )
 }

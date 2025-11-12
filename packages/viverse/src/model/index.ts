@@ -1,7 +1,6 @@
 import { AnimationAction, AnimationMixer, Euler, Object3D, Quaternion } from 'three'
 import { loadGltfCharacterModel } from './gltf.js'
 import { loadVrmCharacterModel } from './vrm.js'
-import { CharacterAnimationMask } from '../animation/index.js'
 
 export { VRMHumanBoneName } from '@pixiv/three-vrm'
 export * from './vrm.js'
@@ -36,7 +35,7 @@ export function flattenCharacterModelOptions(
 export type CharacterModel = {
   mixer: AnimationMixer
   scene: Object3D
-  currentAnimations: Map<CharacterAnimationMask | undefined, AnimationAction>
+  currentAnimations: Map<string | undefined, AnimationAction>
   boneRotationOffset?: Quaternion
 }
 

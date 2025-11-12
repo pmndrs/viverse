@@ -1,18 +1,15 @@
-import { DeltaPitchField, DeltaYawField, ZoomAction, Input, InputField } from './index.js'
-
-export type PointerLockInputOptions = {
-  pointerLockRotationSpeed?: number // default 0.4
-  pointerLockZoomSpeed?: number // default 0.0001
-}
+import { RotatePitchAction, RotateYawAction, ZoomAction } from './index.js'
 
 /**
  * @requires to manually execute `domElement.requestPointerLock()`
  */
-export class PointerLockInput implements Input<PointerLockInputOptions> {
+export class PointerLockInput {
   private readonly abortController = new AbortController()
-  private deltaZoom = 0
-  private deltaYaw = 0
-  private deltaPitch = 0
+
+  public options: {
+    rotationSpeed?: number // default 0.4
+    zoomSpeed?: number // default 0.0001
+  } = {}
 
   constructor(domElement: HTMLElement) {
     domElement.addEventListener(
@@ -21,10 +18,10 @@ export class PointerLockInput implements Input<PointerLockInputOptions> {
         if (document.pointerLockElement != domElement) {
           return
         }
-        // Compute based on domElement bounds instead of window.innerHeight
         const rect = domElement.getBoundingClientRect()
-        this.deltaYaw -= event.movementX / rect.height
-        this.deltaPitch -= event.movementY / rect.height
+        const rotationSpeed = this.options.rotationSpeed ?? 0.4
+        RotateYawAction.write(-(event.movementX / rect.height) * rotationSpeed)
+        RotatePitchAction.write(-(event.movementY / rect.height) * rotationSpeed)
       },
       {
         signal: this.abortController.signal,
@@ -36,34 +33,14 @@ export class PointerLockInput implements Input<PointerLockInputOptions> {
         if (document.pointerLockElement != domElement) {
           return
         }
-        this.deltaZoom += event.deltaY
+        const zoomSpeed = this.options.zoomSpeed ?? 0.0001
+        ZoomAction.write(event.deltaY * zoomSpeed)
         event.preventDefault()
       },
       {
         signal: this.abortController.signal,
       },
     )
-  }
-
-  get<T>(field: InputField<T>, options: PointerLockInputOptions): T | undefined {
-    const rotationSpeed = options.pointerLockRotationSpeed ?? 0.4
-    const zoomSpeed = options.pointerLockZoomSpeed ?? 0.0001
-    let result: T | undefined
-    switch (field) {
-      case DeltaPitchField:
-        result = (this.deltaPitch * rotationSpeed) as T
-        this.deltaPitch = 0
-        break
-      case DeltaYawField:
-        result = (this.deltaYaw * rotationSpeed) as T
-        this.deltaYaw = 0
-        break
-      case ZoomAction:
-        result = (this.deltaZoom * zoomSpeed) as T
-        this.deltaZoom = 0
-        break
-    }
-    return result
   }
 
   dispose(): void {

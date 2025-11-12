@@ -55,7 +55,7 @@ export function Scene() {
       characterRef.current.position.set(0, 0, 0)
     }
   })
-  const input = useXRControllerInput()
+  useXRControllerInput()
   return (
     <>
       <directionalLight
@@ -70,7 +70,7 @@ export function Scene() {
         shadow-camera-bottom={-10}
       />
       <ambientLight intensity={1} />
-      <SimpleCharacter input={[input]} cameraBehavior={false} ref={characterRef}>
+      <SimpleCharacter cameraBehavior={false} ref={characterRef}>
         <PlayerTag />
       </SimpleCharacter>
       <BvhPhysicsBody>

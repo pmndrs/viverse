@@ -112,6 +112,9 @@ importers:
       '@dotenvx/dotenvx':
         specifier: ^1.47.6
         version: 1.48.3
+      '@pixiv/three-vrm':
+        specifier: ^3.4.2
+        version: 3.4.2(three@0.178.0)
       '@react-three/drei':
         specifier: ^10.5.1
         version: 10.5.1(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(@types/react@19.1.8)(@types/three@0.178.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0)
@@ -119,8 +122,8 @@ importers:
         specifier: 9.2.0
         version: 9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0)
       '@react-three/timeline':
-        specifier: ^0.3.5
-        version: 0.3.5(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(three@0.178.0)
+        specifier: ^0.3.7
+        version: 0.3.7(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(three@0.178.0)
       '@react-three/uikit':
         specifier: ^1.0.41
         version: 1.0.41(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(@types/react@19.1.8)(react@19.1.0)(three@0.178.0)(use-sync-external-store@1.5.0(react@19.1.0))
@@ -139,6 +142,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
+      zustand:
+        specifier: ^5.0.6
+        version: 5.0.6(@types/react@19.1.8)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))
     devDependencies:
       '@types/react':
         specifier: ^19.1.8
@@ -162,8 +168,8 @@ importers:
         specifier: 9.2.0
         version: 9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0)
       '@react-three/timeline':
-        specifier: ^0.3.5
-        version: 0.3.5(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(three@0.178.0)
+        specifier: ^0.3.7
+        version: 0.3.7(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(three@0.178.0)
       '@react-three/uikit':
         specifier: ^1.0.41
         version: 1.0.41(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(@types/react@19.1.8)(react@19.1.0)(three@0.178.0)(use-sync-external-store@1.5.0(react@19.1.0))
@@ -263,8 +269,8 @@ importers:
         specifier: workspace:^
         version: link:../viverse
       '@react-three/timeline':
-        specifier: ^0.3.5
-        version: 0.3.5(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(three@0.178.0)
+        specifier: ^0.3.7
+        version: 0.3.7(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(three@0.178.0)
       '@react-three/xr':
         specifier: ^6.6.20
         version: 6.6.20(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0)
@@ -297,8 +303,8 @@ importers:
         specifier: ^3.4.2
         version: 3.4.2(three@0.178.0)
       '@pmndrs/timeline':
-        specifier: ^0.3.5
-        version: 0.3.5(three@0.178.0)
+        specifier: ^0.3.7
+        version: 0.3.7(three@0.178.0)
       '@viverse/sdk':
         specifier: 1.2.10-alpha.0
         version: 1.2.10-alpha.0
@@ -908,8 +914,8 @@ packages:
   '@pmndrs/pointer-events@6.6.20':
     resolution: {integrity: sha512-Jf5eNS8VREZ4d/lGX/TVxJrNNxQSUM94cd0RjlXfxwXQt10faETQW0j9u0jTOjsW7EtwjM/lTsjUsjbvxwPGlw==}
 
-  '@pmndrs/timeline@0.3.5':
-    resolution: {integrity: sha512-HR7qeV7ie9StntdX/zGWrPg50XEF2UGdIIgzS5BiiISkxycAMd0KHdnqCXLRggrWUIwQbMyf7ZB1bBqR3kYvtA==}
+  '@pmndrs/timeline@0.3.7':
+    resolution: {integrity: sha512-0YIrwhmsseeipAY+AzOg/15qo/tdsm3uEAhQcUU19EFgA0YmVrdlMS0nJ7mJPbJ5A13m+Rm3FSUXigntVD+G2Q==}
     peerDependencies:
       three: '*'
 
@@ -1084,8 +1090,8 @@ packages:
       react-native:
         optional: true
 
-  '@react-three/timeline@0.3.5':
-    resolution: {integrity: sha512-BerjgjpuA6QZeQx5Sp+JV5usfnOUtfhygzJZlwTRTB8pfJ0v5UMqtS7ZLDz62lrL29i5KbTmUsO/0yw3W0hQ/w==}
+  '@react-three/timeline@0.3.7':
+    resolution: {integrity: sha512-xFYuNo25cJcNiC8kCMfHLZynUdWMdyPkvg+Zr19qPZtSLzAm7Plu3pKkznDsyH5WroJpCKdYO9rC8RLiitiCYA==}
     peerDependencies:
       '@react-three/fiber': '*'
 
@@ -4292,7 +4298,7 @@ snapshots:
 
   '@pmndrs/pointer-events@6.6.20': {}
 
-  '@pmndrs/timeline@0.3.5(three@0.178.0)':
+  '@pmndrs/timeline@0.3.7(three@0.178.0)':
     dependencies:
       three: 0.178.0
 
@@ -4552,9 +4558,9 @@ snapshots:
       - '@types/react'
       - immer
 
-  '@react-three/timeline@0.3.5(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(three@0.178.0)':
+  '@react-three/timeline@0.3.7(@react-three/fiber@9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0))(three@0.178.0)':
     dependencies:
-      '@pmndrs/timeline': 0.3.5(three@0.178.0)
+      '@pmndrs/timeline': 0.3.7(three@0.178.0)
       '@react-three/fiber': 9.2.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.178.0)
     transitivePeerDependencies:
       - three

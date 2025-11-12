@@ -1,12 +1,4 @@
-import {
-  Input,
-  InputField,
-  MoveForwardAction,
-  MoveBackwardAction,
-  MoveLeftAction,
-  MoveRightAction,
-  RunAction,
-} from './index.js'
+import { MoveForwardAction, MoveBackwardAction, MoveLeftAction, MoveRightAction, RunAction } from './index.js'
 
 export type ScreenJoystickInputOptions = {
   screenJoystickRunDistancePx?: number
@@ -17,14 +9,20 @@ const DefaultDeadZonePx = 24
 const DefaultRunDistancePx = 46
 const JoystickRadius = 56
 
-export class ScreenJoystickInput implements Input<ScreenJoystickInputOptions> {
+export class ScreenJoystickInput {
+  private readonly abortController = new AbortController()
   public readonly root: HTMLDivElement
   private readonly handle: HTMLDivElement
 
   private pointerId: number | undefined
-  private distanceToCenter: number = 0
-  private clampedX: number = 0
-  private clampedY: number = 0
+
+  private forwardWriter = MoveForwardAction.createWriter(this.abortController.signal)
+  private backwardWriter = MoveBackwardAction.createWriter(this.abortController.signal)
+  private leftWriter = MoveLeftAction.createWriter(this.abortController.signal)
+  private rightWriter = MoveRightAction.createWriter(this.abortController.signal)
+  private runWriter = RunAction.createWriter(this.abortController.signal)
+
+  public options: { runDistancePx?: number; deadZonePx?: number } = {}
 
   constructor(domElement: HTMLElement) {
     const parent = domElement.parentElement ?? domElement
@@ -98,49 +96,39 @@ export class ScreenJoystickInput implements Input<ScreenJoystickInputOptions> {
       e.preventDefault()
       this.resetHandle()
     }
-    joy.addEventListener('pointerdown', onPointerDown)
-    joy.addEventListener('pointermove', onPointerMove)
-    joy.addEventListener('pointerup', onPointerEnd)
-    joy.addEventListener('pointercancel', onPointerEnd)
-  }
-
-  get<T>(field: InputField<T>, options: ScreenJoystickInputOptions): T | undefined {
-    switch (field) {
-      case MoveForwardAction:
-      case MoveBackwardAction:
-        const moveY =
-          this.distanceToCenter <= (options.screenJoystickDeadZonePx ?? DefaultDeadZonePx)
-            ? 0
-            : -this.clampedY / JoystickRadius
-        return field === MoveForwardAction ? (Math.max(0, moveY) as T) : (Math.max(0, -moveY) as T)
-      case MoveLeftAction:
-      case MoveRightAction:
-        const moveX =
-          this.distanceToCenter <= (options.screenJoystickDeadZonePx ?? DefaultDeadZonePx)
-            ? 0
-            : this.clampedX / JoystickRadius
-        return field === MoveLeftAction ? (Math.max(0, moveX) as T) : (Math.max(0, moveX) as T)
-      case RunAction:
-        return (this.distanceToCenter > (options.screenJoystickRunDistancePx ?? DefaultRunDistancePx)) as T
-    }
-    return undefined
+    joy.addEventListener('pointerdown', onPointerDown, { signal: this.abortController.signal })
+    joy.addEventListener('pointermove', onPointerMove, { signal: this.abortController.signal })
+    joy.addEventListener('pointerup', onPointerEnd, { signal: this.abortController.signal })
+    joy.addEventListener('pointercancel', onPointerEnd, { signal: this.abortController.signal })
   }
 
   dispose(): void {
+    this.abortController.abort()
     this.root.remove()
   }
 
   private updateHandle(dx: number, dy: number): void {
-    this.distanceToCenter = Math.hypot(dx, dy) || 1
-    this.clampedX = (dx / this.distanceToCenter) * Math.min(this.distanceToCenter, JoystickRadius)
-    this.clampedY = (dy / this.distanceToCenter) * Math.min(this.distanceToCenter, JoystickRadius)
-    this.handle.style.transform = `translate(-50%,-50%) translate(${this.clampedX}px, ${this.clampedY}px)`
+    const distanceToCenter = Math.hypot(dx, dy) || 1
+    const clampedX = (dx / distanceToCenter) * Math.min(distanceToCenter, JoystickRadius)
+    const clampedY = (dy / distanceToCenter) * Math.min(distanceToCenter, JoystickRadius)
+    this.handle.style.transform = `translate(-50%,-50%) translate(${clampedX}px, ${clampedY}px)`
+    const deadZone = this.options.deadZonePx ?? DefaultDeadZonePx
+    const runDistance = this.options.runDistancePx ?? DefaultRunDistancePx
+    const moveY = distanceToCenter <= deadZone ? 0 : -clampedY / JoystickRadius
+    const moveX = distanceToCenter <= deadZone ? 0 : clampedX / JoystickRadius
+    this.forwardWriter.write(Math.max(0, moveY))
+    this.backwardWriter.write(Math.max(0, -moveY))
+    this.leftWriter.write(Math.max(0, -moveX))
+    this.rightWriter.write(Math.max(0, moveX))
+    this.runWriter.write(distanceToCenter > runDistance)
   }
 
   private resetHandle(): void {
     this.handle.style.transform = 'translate(-50%,-50%)'
-    this.distanceToCenter = 0
-    this.clampedX = 0
-    this.clampedY = 0
+    this.forwardWriter.write(0)
+    this.backwardWriter.write(0)
+    this.leftWriter.write(0)
+    this.rightWriter.write(0)
+    this.runWriter.write(false)
   }
 }

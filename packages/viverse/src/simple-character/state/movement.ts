@@ -52,7 +52,7 @@ export async function loadSimpleCharacterMovingState<T>(
           let nextAnimation: AnimationAction
           if (state.physics.inputVelocity.lengthSq() === 0) {
             nextAnimation = idle
-          } else if (state.inputSystem.get(RunAction) && options.movement?.run != false) {
+          } else if (RunAction.get() && options.movement?.run != false) {
             nextAnimation = run
           } else if (options.movement?.walk != false) {
             nextAnimation = walk
@@ -76,7 +76,6 @@ export async function loadSimpleCharacterMovingState<T>(
           options.movement?.jump !== false &&
           shouldJump(
             state.physics,
-            state.inputSystem,
             state.lastJump,
             options.movement?.jump === true ? undefined : options.movement?.jump?.bufferTime,
           ),

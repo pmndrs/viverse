@@ -1,12 +1,5 @@
 import { Euler, Object3D, Quaternion } from 'three'
-import {
-  RunAction,
-  MoveLeftAction,
-  MoveRightAction,
-  MoveForwardAction,
-  MoveBackwardAction,
-  InputSystem,
-} from '../input/index.js'
+import { RunAction, MoveLeftAction, MoveRightAction, MoveForwardAction, MoveBackwardAction } from '../input/index.js'
 import type { SimpleCharacterMovementOptions } from './index.js'
 import type { BvhCharacterPhysics } from '../physics/index.js'
 
@@ -15,7 +8,6 @@ const cameraRotation = new Quaternion()
 
 export function updateSimpleCharacterInputVelocity(
   camera: Object3D,
-  inputSystem: InputSystem,
   physics: BvhCharacterPhysics,
   options?: SimpleCharacterMovementOptions,
 ) {
@@ -25,7 +17,7 @@ export function updateSimpleCharacterInputVelocity(
 
   let inputSpeed = 0
   let runOptions = options?.run ?? true
-  if (inputSystem.get(RunAction) && runOptions !== false) {
+  if (RunAction.get() && runOptions !== false) {
     runOptions = runOptions === true ? {} : runOptions
     inputSpeed = runOptions.speed ?? 6
   }
@@ -37,11 +29,7 @@ export function updateSimpleCharacterInputVelocity(
   }
 
   physics.inputVelocity
-    .set(
-      -inputSystem.get(MoveLeftAction) + inputSystem.get(MoveRightAction),
-      0,
-      -inputSystem.get(MoveForwardAction) + inputSystem.get(MoveBackwardAction),
-    )
+    .set(-MoveLeftAction.get() + MoveRightAction.get(), 0, -MoveForwardAction.get() + MoveBackwardAction.get())
     .normalize()
     .applyEuler(cameraEuler)
     .multiplyScalar(inputSpeed)

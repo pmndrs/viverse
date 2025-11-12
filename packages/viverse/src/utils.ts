@@ -1,5 +1,4 @@
-import { type InputSystem, LastTimeJumpPressedField } from './input/index.js'
-import type { CharacterAnimationMask } from './animation/index.js'
+import { JumpAction } from './input/index.js'
 import type { CharacterModel } from './model/index.js'
 import type { BvhCharacterPhysics } from './physics/index.js'
 import type { AnimationAction } from 'three'
@@ -19,18 +18,25 @@ export type StartAnimationOptions = {
   fadeDuration?: number
   sync?: boolean
   paused?: boolean
-  mask?: CharacterAnimationMask
+  crossFade?: boolean
+  layer?: string
 }
 
 export function startAnimation(
   animation: AnimationAction,
   currentAnimations: CharacterModel['currentAnimations'],
-  { fadeDuration = 0.1, paused = false, mask, sync = false }: StartAnimationOptions,
-) {
+  { crossFade = true, layer, fadeDuration = 0.1, paused = false, sync = false }: StartAnimationOptions,
+): (() => void) | undefined {
   animation.reset()
   animation.play()
   animation.paused = paused
-  const currentAnimation = currentAnimations.get(mask)
+  if (!crossFade) {
+    animation.fadeIn(fadeDuration)
+    return () => {
+      animation.fadeOut(fadeDuration)
+    }
+  }
+  const currentAnimation = currentAnimations.get(layer)
   if (currentAnimation != null && sync) {
     animation.syncWith(currentAnimation)
   }
@@ -39,19 +45,14 @@ export function startAnimation(
   } else {
     animation.fadeIn(fadeDuration)
   }
-  currentAnimations.set(mask, animation)
+  currentAnimations.set(layer, animation)
 }
 
-export function shouldJump(
-  physics: BvhCharacterPhysics,
-  inputSystem: InputSystem,
-  lastJump: number,
-  bufferTime = 0.1,
-): boolean {
+export function shouldJump(physics: BvhCharacterPhysics, lastJump: number, bufferTime = 0.1): boolean {
   if (!physics.isGrounded) {
     return false
   }
-  const lastTimePressed = inputSystem.get(LastTimeJumpPressedField)
+  const lastTimePressed = JumpAction.getLatestTime()
   if (lastTimePressed == null || lastJump > lastTimePressed) {
     return false
   }

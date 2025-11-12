@@ -63,7 +63,7 @@ export function Scene() {
       characterRef.current.position.set(0, 0, 0)
     }
   })
-  const input = useXRControllerInput()
+  useXRControllerInput()
   return (
     <>
       <Sky />
@@ -79,7 +79,7 @@ export function Scene() {
         shadow-camera-bottom={-10}
       />
       <ambientLight intensity={1} />
-      <SimpleCharacter input={[input]} cameraBehavior={false} model={false} ref={characterRef}>
+      <SimpleCharacter cameraBehavior={false} model={false} ref={characterRef}>
         <SnapRotateXROrigin />
       </SimpleCharacter>
       <BvhPhysicsBody>
