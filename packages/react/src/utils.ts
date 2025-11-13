@@ -61,9 +61,9 @@ export function useCharacterModelLoader({
       ...flattenCharacterModelOptions(
         avatar != null && useViverseAvatar
           ? {
+              ...modelOptions,
               type: 'vrm',
               url: avatar?.vrmUrl,
-              ...modelOptions,
             }
           : modelOptions,
       ),
