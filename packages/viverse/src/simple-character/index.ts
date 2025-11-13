@@ -75,7 +75,7 @@ export type SimpleCharacterAnimationOptions = {
   /**
    * @default "movement"
    */
-  yawRotationBasdOn?: 'camera' | 'movement'
+  yawRotationBasedOn?: 'camera' | 'movement'
   /**
    * @default 10
    */

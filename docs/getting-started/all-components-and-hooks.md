@@ -239,19 +239,26 @@ Component for placing content inside the character model at specific bones.
 
 ## Hooks
 
-| Hook                             | Description                                                   | Returns                                                          |
-| -------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `useViverseClient()`             | Returns the VIVERSE client instance for making API calls      | `Client`                                                         |
-| `useViverseAuth()`               | Returns the current authentication state                      | Auth object with access tokens, or `undefined`                   |
-| `useViverseAvatarClient()`       | Returns the avatar client for avatar-related operations       | `AvatarClient \| undefined`                                      |
-| `useViverseLogin()`              | Returns a function to initiate the VIVERSE login flow         | Login function                                                   |
-| `useViverseLogout()`             | Returns a function to initiate the VIVERSE logout flow        | Logout function                                                  |
-| `useViverseProfile()`            | Fetches the user's profile (name, avatar info) using Suspense | Profile object with `name`, `activeAvatar`, etc., or `undefined` |
-| `useViverseActiveAvatar()`       | Fetches the user's currently selected avatar using Suspense   | Avatar object with `vrmUrl`, `headIconUrl`, etc., or `undefined` |
-| `useViverseAvatarList()`         | Fetches the user's personal avatar collection using Suspense  | Array of avatar objects, or `undefined`                          |
-| `useViversePublicAvatarList()`   | Fetches publicly available avatars using Suspense             | Array of public avatar objects, or `undefined`                   |
-| `useViversePublicAvatarByID(id)` | Fetches a specific public avatar by ID using Suspense         | Avatar object, or `undefined`                                    |
-| `useIsMobile()`                  | Returns `true` on touch-centric/mobile devices (media query)  | `boolean`                                                        |
+| Hook                                   | Description                                                   | Returns                                                          |
+| -------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `useViverseClient()`                   | Returns the VIVERSE client instance for making API calls      | `Client`                                                         |
+| `useViverseAuth()`                     | Returns the current authentication state                      | Auth object with access tokens, or `undefined`                   |
+| `useViverseAvatarClient()`             | Returns the avatar client for avatar-related operations       | `AvatarClient \| undefined`                                      |
+| `useViverseLogin()`                    | Returns a function to initiate the VIVERSE login flow         | Login function                                                   |
+| `useViverseLogout()`                   | Returns a function to initiate the VIVERSE logout flow        | Logout function                                                  |
+| `useViverseProfile()`                  | Fetches the user's profile (name, avatar info) using Suspense | Profile object with `name`, `activeAvatar`, etc., or `undefined` |
+| `useViverseActiveAvatar()`             | Fetches the user's currently selected avatar using Suspense   | Avatar object with `vrmUrl`, `headIconUrl`, etc., or `undefined` |
+| `useViverseAvatarList()`               | Fetches the user's personal avatar collection using Suspense  | Array of avatar objects, or `undefined`                          |
+| `useViversePublicAvatarList()`         | Fetches publicly available avatars using Suspense             | Array of public avatar objects, or `undefined`                   |
+| `useViversePublicAvatarByID(id)`       | Fetches a specific public avatar by ID using Suspense         | Avatar object, or `undefined`                                    |
+| `useIsMobile()`                        | Returns `true` on touch-centric/mobile devices (media query)  | `boolean`                                                        |
+| `useCharacterModel()`                  | Gets the current character model from context                 | `CharacterModel`                                                 |
+| `useCharacterModelLoader(options?)`    | Loads a character model with Suspense                         | `CharacterModel`                                                 |
+| `useCharacterAnimationLoader(model, options)` | Loads an animation clip for a model with Suspense      | `AnimationClip`                                                  |
+| `useBvhPhysicsWorld()`                 | Accesses the BVH physics world context                        | `BvhPhysicsWorld`                                                |
+| `useBvhCharacterPhysics(modelRef, options?)` | Character controller physics tied to a model ref       | `BvhCharacterPhysics`                                            |
+| `useCharacterCameraBehavior(modelRef, options?)` | Camera behavior that follows/rotates around model     | `RefObject<CharacterCameraBehavior>`                             |
+| `useSimpleCharacterInputs(...)?`       | Deprecated: sets up default input handlers                    | `void`                                                           |
 
 > [!NOTE]
 > `useViverseClient()` returns `undefined` if not within a `<Viverse>` provider or if no `clientId` is provided. Also all avatar-related hooks return `undefined` when the user is not authenticated.
@@ -349,7 +356,7 @@ An array of input classes to instantiate for handling controls
 
 ### `animation` Options
 
-- **yawRotationBasdOn:** `'camera' | 'movement'` - Character rotation basis (default: `'movement'`)
+- **yawRotationBasedOn:** `'camera' | 'movement'` - Character rotation basis (default: `'movement'`)
 - **maxYawRotationSpeed:** `number` - Maximum rotation speed (default: `10`)
 - **crossFadeDuration:** `number` - Animation blend time in seconds (default: `0.1`)
 

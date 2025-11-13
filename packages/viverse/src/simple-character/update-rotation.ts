@@ -17,7 +17,7 @@ export function updateSimpleCharacterRotation(
   options?: SimpleCharacterAnimationOptions,
 ) {
   // Character yaw rotation logic
-  const basedOn = options?.yawRotationBasdOn ?? 'movement'
+  const basedOn = options?.yawRotationBasedOn ?? 'movement'
 
   // compute goalTargetEuler
   if (basedOn === 'camera') {

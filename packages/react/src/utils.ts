@@ -20,6 +20,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { RefObject, useEffect, useMemo, useRef } from 'react'
 import { suspend } from 'suspend-react'
 import { Object3D } from 'three'
+import { useViverseActiveAvatar } from './index.js'
 import { useBvhPhysicsWorld } from './physics.js'
 
 export function useCharacterCameraBehavior(
@@ -48,10 +49,25 @@ export function useCharacterCameraBehavior(
 }
 
 const loadCharacterModelSymbol = Symbol('loadCharacterModel')
-export function useCharacterModelLoader(options?: CharacterModelOptions) {
+export function useCharacterModelLoader({
+  useViverseAvatar = true,
+  ...modelOptions
+}: CharacterModelOptions & { useViverseAvatar?: boolean } = {}) {
+  const avatar = useViverseActiveAvatar()
   const model = suspend(
     (_, ...params) => loadCharacterModel(...params),
-    [loadCharacterModelSymbol, ...flattenCharacterModelOptions(options)],
+    [
+      loadCharacterModelSymbol,
+      ...flattenCharacterModelOptions(
+        avatar != null && useViverseAvatar
+          ? {
+              type: 'vrm',
+              url: avatar?.vrmUrl,
+              ...modelOptions,
+            }
+          : modelOptions,
+      ),
+    ],
   )
   useFrame((_, delta) => {
     if (model instanceof VRM) {
