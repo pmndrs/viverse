@@ -14,12 +14,12 @@ Actions allow to decouple specific user inputs from game/business logic. Inputs 
 
 ## State vs. Event actions
 
-- **StateAction<T>**
+- **StateAction&lt;T&gt;**
   - Represents a continuous state that persists until changed (e.g., movement axes, “is running”).
   - Merges multiple writers (e.g., keyboard + joystick) into one value each frame.
   - Read anywhere via `.get()`.
 
-- **EventAction<T>**
+- **EventAction&lt;T&gt;**
   - Represents instantaneous events (e.g., “jump pressed”, “rotate delta”, “zoom delta”).
   - Produces values per frame via a reader; values are combined (sum, etc.) before consumption.
 
