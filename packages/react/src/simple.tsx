@@ -8,8 +8,6 @@ import {
   SimpleCharacterOptions,
   updateSimpleCharacterVelocity,
   updateSimpleCharacterRotation,
-} from '@pmndrs/viverse'
-import {
   IdleAnimationUrl,
   JumpDownAnimationUrl,
   JumpForwardAnimationUrl,
@@ -17,7 +15,7 @@ import {
   JumpUpAnimationUrl,
   RunAnimationUrl,
   WalkAnimationUrl,
-} from '@pmndrs/viverse/src/animation/default.js'
+} from '@pmndrs/viverse'
 import { ThreeElement, useFrame } from '@react-three/fiber'
 import { Graph, GrapthState, Parallel, RunTimeline, Switch, SwitchCase, timePassed } from '@react-three/timeline'
 import { forwardRef, ReactNode, Suspense, useImperativeHandle, useRef } from 'react'
