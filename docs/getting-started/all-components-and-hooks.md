@@ -6,7 +6,7 @@ nav: 1
 
 ## Components
 
-## `<Viverse>`
+### `<Viverse>`
 
 The main provider component that sets up VIVERSE authentication and physics context. Must wrap your entire application or the parts that use VIVERSE features.
 
@@ -92,7 +92,7 @@ Adds visible children as sensors that detect player intersection and trigger cal
 **Example:**
 
 ```tsx
-<BvhPhysicsSensor onIntersectedChanged={(intersected) => console.log("currently intersected", intersected)}>
+<BvhPhysicsSensor onIntersectedChanged={(intersected) => console.log('currently intersected', intersected)}>
   <mesh visible={false}>
     <boxGeometry />
   </mesh>
@@ -239,26 +239,27 @@ Component for placing content inside the character model at specific bones.
 
 ## Hooks
 
-| Hook                                   | Description                                                   | Returns                                                          |
-| -------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `useViverseClient()`                   | Returns the VIVERSE client instance for making API calls      | `Client`                                                         |
-| `useViverseAuth()`                     | Returns the current authentication state                      | Auth object with access tokens, or `undefined`                   |
-| `useViverseAvatarClient()`             | Returns the avatar client for avatar-related operations       | `AvatarClient \| undefined`                                      |
-| `useViverseLogin()`                    | Returns a function to initiate the VIVERSE login flow         | Login function                                                   |
-| `useViverseLogout()`                   | Returns a function to initiate the VIVERSE logout flow        | Logout function                                                  |
-| `useViverseProfile()`                  | Fetches the user's profile (name, avatar info) using Suspense | Profile object with `name`, `activeAvatar`, etc., or `undefined` |
-| `useViverseActiveAvatar()`             | Fetches the user's currently selected avatar using Suspense   | Avatar object with `vrmUrl`, `headIconUrl`, etc., or `undefined` |
-| `useViverseAvatarList()`               | Fetches the user's personal avatar collection using Suspense  | Array of avatar objects, or `undefined`                          |
-| `useViversePublicAvatarList()`         | Fetches publicly available avatars using Suspense             | Array of public avatar objects, or `undefined`                   |
-| `useViversePublicAvatarByID(id)`       | Fetches a specific public avatar by ID using Suspense         | Avatar object, or `undefined`                                    |
-| `useIsMobile()`                        | Returns `true` on touch-centric/mobile devices (media query)  | `boolean`                                                        |
-| `useCharacterModel()`                  | Gets the current character model from context                 | `CharacterModel`                                                 |
-| `useCharacterModelLoader(options?)`    | Loads a character model with Suspense                         | `CharacterModel`                                                 |
-| `useCharacterAnimationLoader(model, options)` | Loads an animation clip for a model with Suspense      | `AnimationClip`                                                  |
-| `useBvhPhysicsWorld()`                 | Accesses the BVH physics world context                        | `BvhPhysicsWorld`                                                |
-| `useBvhCharacterPhysics(modelRef, options?)` | Character controller physics tied to a model ref       | `BvhCharacterPhysics`                                            |
-| `useCharacterCameraBehavior(modelRef, options?)` | Camera behavior that follows/rotates around model     | `RefObject<CharacterCameraBehavior>`                             |
-| `useSimpleCharacterInputs(...)?`       | Deprecated: sets up default input handlers                    | `void`                                                           |
+| Hook                                             | Description                                                   | Returns                                                          |
+| ------------------------------------------------ | ------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `useViverseClient()`                             | Returns the VIVERSE client instance for making API calls      | `Client`                                                         |
+| `useViverseAuth()`                               | Returns the current authentication state                      | Auth object with access tokens, or `undefined`                   |
+| `useViverseAvatarClient()`                       | Returns the avatar client for avatar-related operations       | `AvatarClient \| undefined`                                      |
+| `useViverseLogin()`                              | Returns a function to initiate the VIVERSE login flow         | Login function                                                   |
+| `useViverseLogout()`                             | Returns a function to initiate the VIVERSE logout flow        | Logout function                                                  |
+| `useViverseProfile()`                            | Fetches the user's profile (name, avatar info) using Suspense | Profile object with `name`, `activeAvatar`, etc., or `undefined` |
+| `useViverseActiveAvatar()`                       | Fetches the user's currently selected avatar using Suspense   | Avatar object with `vrmUrl`, `headIconUrl`, etc., or `undefined` |
+| `useViverseAvatarList()`                         | Fetches the user's personal avatar collection using Suspense  | Array of avatar objects, or `undefined`                          |
+| `useViversePublicAvatarList()`                   | Fetches publicly available avatars using Suspense             | Array of public avatar objects, or `undefined`                   |
+| `useViversePublicAvatarByID(id)`                 | Fetches a specific public avatar by ID using Suspense         | Avatar object, or `undefined`                                    |
+| `useIsMobile()`                                  | Returns `true` on touch-centric/mobile devices (media query)  | `boolean`                                                        |
+| `useCharacterModel()`                            | Gets the current character model from context                 | `CharacterModel`                                                 |
+| `useCharacterModelLoader(options?)`              | Loads a character model with Suspense                         | `CharacterModel`                                                 |
+| `useCharacterAnimationLoader(model, options)`    | Loads an animation clip for a model with Suspense             | `AnimationClip`                                                  |
+| `useBvhPhysicsWorld()`                           | Accesses the BVH physics world context                        | `BvhPhysicsWorld`                                                |
+| `useBvhCharacterPhysics(modelRef, options?)`     | Character controller physics tied to a model ref              | `BvhCharacterPhysics`                                            |
+| `useCharacterCameraBehavior(modelRef, options?)` | Camera behavior that follows/rotates around model             | `RefObject<CharacterCameraBehavior>`                             |
+| `useSimpleCharacterActionBindings(...)?`         | Deprecated: sets up default action bindings                   | `void`                                                           |
+| `useScreenButton(image)`                          | Create and mount a styled on-screen button element            | `HTMLElement`                                                    |
 
 > [!NOTE]
 > `useViverseClient()` returns `undefined` if not within a `<Viverse>` provider or if no `clientId` is provided. Also all avatar-related hooks return `undefined` when the user is not authenticated.
@@ -274,6 +275,71 @@ function MobileOnlyUI() {
   const isMobile = useIsMobile()
   return isMobile ? <div>Shown on mobile</div> : null
 }
+```
+
+### Action Binding Hooks
+
+Actions allow to decouple specific user inputs from game/business logic.
+One action can be connected to multiple inputs via Action bindings (keyboard, mouse/touch, on-screen controls). For background on actions vs. action bindings and how to create custom ones, see the Actions tutorial: [Create and use actions](../tutorials/actions.mdx). We provide several easy to use hooks to setup default action bindings for general use cases such as pressing a button or specific use case such as locomotion using a keyboard.
+
+#### `useKeyboardActionBinding(action, options)`
+
+- **Description:** Binds a `KeyboardEvent` or boolean state action to one or more keys.
+- **Options:** `{ keys: string[]; requiresPointerLock?: boolean }`
+- **Returns:** `void`
+
+```tsx
+useKeyboardActionBinding(jumpAction, { keys: ['Space'] })
+```
+
+#### `usePointerButtonActionBinding(action, options)`
+
+- **Description:** Binds a pointer button (mouse/touch) event or state action.
+- **Options:** `{ domElement?: HTMLElement | RefObject<HTMLElement>; buttons?: number[]; requiresPointerLock?: boolean }`
+- **Returns:** `void`
+
+```tsx
+usePointerButtonActionBinding(fireAction, { buttons: [0] }) // left mouse / primary touch
+```
+
+#### `usePointerCaptureRotateZoomActionBindings(options)`
+
+- **Description:** Enables rotate/zoom camera controls using Pointer Capture on the canvas.
+- **Options:** `{ rotationSpeed?: number; zoomSpeed?: number }`
+- **Returns:** `void`
+
+```tsx
+usePointerCaptureRotateZoomActionBindings({ rotationSpeed: 1000, zoomSpeed: 1000 })
+```
+
+#### `usePointerLockRotateZoomActionBindings(options)`
+
+- **Description:** Enables rotate/zoom camera controls using Pointer Lock on the canvas.
+- **Options:** `{ rotationSpeed?: number; zoomSpeed?: number; lockOnClick?: boolean }`
+- **Returns:** `void`
+
+```tsx
+usePointerLockRotateZoomActionBindings({ lockOnClick: true })
+```
+
+#### `useKeyboardLocomotionActionBindings(options)`
+
+- **Description:** WASD movement, Shift to run, Space to jump.
+- **Options:** `{ moveForwardKeys?, moveBackwardKeys?, moveLeftKeys?, moveRightKeys?, runKeys?, jumpKeys?, requiresPointerLock? }` (arrays of key strings)
+- **Returns:** `void`
+
+```tsx
+useKeyboardLocomotionActionBindings({ requiresPointerLock: false })
+```
+
+#### `useScreenJoystickLocomotionActionBindings(options)`
+
+- **Description:** On-screen joystick for movement and run on mobile devices.
+- **Options:** `{ runDistancePx?: number; deadZonePx?: number }`
+- **Returns:** `void`
+
+```tsx
+useScreenJoystickLocomotionActionBindings({ deadZonePx: 8, runDistancePx: 40 })
 ```
 
 ## SimpleCharacter Options
@@ -302,20 +368,20 @@ Allows to configure whether the users vrm avatar should be displayed as the char
   - **speed:** Jump velocity in units per second (default: `8`)
   - Set to `false` to disable jumping
 
-### `input` Options
+### `actionBindings` Options
 
-An array of input classes to instantiate for handling controls
+An array of action binding classes to instantiate for handling controls
 
-- **Default:** `[ScreenJoystickInput, ScreenJumpButtonInput, PointerCaptureInput, LocomotionKeyboardInput]`
-- Configure input handling with custom input classes
+- **Default:** `[ScreenJoystickLocomotionActionBindings, ScreenButtonJumpActionBindings, PointerCaptureRotateZoomActionBindings, KeyboardLocomotionActionBindings]`
+- Configure action bindings with custom action binding classes
 
-**Available Input Classes provided by @pmndrs/viverse:**
+**Available Action Binding Classes provided by @pmndrs/viverse:**
 
-- `LocomotionKeyboardInput` - WASD movement, Space for jump, Shift for run
-- `PointerCaptureInput` - Mouse look with pointer capture (requires manual `setPointerCapture`)
-- `PointerLockInput` - Mouse look with pointer lock (requires manual `requestPointerLock`)
-- `ScreenJoystickInput` - On-screen joystick for movement and run (mobile). Options: `{ screenJoystickDeadZonePx?, screenJoystickRunDistancePx? }`
-- `ScreenJumpButtonInput` - On-screen jump button (mobile-only). Visible only on mobile.
+- `KeyboardLocomotionActionBindings` - WASD movement, Space for jump, Shift for run
+- `PointerCaptureRotateZoomActionBindings` - Mouse look with pointer capture (requires manual `setPointerCapture`)
+- `PointerLockRotateZoomActionBindings` - Mouse look with pointer lock (requires manual `requestPointerLock`)
+- `ScreenJoystickLocomotionActionBindings` - On-screen joystick for movement and run (mobile). Options: `{ screenJoystickDeadZonePx?, screenJoystickRunDistancePx? }`
+- `ScreenButtonJumpActionBindings` - On-screen jump button (mobile-only). Visible only on mobile.
 
 ### `model` Options
 

@@ -1,4 +1,4 @@
-import { JumpAction } from './input/index.js'
+import { JumpAction } from './action/index.js'
 import type { CharacterModel } from './model/index.js'
 import type { BvhCharacterPhysics } from './physics/index.js'
 import type { AnimationAction } from 'three'

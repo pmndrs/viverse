@@ -1,4 +1,4 @@
-import { SimpleCharacterInputOptions } from './index.js'
+import { SimpleCharacterActionBindingOptions } from './index.js'
 import {
   DefaultJumpKeys,
   DefaultMoveBackwardKeys,
@@ -6,33 +6,42 @@ import {
   DefaultMoveLeftKeys,
   DefaultMoveRightKeys,
   DefaultRunKeys,
-  LocomotionKeyboardInput,
-} from '../input/keyboard.js'
-import { PointerCaptureInput } from '../input/pointer-capture.js'
-import { PointerLockInput } from '../input/pointer-lock.js'
-import { ScreenJoystickInput } from '../input/screen-joystick.js'
+  KeyboardLocomotionActionBindings,
+} from '../action/keyboard.js'
+import { PointerCaptureRotateZoomActionBindings } from '../action/pointer-capture.js'
+import { PointerLockRotateZoomActionBindings } from '../action/pointer-lock.js'
+import { ScreenJoystickLocomotionActionBindings } from '../action/screen-joystick.js'
 
-export function applySimpleCharacterInputOptions(inputs: Array<unknown>, options?: SimpleCharacterInputOptions) {
-  for (const input of inputs) {
-    if (input instanceof ScreenJoystickInput) {
-      input.options.deadZonePx = options?.screenJoystickDeadZonePx
-      input.options.runDistancePx = options?.screenJoystickRunDistancePx
+export function applySimpleCharacterActionBindingOptions(
+  actionBindingsList: Array<unknown>,
+  options?: SimpleCharacterActionBindingOptions,
+) {
+  for (const actionBindings of actionBindingsList) {
+    if (actionBindings instanceof ScreenJoystickLocomotionActionBindings) {
+      actionBindings.deadZonePx = options?.screenJoystickDeadZonePx
+      actionBindings.runDistancePx = options?.screenJoystickRunDistancePx
     }
-    if (input instanceof PointerCaptureInput) {
-      input.options.rotationSpeed = options?.pointerCaptureRotationSpeed
-      input.options.zoomSpeed = options?.pointerCaptureZoomSpeed
+    if (actionBindings instanceof PointerCaptureRotateZoomActionBindings) {
+      actionBindings.rotationSpeed = options?.pointerCaptureRotationSpeed
+      actionBindings.zoomSpeed = options?.pointerCaptureZoomSpeed
     }
-    if (input instanceof PointerLockInput) {
-      input.options.rotationSpeed = options?.pointerLockRotationSpeed
-      input.options.zoomSpeed = options?.pointerLockZoomSpeed
+    if (actionBindings instanceof PointerLockRotateZoomActionBindings) {
+      actionBindings.rotationSpeed = options?.pointerLockRotationSpeed
+      actionBindings.zoomSpeed = options?.pointerLockZoomSpeed
     }
-    if (input instanceof LocomotionKeyboardInput) {
-      input.forward.options.keys = options?.keyboardMoveForwardKeys ?? DefaultMoveForwardKeys
-      input.backward.options.keys = options?.keyboardMoveBackwardKeys ?? DefaultMoveBackwardKeys
-      input.left.options.keys = options?.keyboardMoveLeftKeys ?? DefaultMoveLeftKeys
-      input.right.options.keys = options?.keyboardMoveRightKeys ?? DefaultMoveRightKeys
-      input.run.options.keys = options?.keyboardRunKeys ?? DefaultRunKeys
-      input.jump.options.keys = options?.keyboardJumpKeys ?? DefaultJumpKeys
+    if (actionBindings instanceof KeyboardLocomotionActionBindings) {
+      actionBindings.moveForwardBinding.keys = options?.keyboardMoveForwardKeys ?? DefaultMoveForwardKeys
+      actionBindings.moveBackwardBinding.requiresPointerLock = options?.keyboardRequiresPointerLock
+      actionBindings.moveBackwardBinding.keys = options?.keyboardMoveBackwardKeys ?? DefaultMoveBackwardKeys
+      actionBindings.moveBackwardBinding.requiresPointerLock = options?.keyboardRequiresPointerLock
+      actionBindings.moveLeftBinding.keys = options?.keyboardMoveLeftKeys ?? DefaultMoveLeftKeys
+      actionBindings.moveLeftBinding.requiresPointerLock = options?.keyboardRequiresPointerLock
+      actionBindings.moveRightBinding.keys = options?.keyboardMoveRightKeys ?? DefaultMoveRightKeys
+      actionBindings.moveRightBinding.requiresPointerLock = options?.keyboardRequiresPointerLock
+      actionBindings.runBinding.keys = options?.keyboardRunKeys ?? DefaultRunKeys
+      actionBindings.runBinding.requiresPointerLock = options?.keyboardRequiresPointerLock
+      actionBindings.jumpBinding.keys = options?.keyboardJumpKeys ?? DefaultJumpKeys
+      actionBindings.jumpBinding.requiresPointerLock = options?.keyboardRequiresPointerLock
     }
   }
 }

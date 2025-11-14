@@ -6,8 +6,7 @@ nav: 4
 
 In this tutorial we will configure the `SimpleCharacter` to use first person controls with the following result:
 
-
-*Here's a preview of this tutorial's result:*
+_Here's a preview of this tutorial's result:_
 
 <Sandpack
   template="react-ts"
@@ -29,14 +28,13 @@ import {
   BvhPhysicsBody,
   PrototypeBox,
   FirstPersonCharacterCameraBehavior,
-  PointerLockInput,
-  LocomotionKeyboardInput,
+  PointerLockRotateZoomActionBindings,
+  KeyboardLocomotionActionBindings,
 } from '@react-three/viverse'
 
 export default function App() {
   return (
    <Canvas
-      onClick={(e) => (e.target as HTMLElement).requestPointerLock()}
       style={{ position: 'absolute', inset: '0', touchAction: 'none' }}
     >
       <Viverse>
@@ -45,7 +43,7 @@ export default function App() {
         <ambientLight intensity={1} />
         <SimpleCharacter
           model={false}
-          input={[LocomotionKeyboardInput, PointerLockInput]}
+          actionBindings={[KeyboardLocomotionActionBindings, PointerLockRotateZoomActionBindings]}
           cameraBehavior={FirstPersonCharacterCameraBehavior}
         />
         <BvhPhysicsBody>
@@ -68,31 +66,18 @@ First, we switch from third-person to first-person camera behavior and hide the 
 ```
 
 **Changes:**
+
 - `model={false}` - Hides the character model since in first-person view, you don't want to see your own character
 - `cameraBehavior={FirstPersonCharacterCameraBehavior}` - Switches from the default third-person camera to first-person camera behavior
 
-Next, you need to set up the appropriate input controls for first-person movement and looking around:
+Next, you need to set up the appropriate action bindings for first-person movement and looking around:
 
 ```tsx
 <SimpleCharacter
-  input={[LocomotionKeyboardInput, PointerLockInput]}
+  actionBindings={[KeyboardLocomotionActionBindings, PointerLockRotateZoomActionBindings]}
   // ... other props
 />
 ```
 
-**Input components:**
-- `LocomotionKeyboardInput` - Handles WASD movement controls for walking around
-- `PointerLockInput` - Enables mouse look controls for rotating the camera/view direction
-
-Finally, we need to enable pointer locking when the user clicks on the canvas for the `PointerLockInput` to work properly:
-
-```tsx
-<Canvas
-  onClick={(e) => (e.target as HTMLElement).requestPointerLock()}
->
-  {/* ... rest of your scene */}
-</Canvas>
-```
-
-**What this does:**
-- `onClick={(e) => (e.target as HTMLElement).requestPointerLock()}` - When the user clicks anywhere on the canvas, it requests pointer lock, which captures the mouse cursor and allows for unlimited mouse movement for camera control
+- `KeyboardLocomotionActionBindings` - Handles WASD movement action bindings for walking around
+- `PointerLockRotateZoomActionBindings` - Enables mouse look action bindings for rotating the camera/view direction

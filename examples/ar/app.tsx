@@ -7,7 +7,7 @@ import {
   useViverseProfile,
   Viverse,
   PrototypeBox,
-  useXRControllerInput,
+  useXRControllerLocomotionActionBindings,
 } from '@react-three/viverse'
 import { XR, XROrigin, createXRStore } from '@react-three/xr'
 import { Suspense, useRef } from 'react'
@@ -55,7 +55,7 @@ export function Scene() {
       characterRef.current.position.set(0, 0, 0)
     }
   })
-  useXRControllerInput()
+  useXRControllerLocomotionActionBindings()
   return (
     <>
       <directionalLight

@@ -1,13 +1,13 @@
 import { Object3D, Vector3, Euler, Vector3Tuple, Ray, Quaternion } from 'three'
 import { clamp } from 'three/src/math/MathUtils.js'
-import { RotatePitchAction, RotateYawAction, ZoomAction } from './input/index.js'
+import { RotatePitchAction, RotateYawAction, ZoomAction } from './action/index.js'
 
-export const FirstPersonCharacterCameraBehavior: SimpleCharacterCameraBehaviorOptions = {
+export const FirstPersonCharacterCameraBehavior: CharacterCameraBehaviorOptions = {
   characterBaseOffset: [0, 1.6, 0],
   zoom: { maxDistance: 0, minDistance: 0 },
 }
 
-export type SimpleCharacterCameraBehaviorOptions =
+export type CharacterCameraBehaviorOptions =
   | {
       /**
        * @default true
@@ -96,7 +96,7 @@ export class CharacterCameraBehavior {
   private setRotationFromDelta(
     camera: Object3D,
     delta: Vector3,
-    rotationOptions: Exclude<Exclude<SimpleCharacterCameraBehaviorOptions, boolean>['rotation'], undefined | boolean>,
+    rotationOptions: Exclude<Exclude<CharacterCameraBehaviorOptions, boolean>['rotation'], undefined | boolean>,
   ): void {
     if (delta.lengthSq() < 0.0001) {
       // use current camera rotation if very close to target
@@ -111,14 +111,14 @@ export class CharacterCameraBehavior {
 
   private setDistanceFromDelta(
     delta: Vector3,
-    zoomOptions: Exclude<Exclude<SimpleCharacterCameraBehaviorOptions, boolean>['zoom'], undefined | boolean>,
+    zoomOptions: Exclude<Exclude<CharacterCameraBehaviorOptions, boolean>['zoom'], undefined | boolean>,
   ): void {
     this.zoomDistance = this.clampDistance(delta.length(), zoomOptions)
   }
 
   private computeCharacterBaseOffset(
     target: Vector3,
-    options: Exclude<SimpleCharacterCameraBehaviorOptions, boolean>['characterBaseOffset'],
+    options: Exclude<CharacterCameraBehaviorOptions, boolean>['characterBaseOffset'],
   ): void {
     if (options instanceof Vector3) {
       target.copy(options)
@@ -136,7 +136,7 @@ export class CharacterCameraBehavior {
     {
       minDistance = 1,
       maxDistance = 7,
-    }: Exclude<Exclude<SimpleCharacterCameraBehaviorOptions, boolean>['zoom'], undefined | boolean>,
+    }: Exclude<Exclude<CharacterCameraBehaviorOptions, boolean>['zoom'], undefined | boolean>,
   ): number {
     return clamp(distance, minDistance, maxDistance)
   }
@@ -146,7 +146,7 @@ export class CharacterCameraBehavior {
     {
       maxYaw = Infinity,
       minYaw = -Infinity,
-    }: Exclude<Exclude<SimpleCharacterCameraBehaviorOptions, boolean>['rotation'], undefined | boolean>,
+    }: Exclude<Exclude<CharacterCameraBehaviorOptions, boolean>['rotation'], undefined | boolean>,
   ) {
     return clamp(yaw, minYaw, maxYaw)
   }
@@ -156,7 +156,7 @@ export class CharacterCameraBehavior {
     {
       maxPitch = Math.PI / 2,
       minPitch = -Math.PI / 2,
-    }: Exclude<Exclude<SimpleCharacterCameraBehaviorOptions, boolean>['rotation'], undefined | boolean>,
+    }: Exclude<Exclude<CharacterCameraBehaviorOptions, boolean>['rotation'], undefined | boolean>,
   ) {
     return clamp(pitch, minPitch, maxPitch)
   }
@@ -169,7 +169,7 @@ export class CharacterCameraBehavior {
     target: Object3D,
     deltaTime: number,
     raycast?: (ray: Ray, far: number) => number | undefined,
-    options: SimpleCharacterCameraBehaviorOptions = true,
+    options: CharacterCameraBehaviorOptions = true,
   ): void {
     if (options === false) {
       this.firstUpdate = true
@@ -189,7 +189,7 @@ export class CharacterCameraBehavior {
     camera.getWorldPosition(deltaHelper)
     deltaHelper.sub(characterWorldPosition)
 
-    // apply rotation input to rotationYaw and rotationPitch if not disabled or first update
+    // apply rotation actions to rotationYaw and rotationPitch if not disabled or first update
     let rotationOptions = options.rotation ?? true
     if (!this.firstUpdate && rotationOptions !== false) {
       rotationOptions = rotationOptions === true ? {} : rotationOptions
@@ -210,7 +210,7 @@ export class CharacterCameraBehavior {
     rayHelper.direction.set(0, 0, 1).applyEuler(camera.rotation)
     rayHelper.origin.copy(characterWorldPosition)
 
-    // apply zoom input to zoomDistance if not disabled or first update
+    // apply zoom action to zoomDistance if not disabled or first update
     let zoomOptions = options.zoom ?? true
     if (!this.firstUpdate && zoomOptions !== false) {
       zoomOptions = zoomOptions === true ? {} : zoomOptions

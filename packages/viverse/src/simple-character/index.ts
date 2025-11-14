@@ -1,14 +1,15 @@
 import { VRM, VRMUtils } from '@pixiv/three-vrm'
 import { runTimeline, Update, GraphTimeline } from '@pmndrs/timeline'
 import { Group, Object3D, Object3DEventMap, AnimationAction, Vector3 } from 'three'
-import { CharacterAnimationOptions } from '../animation/index.js'
-import { CharacterCameraBehavior, SimpleCharacterCameraBehaviorOptions } from '../camera.js'
+import { applySimpleCharacterActionBindingOptions } from './apply-input-options.js'
 import {
-  LocomotionKeyboardInput,
-  PointerCaptureInput,
-  ScreenJoystickInput,
-  ScreenJumpButtonInput,
-} from '../input/index.js'
+  KeyboardLocomotionActionBindings,
+  PointerCaptureRotateZoomActionBindings,
+  ScreenJoystickLocomotionActionBindings,
+  ScreenButtonJumpActionBindings,
+} from '../action/index.js'
+import { CharacterAnimationOptions } from '../animation/index.js'
+import { CharacterCameraBehavior, CharacterCameraBehaviorOptions } from '../camera.js'
 import {
   CharacterModelOptions,
   loadCharacterModel,
@@ -16,16 +17,15 @@ import {
   CharacterModel,
 } from '../model/index.js'
 import { BvhCharacterPhysicsOptions, BvhCharacterPhysics, BvhPhysicsWorld } from '../physics/index.js'
+import { shouldJump } from '../utils.js'
 import { loadSimpleCharacterJumpDownState } from './state/jump-down.js'
 import { loadSimpleCharacterJumpForwardAction, loadSimpleCharacterJumpForwardState } from './state/jump-forward.js'
 import { loadSimpleCharacterJumpLoopState } from './state/jump-loop.js'
 import { loadSimpleCharacterJumpStartState } from './state/jump-start.js'
 import { loadSimpleCharacterJumpUpAction, loadSimpleCharacterJumpUpState } from './state/jump-up.js'
 import { loadSimpleCharacterMovingState } from './state/movement.js'
-import { updateSimpleCharacterInputVelocity } from './update-input-velocity.js'
+import { updateSimpleCharacterVelocity } from './update-input-velocity.js'
 import { updateSimpleCharacterRotation } from './update-rotation.js'
-import { shouldJump } from '../utils.js'
-import { applySimpleCharacterInputOptions } from './apply-input-options.js'
 
 export type SimpleCharacterState = {
   camera: Object3D
@@ -86,13 +86,14 @@ export type SimpleCharacterAnimationOptions = {
   crossFadeDuration?: number
 }
 
-export type SimpleCharacterInputOptions = {
+export type SimpleCharacterActionBindingOptions = {
   screenJoystickRunDistancePx?: number
   screenJoystickDeadZonePx?: number
   pointerCaptureRotationSpeed?: number // default 0.4
   pointerCaptureZoomSpeed?: number // default 0.0001
   pointerLockRotationSpeed?: number // default 0.4
   pointerLockZoomSpeed?: number // default 0.0001
+  keyboardRequiresPointerLock?: boolean //default false
   keyboardMoveForwardKeys?: Array<string>
   keyboardMoveBackwardKeys?: Array<string>
   keyboardMoveLeftKeys?: Array<string>
@@ -102,12 +103,20 @@ export type SimpleCharacterInputOptions = {
 }
 
 export type SimpleCharacterOptions = {
-  readonly input?: ReadonlyArray<{ new (domElement: HTMLElement): { dispose(): void } }>
-  inputOptions?: SimpleCharacterInputOptions
+  /**
+   * @deprecated use actionBindings instead
+   */
+  readonly input?: ReadonlyArray<{ new (domElement: HTMLElement, abortSignal: AbortSignal): any }>
+  readonly actionBindings?: ReadonlyArray<{ new (domElement: HTMLElement, abortSignal: AbortSignal): any }>
+  /**
+   * @deprecated use actionBindingOptions instead
+   */
+  inputOptions?: SimpleCharacterActionBindingOptions
+  actionBindingOptions?: SimpleCharacterActionBindingOptions
   movement?: SimpleCharacterMovementOptions
   readonly model?: CharacterModelOptions | boolean
   physics?: BvhCharacterPhysicsOptions
-  cameraBehavior?: SimpleCharacterCameraBehaviorOptions
+  cameraBehavior?: CharacterCameraBehaviorOptions
   readonly animation?: SimpleCharacterAnimationOptions
 }
 
@@ -122,7 +131,6 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> im
   private readonly updateTimeline: Update<unknown>
   private readonly graph = new GraphTimeline('moving')
   private readonly abortController = new AbortController()
-  private readonly inputs: Array<{ dispose(): void }>
 
   public lastJump = 0
 
@@ -135,12 +143,16 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> im
     private readonly options: SimpleCharacterOptions = {},
   ) {
     super()
-
-    this.inputs = (
-      options.input ?? [ScreenJoystickInput, ScreenJumpButtonInput, PointerCaptureInput, LocomotionKeyboardInput]
-    ).map((Input) => new Input(domElement))
-
-    applySimpleCharacterInputOptions(this.inputs, options.inputOptions)
+    const actionBindingsList = (
+      options.actionBindings ??
+      options.input ?? [
+        ScreenJoystickLocomotionActionBindings,
+        ScreenButtonJumpActionBindings,
+        PointerCaptureRotateZoomActionBindings,
+        KeyboardLocomotionActionBindings,
+      ]
+    ).map((ActionBindings) => new ActionBindings(domElement, this.abortController.signal))
+    applySimpleCharacterActionBindingOptions(actionBindingsList, options.actionBindingOptions ?? options.inputOptions)
 
     // camera behavior
     this.cameraBehavior = new CharacterCameraBehavior()
@@ -211,7 +223,7 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> im
     if (this.model != null) {
       updateSimpleCharacterRotation(delta, this.physics, this.camera, this.model, this.options.animation)
     }
-    updateSimpleCharacterInputVelocity(this.camera, this.physics, this.options.movement)
+    updateSimpleCharacterVelocity(this.camera, this.physics, this.options.movement)
     this.updateTimeline?.(undefined, delta)
     this.model?.mixer.update(delta)
     if (this.model instanceof VRM) {
@@ -231,7 +243,6 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> im
     this.abortController.abort()
     this.parent?.remove(this)
     this.model?.scene.dispatchEvent({ type: 'dispose' } as any)
-    this.inputs.forEach((input) => input.dispose())
     this.cameraBehavior.dispose()
     VRMUtils.deepDispose(this)
   }

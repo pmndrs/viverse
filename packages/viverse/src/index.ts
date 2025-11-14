@@ -1,5 +1,5 @@
 export * from './utils.js'
-export * from './input/index.js'
+export * from './action/index.js'
 export * from './utils.js'
 export * from './camera.js'
 export * from './physics/index.js'

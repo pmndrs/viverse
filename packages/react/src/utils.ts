@@ -7,14 +7,26 @@ import {
   flattenCharacterModelOptions,
   loadCharacterModel,
   loadCharacterAnimation,
-  SimpleCharacterCameraBehaviorOptions,
+  CharacterCameraBehaviorOptions,
   CharacterModel,
-  ScreenJoystickInput,
-  ScreenJumpButtonInput,
-  PointerCaptureInput,
-  LocomotionKeyboardInput,
-  SimpleCharacterInputOptions,
-  applySimpleCharacterInputOptions,
+  ScreenJoystickLocomotionActionBindings,
+  ScreenButtonJumpActionBindings,
+  PointerCaptureRotateZoomActionBindings,
+  KeyboardLocomotionActionBindings,
+  SimpleCharacterActionBindingOptions,
+  applySimpleCharacterActionBindingOptions,
+  KeyboardActionBinding,
+  WriteonlyEventAction,
+  StateAction,
+  PointerButtonActionBinding,
+  defaultScreenButtonStyles,
+  PointerLockRotateZoomActionBindings,
+  DefaultMoveBackwardKeys,
+  DefaultMoveForwardKeys,
+  DefaultJumpKeys,
+  DefaultMoveLeftKeys,
+  DefaultMoveRightKeys,
+  DefaultRunKeys,
 } from '@pmndrs/viverse'
 import { useFrame, useThree } from '@react-three/fiber'
 import { RefObject, useEffect, useMemo, useRef } from 'react'
@@ -25,7 +37,7 @@ import { useBvhPhysicsWorld } from './physics.js'
 
 export function useCharacterCameraBehavior(
   model: Object3D | RefObject<Object3D | null>,
-  options?: SimpleCharacterCameraBehaviorOptions,
+  options?: CharacterCameraBehaviorOptions,
 ) {
   const behaviorRef = useRef<CharacterCameraBehavior>(undefined)
   useEffect(() => {
@@ -44,7 +56,7 @@ export function useCharacterCameraBehavior(
       return
     }
     behaviorRef.current?.update(state.camera, resolvedModel, delta, raycast, options)
-  })
+  }, -1)
   return behaviorRef
 }
 
@@ -87,44 +99,208 @@ export function useCharacterAnimationLoader(model: CharacterModel, options: Char
 }
 
 /**
- * @deprecated use inputs directly
+ * @deprecated use the specific action binding hooks directly
  */
-export function useSimpleCharacterInputs(
-  inputsClasses: ReadonlyArray<{ new (domElement: HTMLElement): { dispose(): void } }> = [
-    ScreenJoystickInput,
-    ScreenJumpButtonInput,
-    PointerCaptureInput,
-    LocomotionKeyboardInput,
+export function useSimpleCharacterActionBindings(
+  actionBindingsClasses: ReadonlyArray<{ new (domElement: HTMLElement, abortSignal: AbortSignal): unknown }> = [
+    ScreenJoystickLocomotionActionBindings,
+    ScreenButtonJumpActionBindings,
+    PointerCaptureRotateZoomActionBindings,
+    KeyboardLocomotionActionBindings,
   ],
-  options?: SimpleCharacterInputOptions,
+  options?: SimpleCharacterActionBindingOptions,
 ): void {
   const dom = useThree((s) => s.gl.domElement)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const inputs = useMemo<Array<{ dispose(): void }>>(() => [], [dom])
+  const actionBindingsList = useMemo<Array<{ abortController: AbortController; actionBindings: unknown }>>(
+    () => [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dom],
+  )
   useEffect(() => {
-    const removedInputs = new Set(inputs)
-    for (const inputClass of inputsClasses) {
-      const existingInput = inputs.find((existingInput) => existingInput instanceof inputClass)
-      if (existingInput != null) {
-        removedInputs.delete(existingInput)
+    const removeActionBindingsSet = new Set(actionBindingsList)
+    for (const actionBindingsClass of actionBindingsClasses) {
+      const existingActionBindings = actionBindingsList.find(
+        (existingActionBindings) => existingActionBindings instanceof actionBindingsClass,
+      )
+      if (existingActionBindings != null) {
+        removeActionBindingsSet.delete(existingActionBindings)
         continue
       }
-      inputs.push(new inputClass(dom))
+      const abortController = new AbortController()
+      actionBindingsList.push({ actionBindings: new actionBindingsClass(dom, abortController.signal), abortController })
     }
-    for (const removedInput of removedInputs) {
-      removedInput.dispose()
-      const index = inputs.indexOf(removedInput)
+    for (const entry of removeActionBindingsSet) {
+      entry.abortController.abort()
+      const index = actionBindingsList.indexOf(entry)
       if (index != -1) {
-        inputs.splice(index, 1)
+        actionBindingsList.splice(index, 1)
       }
     }
-    applySimpleCharacterInputOptions(inputs, options)
+    applySimpleCharacterActionBindingOptions(actionBindingsList, options)
   })
   useEffect(
     () => () => {
-      inputs.forEach((input) => input.dispose())
-      inputs.length = 0
+      actionBindingsList.forEach(({ abortController }) => abortController.abort())
+      actionBindingsList.length = 0
     },
-    [inputs],
+    [actionBindingsList],
   )
+}
+
+export function useKeyboardActionBinding(
+  action: WriteonlyEventAction<KeyboardEvent> | StateAction<boolean>,
+  options: { keys: Array<string>; requiresPointerLock?: boolean },
+) {
+  const ref = useRef<KeyboardActionBinding>(undefined)
+  const domElement = useThree((s) => s.gl.domElement)
+  useEffect(() => {
+    const abortController = new AbortController()
+    ref.current = new KeyboardActionBinding(action, domElement, abortController.signal)
+    return () => abortController.abort()
+  }, [action, domElement])
+  useEffect(() => {
+    if (ref.current == null) {
+      return
+    }
+    ref.current.keys = options.keys
+    ref.current.requiresPointerLock = options.requiresPointerLock
+  })
+}
+
+export function usePointerButtonActionBinding(
+  action: WriteonlyEventAction<PointerEvent> | StateAction<boolean>,
+  options: {
+    domElement?: HTMLElement | RefObject<HTMLElement | null>
+    buttons?: Array<number>
+    requiresPointerLock?: boolean
+  },
+) {
+  const ref = useRef<PointerButtonActionBinding>(undefined)
+  const canvasDomElement = useThree((s) => s.gl.domElement)
+  const domElement = options.domElement ?? canvasDomElement
+  useEffect(() => {
+    const abortController = new AbortController()
+    ref.current = new PointerButtonActionBinding(
+      action,
+      domElement instanceof HTMLElement ? domElement : domElement.current!,
+      abortController.signal,
+    )
+    return () => abortController.abort()
+  }, [action, domElement])
+  useEffect(() => {
+    if (ref.current == null) {
+      return
+    }
+    ref.current.buttons = options.buttons
+    ref.current.requiresPointerLock = options.requiresPointerLock
+  })
+}
+
+export function usePointerCaptureRotateZoomActionBindings(options?: { rotationSpeed?: number; zoomSpeed?: number }) {
+  const ref = useRef<PointerCaptureRotateZoomActionBindings>(undefined)
+  const domElement = useThree((s) => s.gl.domElement)
+  useEffect(() => {
+    const abortController = new AbortController()
+    ref.current = new PointerCaptureRotateZoomActionBindings(domElement, abortController.signal)
+    return () => abortController.abort()
+  }, [domElement])
+  useEffect(() => {
+    if (ref.current == null) {
+      return
+    }
+    ref.current.rotationSpeed = options?.rotationSpeed
+    ref.current.zoomSpeed = options?.zoomSpeed
+  })
+}
+
+export function usePointerLockRotateZoomActionBindings(options?: {
+  rotationSpeed?: number
+  zoomSpeed?: number
+  lockOnClick?: boolean
+}) {
+  const ref = useRef<PointerLockRotateZoomActionBindings>(undefined)
+  const domElement = useThree((s) => s.gl.domElement)
+  useEffect(() => {
+    const abortController = new AbortController()
+    ref.current = new PointerLockRotateZoomActionBindings(domElement, abortController.signal)
+    return () => abortController.abort()
+  }, [domElement])
+  useEffect(() => {
+    if (ref.current == null) {
+      return
+    }
+    ref.current.lockOnClick = options?.lockOnClick
+    ref.current.rotationSpeed = options?.rotationSpeed
+    ref.current.zoomSpeed = options?.zoomSpeed
+  })
+}
+
+export function useKeyboardLocomotionActionBindings(options?: {
+  moveForwardKeys?: Array<string>
+  moveBackwardKeys?: Array<string>
+  moveLeftKeys?: Array<string>
+  moveRightKeys?: Array<string>
+  runKeys?: Array<string>
+  jumpKeys?: Array<string>
+  requiresPointerLock?: boolean
+}) {
+  const ref = useRef<KeyboardLocomotionActionBindings>(undefined)
+  const domElement = useThree((s) => s.gl.domElement)
+  useEffect(() => {
+    const abortController = new AbortController()
+    ref.current = new KeyboardLocomotionActionBindings(domElement, abortController.signal)
+    return () => abortController.abort()
+  }, [domElement])
+  useEffect(() => {
+    if (ref.current == null) {
+      return
+    }
+    ref.current.moveBackwardBinding.keys = options?.moveBackwardKeys ?? DefaultMoveBackwardKeys
+    ref.current.moveBackwardBinding.requiresPointerLock = options?.requiresPointerLock
+    ref.current.moveForwardBinding.keys = options?.moveForwardKeys ?? DefaultMoveForwardKeys
+    ref.current.moveForwardBinding.requiresPointerLock = options?.requiresPointerLock
+    ref.current.jumpBinding.keys = options?.jumpKeys ?? DefaultJumpKeys
+    ref.current.jumpBinding.requiresPointerLock = options?.requiresPointerLock
+    ref.current.moveLeftBinding.keys = options?.moveLeftKeys ?? DefaultMoveLeftKeys
+    ref.current.moveLeftBinding.requiresPointerLock = options?.requiresPointerLock
+    ref.current.moveRightBinding.keys = options?.moveRightKeys ?? DefaultMoveRightKeys
+    ref.current.moveRightBinding.requiresPointerLock = options?.requiresPointerLock
+    ref.current.runBinding.keys = options?.runKeys ?? DefaultRunKeys
+    ref.current.runBinding.requiresPointerLock = options?.requiresPointerLock
+  })
+}
+export function useScreenButton(image: string): HTMLElement {
+  const element = useMemo(() => document.createElement('div'), [])
+  element.style.backgroundImage = image
+  const domElement = useThree((s) => s.gl.domElement)
+  useEffect(() => {
+    domElement.className = 'viverse-button viverse-jump mobile-only'
+    const parent = domElement.parentNode ?? domElement
+    parent.appendChild(element)
+    Object.assign(element.style, defaultScreenButtonStyles)
+    const stopPropagation = (e: Event) => e.stopPropagation()
+    element.addEventListener('pointerdown', stopPropagation)
+    return () => {
+      element.remove()
+      element.removeEventListener('pointerdown', stopPropagation)
+    }
+  }, [element, domElement])
+  return element
+}
+
+export function useScreenJoystickLocomotionActionBindings(options?: { runDistancePx?: number; deadZonePx?: number }) {
+  const ref = useRef<ScreenJoystickLocomotionActionBindings>(undefined)
+  const domElement = useThree((s) => s.gl.domElement)
+  useEffect(() => {
+    const abortController = new AbortController()
+    ref.current = new ScreenJoystickLocomotionActionBindings(domElement, abortController.signal)
+    return () => abortController.abort()
+  }, [domElement])
+  useEffect(() => {
+    if (ref.current == null) {
+      return
+    }
+    ref.current.deadZonePx = options?.deadZonePx
+    ref.current.runDistancePx = options?.runDistancePx
+  })
 }

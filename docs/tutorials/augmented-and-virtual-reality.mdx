@@ -64,7 +64,7 @@ import {
   SimpleCharacter,
   BvhPhysicsBody,
   PrototypeBox,
-  useXRControllerInput,
+  useXRControllerLocomotionActionBindings,
 } from '@react-three/viverse'
 import { useRef } from 'react'
 import { Group } from 'three'
@@ -79,7 +79,7 @@ export function Scene() {
       characterRef.current.position.set(0, 0, 0)
     }
   })
-  useXRControllerInput()
+  useXRControllerLocomotionActionBindings()
   return (
     <>
       <directionalLight
@@ -170,15 +170,15 @@ export function Scene() {
 }
 ```
 
-### Step 4: Use XR Controller Input
+### Step 4: Use XR Controller Action Bindings
 
-Add XR controller input using the `useXRControllerInput` hook:
+Add XR controller action bindings using the `useXRControllerLocomotionActionBindings` hook:
 
 ```tsx
-import { useXRControllerInput } from '@react-three/viverse'
+import { useXRControllerLocomotionActionBindings } from '@react-three/viverse'
 
 export function Scene() {
-  const input = useXRControllerInput()
+  useXRControllerLocomotionActionBindings()
   
   return (
     <>
@@ -196,9 +196,9 @@ export function Scene() {
 
 **Key changes:**
 - `cameraBehavior={false}` - Disables automatic camera control (AR handles this)
-- `useXRControllerInput()` - Hook that provides controller input for movement
+- `useXRControllerLocomotionActionBindings()` - Hook that provides controller action bindings for movement
 
-The `useXRControllerInput` hook maps XR controller inputs to character movement:
+The `useXRControllerLocomotionActionBindings` hook binds XR controller inputs to character locomotion actions:
 - **Left thumbstick** controls movement (forward/backward/left/right)
 - **Right controller A button** triggers jumping
 - **Left trigger** enables running
@@ -252,7 +252,7 @@ import {
   SimpleCharacter,
   BvhPhysicsBody,
   PrototypeBox,
-  useXRControllerInput,
+  useXRControllerLocomotionActionBindings,
 } from '@react-three/viverse'
 import { Sky } from '@react-three/drei'
 import { XROrigin, useXRInputSourceState } from '@react-three/xr'
@@ -269,7 +269,7 @@ export function Scene() {
       characterRef.current.position.set(0, 0, 0)
     }
   })
-  useXRControllerInput()
+  useXRControllerLocomotionActionBindings()
   return (
     <>
       <Sky />
@@ -419,7 +419,7 @@ function SnapRotateXROrigin() {
 **For AR:**
 1. Use `offerSession: 'immersive-ar'`
 2. Remove `Sky` component
-3. Use `useXRControllerInput()` for input
+3. Use `useXRControllerLocomotionActionBindings()` for to bind the locomotion actions
 4. Set `cameraBehavior={false}` on SimpleCharacter
 5. Add `XROrigin` with appropriate scaling/positioning
 

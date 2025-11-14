@@ -61,9 +61,10 @@ Get started with **[building a simple game](https://pmndrs.github.io/viverse/tut
 - [Accessing avatar and profile](https://pmndrs.github.io/viverse/tutorials/access-avatar-and-profile)
 - [Equipping the character with items](https://pmndrs.github.io/viverse/tutorials/equipping-items)
 - [Using custom animations and models](https://pmndrs.github.io/viverse/tutorials/custom-models-and-animations)
+- [Actions](https://pmndrs.github.io/viverse/tutorials/actions)
+- [Custom Character Controller](https://pmndrs.github.io/viverse/tutorials/custom-character-controller)
 - [How to remove the viverse integrations](https://pmndrs.github.io/viverse/tutorials/remove-viverse-integrations)
 - [Publish to VIVERSE](https://pmndrs.github.io/viverse/tutorials/publish-to-viverse)
-- Building your own character controller - _Coming Soon_
 
 ## Not into react?
 

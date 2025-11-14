@@ -6,7 +6,7 @@ import {
   SimpleCharacterAnimationOptions,
   SimpleCharacterMovementOptions,
   SimpleCharacterOptions,
-  updateSimpleCharacterInputVelocity,
+  updateSimpleCharacterVelocity,
   updateSimpleCharacterRotation,
 } from '@pmndrs/viverse'
 import {
@@ -26,7 +26,7 @@ import { CharacterAnimationAction } from './animation.js'
 import { useViverseActiveAvatar } from './index.js'
 import { CharacterModelProvider } from './model.js'
 import { useBvhCharacterPhysics } from './physics.js'
-import { useCharacterCameraBehavior, useCharacterModelLoader, useSimpleCharacterInputs } from './utils.js'
+import { useCharacterCameraBehavior, useCharacterModelLoader, useSimpleCharacterActionBindings } from './utils.js'
 
 export const SimpleCharacter = forwardRef<
   Object3D,
@@ -35,7 +35,9 @@ export const SimpleCharacter = forwardRef<
   (
     {
       input,
+      actionBindings,
       inputOptions,
+      actionBindingOptions,
       cameraBehavior,
       children,
       movement,
@@ -47,12 +49,12 @@ export const SimpleCharacter = forwardRef<
     },
     ref,
   ) => {
-    useSimpleCharacterInputs(input, inputOptions)
+    useSimpleCharacterActionBindings(actionBindings ?? input, actionBindingOptions ?? inputOptions)
     const internalRef = useRef<Object3D>(null)
     useCharacterCameraBehavior(internalRef, cameraBehavior)
     const physics = useBvhCharacterPhysics(internalRef, physicsOptions)
     const lastJumpTimeRef = useRef(-Infinity)
-    useFrame((state) => updateSimpleCharacterInputVelocity(state.camera, physics, movement))
+    useFrame((state) => updateSimpleCharacterVelocity(state.camera, physics, movement))
     useFrame(() => {
       if (model != false || movement?.jump === false) {
         return

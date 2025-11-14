@@ -1,12 +1,12 @@
 import { Euler, Object3D, Quaternion } from 'three'
-import { RunAction, MoveLeftAction, MoveRightAction, MoveForwardAction, MoveBackwardAction } from '../input/index.js'
+import { RunAction, MoveLeftAction, MoveRightAction, MoveForwardAction, MoveBackwardAction } from '../action/index.js'
 import type { SimpleCharacterMovementOptions } from './index.js'
 import type { BvhCharacterPhysics } from '../physics/index.js'
 
 const cameraEuler = new Euler()
 const cameraRotation = new Quaternion()
 
-export function updateSimpleCharacterInputVelocity(
+export function updateSimpleCharacterVelocity(
   camera: Object3D,
   physics: BvhCharacterPhysics,
   options?: SimpleCharacterMovementOptions,

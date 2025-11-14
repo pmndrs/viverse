@@ -10,10 +10,10 @@ import { useFrame } from '@react-three/fiber'
 import { useXRControllerButtonEvent, useXRInputSourceState } from '@react-three/xr'
 import { useEffect, useRef } from 'react'
 
-export function useXRControllerInput() {
+export function useXRControllerLocomotionActionBindings() {
   const leftController = useXRInputSourceState('controller', 'left')
   const rightController = useXRInputSourceState('controller', 'right')
-  useXRControllerButtonEvent(rightController, 'a-button', (state) => state === 'pressed' && JumpAction.emit())
+  useXRControllerButtonEvent(rightController, 'a-button', (state) => state === 'pressed' && JumpAction.emit(undefined))
   const forwardWriterRef = useRef<StateActionWriter<number>>(undefined)
   const backwardWriterRef = useRef<StateActionWriter<number>>(undefined)
   const leftWriterRef = useRef<StateActionWriter<number>>(undefined)

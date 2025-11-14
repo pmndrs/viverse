@@ -1,6 +1,6 @@
 import { action, timePassed, GraphTimelineState } from '@pmndrs/timeline'
 import { AnimationAction } from 'three'
-import { RunAction } from '../../input/index.js'
+import { RunAction } from '../../action/index.js'
 import { startAnimation } from '../../utils.js'
 import { DefaultCrossFadeDuration, DefaultJumDelay } from '../defaults.js'
 import type { SimpleCharacterOptions, SimpleCharacterState } from '../index.js'
