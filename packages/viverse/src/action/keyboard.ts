@@ -51,7 +51,6 @@ export class KeyboardActionBinding {
       domElement.addEventListener(
         'keyup',
         (e: KeyboardEvent) => {
-          console.log('up')
           this.pressedKeys.delete(e.code)
           this.updateState()
         },
@@ -59,7 +58,6 @@ export class KeyboardActionBinding {
       )
       // Handle focus loss to clear pressed keys
       const onBlur = () => {
-        console.log('blur')
         this.pressedKeys.clear()
         this.updateState()
       }

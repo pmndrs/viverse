@@ -136,7 +136,10 @@ export function useSimpleCharacterActionBindings(
         actionBindingsList.splice(index, 1)
       }
     }
-    applySimpleCharacterActionBindingOptions(actionBindingsList, options)
+    applySimpleCharacterActionBindingOptions(
+      actionBindingsList.map(({ actionBindings }) => actionBindings),
+      options,
+    )
   })
   useEffect(
     () => () => {

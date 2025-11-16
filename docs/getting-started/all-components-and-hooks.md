@@ -383,6 +383,43 @@ An array of action binding classes to instantiate for handling controls
 - `ScreenJoystickLocomotionActionBindings` - On-screen joystick for movement and run (mobile). Options: `{ screenJoystickDeadZonePx?, screenJoystickRunDistancePx? }`
 - `ScreenButtonJumpActionBindings` - On-screen jump button (mobile-only). Visible only on mobile.
 
+### `actionBindingOptions` Options
+
+Fine-tune the default action binding classes created by `SimpleCharacter`. These options are applied to any active bindings that support them (including your custom `actionBindings` if they expose the same properties).
+
+- **screenJoystickDeadZonePx:** `number` - Inner dead zone radius in pixels for the on-screen joystick (default: `24`)
+- **screenJoystickRunDistancePx:** `number` - Distance from center (px) after which the joystick toggles run (default: `46`)
+- **pointerCaptureRotationSpeed:** `number` - Rotation speed multiplier for Pointer Capture look (default: `0.4`)
+- **pointerCaptureZoomSpeed:** `number` - Zoom speed multiplier for Pointer Capture (default: `0.0001`)
+- **pointerLockRotationSpeed:** `number` - Rotation speed multiplier for Pointer Lock look (default: `0.4`)
+- **pointerLockZoomSpeed:** `number` - Zoom speed multiplier for Pointer Lock (default: `0.0001`)
+- **keyboardRequiresPointerLock:** `boolean` - If `true`, keyboard input only works while the canvas has pointer lock (default: `false`)
+- **keyboardMoveForwardKeys:** `string[]` - KeyboardEvent.code values for moving forward (default: `['KeyW']`)
+- **keyboardMoveBackwardKeys:** `string[]` - Keys for moving backward (default: `['KeyS']`)
+- **keyboardMoveLeftKeys:** `string[]` - Keys for moving left (default: `['KeyA']`)
+- **keyboardMoveRightKeys:** `string[]` - Keys for moving right (default: `['KeyD']`)
+- **keyboardRunKeys:** `string[]` - Keys for run modifier (default: `['ShiftRight','ShiftLeft']`)
+- **keyboardJumpKeys:** `string[]` - Keys for jump (default: `['Space']`)
+
+> [!NOTE]
+> Key arrays use `KeyboardEvent.code` strings (e.g., `'KeyW'`, `'ArrowUp'`), not `key` values.
+
+**Example:**
+
+```tsx
+<SimpleCharacter
+  actionBindingOptions={{
+    keyboardRequiresPointerLock: true,
+    keyboardMoveForwardKeys: ['KeyW', 'ArrowUp'],
+    keyboardRunKeys: ['ShiftLeft'],
+    pointerLockRotationSpeed: 0.5,
+    pointerLockZoomSpeed: 0.0002,
+    screenJoystickDeadZonePx: 16,
+    screenJoystickRunDistancePx: 40,
+  }}
+/>
+```
+
 ### `model` Options
 
 - **url:** `string` - URL to VRM or GLTF model file
