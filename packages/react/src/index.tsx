@@ -246,7 +246,6 @@ export {
   FirstPersonCharacterCameraBehavior,
   BvhCharacterPhysics,
   type BvhCharacterPhysicsOptions,
-  BvhPhysicsWorld,
   bvhBoneMap,
   CharacterCameraBehavior,
 } from '@pmndrs/viverse'
