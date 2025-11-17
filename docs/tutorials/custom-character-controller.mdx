@@ -24,17 +24,6 @@ Use pnpm and ensure these packages are installed. VRM support is optional but re
 pnpm add three @react-three/fiber @react-three/drei @react-three/timeline @react-three/viverse zustand
 ```
 
-Create an environment file for your Viverse app id (replace the value with your own):
-
-```bash
-# .env.local
-VITE_VIVERSE_APP_ID=your_app_id_here
-```
-
-Notes:
-- Keep your assets (e.g. `map.glb`, `avatar.vrm`, sounds/textures) under `public/`.
-- Pointer lock: click the canvas to lock the mouse; press ESC to release.
-
 ## Step 1 — App shell (scene, provider, UI)
 
 First, we start by copying all the assets, we'll need from this repository under `examples/fortnite/public` into your public folder. For animations, we are using the [Universal Animation Library - Pro](https://quaternius.com/packs/universalanimationlibrary.html) from Quaternius. If you want to use these animations for your project, please make sure to buy the Pro version at their website.
