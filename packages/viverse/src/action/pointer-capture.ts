@@ -1,4 +1,4 @@
-import { RotatePitchAction, RotateYawAction, ZoomAction } from './index.js'
+import { RotatePitchAction, RotateYawAction, ZoomAction } from './definitions.js'
 
 export class PointerCaptureRotateZoomActionBindings {
   private activePointers: Map<number, { x: number; y: number }> = new Map()

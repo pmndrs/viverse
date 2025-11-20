@@ -3,7 +3,7 @@ import { JumpLoopAnimationUrl } from '../../animation/default.js'
 import { flattenCharacterAnimationOptions, loadCharacterAnimation } from '../../animation/index.js'
 import { startAnimation } from '../../utils.js'
 import { DefaultCrossFadeDuration } from '../defaults.js'
-import type { SimpleCharacterOptions, SimpleCharacterState } from '../index.js'
+import type { SimpleCharacterOptions, SimpleCharacterState } from '../types.js'
 
 export async function loadSimpleCharacterJumpLoopState<T>(
   state: SimpleCharacterState,

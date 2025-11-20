@@ -8,15 +8,9 @@ import {
   ScreenJoystickLocomotionActionBindings,
   ScreenButtonJumpActionBindings,
 } from '../action/index.js'
-import { CharacterAnimationOptions } from '../animation/index.js'
-import { CharacterCameraBehavior, CharacterCameraBehaviorOptions } from '../camera.js'
-import {
-  CharacterModelOptions,
-  loadCharacterModel,
-  flattenCharacterModelOptions,
-  CharacterModel,
-} from '../model/index.js'
-import { BvhCharacterPhysicsOptions, BvhCharacterPhysics, BvhPhysicsWorld } from '../physics/index.js'
+import { CharacterCameraBehavior } from '../camera.js'
+import { loadCharacterModel, flattenCharacterModelOptions, CharacterModel } from '../model/index.js'
+import { BvhCharacterPhysics, BvhPhysicsWorld } from '../physics/index.js'
 import { shouldJump } from '../utils.js'
 import { loadSimpleCharacterJumpDownState } from './state/jump-down.js'
 import { loadSimpleCharacterJumpForwardAction, loadSimpleCharacterJumpForwardState } from './state/jump-forward.js'
@@ -24,101 +18,9 @@ import { loadSimpleCharacterJumpLoopState } from './state/jump-loop.js'
 import { loadSimpleCharacterJumpStartState } from './state/jump-start.js'
 import { loadSimpleCharacterJumpUpAction, loadSimpleCharacterJumpUpState } from './state/jump-up.js'
 import { loadSimpleCharacterMovingState } from './state/movement.js'
+import { SimpleCharacterOptions, SimpleCharacterState } from './types.js'
 import { updateSimpleCharacterVelocity } from './update-input-velocity.js'
 import { updateSimpleCharacterRotation } from './update-rotation.js'
-
-export type SimpleCharacterState = {
-  camera: Object3D
-  model?: CharacterModel
-  physics: BvhCharacterPhysics
-  lastJump: number
-}
-
-export type SimpleCharacterMovementOptions = {
-  /**
-   * @default true
-   */
-  jump?:
-    | {
-        /**
-         * @default 0.2
-         */
-        delay?: number
-        /**
-         * @default 0.1
-         */
-        bufferTime?: number
-        /**
-         * @default 8
-         */
-        speed?: number
-      }
-    | boolean
-  /**
-   * @default true
-   */
-  walk?: { speed?: number } | boolean
-  /**
-   * @default true
-   */
-  run?: { speed?: number } | boolean
-}
-
-export type SimpleCharacterAnimationOptions = {
-  readonly walk?: CharacterAnimationOptions
-  readonly run?: CharacterAnimationOptions
-  readonly idle?: CharacterAnimationOptions
-  readonly jumpUp?: CharacterAnimationOptions
-  readonly jumpLoop?: CharacterAnimationOptions
-  readonly jumpDown?: CharacterAnimationOptions
-  readonly jumpForward?: CharacterAnimationOptions
-  /**
-   * @default "movement"
-   */
-  yawRotationBasedOn?: 'camera' | 'movement'
-  /**
-   * @default 10
-   */
-  maxYawRotationSpeed?: number
-  /**
-   * @default 0.1
-   */
-  crossFadeDuration?: number
-}
-
-export type SimpleCharacterActionBindingOptions = {
-  screenJoystickRunDistancePx?: number
-  screenJoystickDeadZonePx?: number
-  pointerCaptureRotationSpeed?: number // default 0.4
-  pointerCaptureZoomSpeed?: number // default 0.0001
-  pointerLockRotationSpeed?: number // default 0.4
-  pointerLockZoomSpeed?: number // default 0.0001
-  keyboardRequiresPointerLock?: boolean //default false
-  keyboardMoveForwardKeys?: Array<string>
-  keyboardMoveBackwardKeys?: Array<string>
-  keyboardMoveLeftKeys?: Array<string>
-  keyboardMoveRightKeys?: Array<string>
-  keyboardRunKeys?: Array<string>
-  keyboardJumpKeys?: Array<string>
-}
-
-export type SimpleCharacterOptions = {
-  /**
-   * @deprecated use actionBindings instead
-   */
-  readonly input?: ReadonlyArray<{ new (domElement: HTMLElement, abortSignal: AbortSignal): any }>
-  readonly actionBindings?: ReadonlyArray<{ new (domElement: HTMLElement, abortSignal: AbortSignal): any }>
-  /**
-   * @deprecated use actionBindingOptions instead
-   */
-  inputOptions?: SimpleCharacterActionBindingOptions
-  actionBindingOptions?: SimpleCharacterActionBindingOptions
-  movement?: SimpleCharacterMovementOptions
-  readonly model?: CharacterModelOptions | boolean
-  physics?: BvhCharacterPhysicsOptions
-  cameraBehavior?: CharacterCameraBehaviorOptions
-  readonly animation?: SimpleCharacterAnimationOptions
-}
 
 export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> implements SimpleCharacterState {
   public readonly cameraBehavior: CharacterCameraBehavior
@@ -251,3 +153,4 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> im
 export * from './update-input-velocity.js'
 export * from './update-rotation.js'
 export * from './apply-input-options.js'
+export * from './types.js'

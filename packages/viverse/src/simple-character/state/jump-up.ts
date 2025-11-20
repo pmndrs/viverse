@@ -3,7 +3,7 @@ import { AnimationAction, LoopOnce, Vector3 } from 'three'
 import { JumpUpAnimationUrl } from '../../animation/default.js'
 import { flattenCharacterAnimationOptions, loadCharacterAnimation } from '../../animation/index.js'
 import { startAnimation } from '../../utils.js'
-import { SimpleCharacterState, SimpleCharacterOptions } from '../index.js'
+import { SimpleCharacterState, SimpleCharacterOptions } from '../types.js'
 
 export async function loadSimpleCharacterJumpUpAction(state: SimpleCharacterState, options: SimpleCharacterOptions) {
   const model = state.model

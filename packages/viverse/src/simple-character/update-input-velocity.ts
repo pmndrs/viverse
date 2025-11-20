@@ -1,6 +1,6 @@
 import { Euler, Object3D, Quaternion } from 'three'
 import { RunAction, MoveLeftAction, MoveRightAction, MoveForwardAction, MoveBackwardAction } from '../action/index.js'
-import type { SimpleCharacterMovementOptions } from './index.js'
+import type { SimpleCharacterMovementOptions } from './types.js'
 import type { BvhCharacterPhysics } from '../physics/index.js'
 
 const cameraEuler = new Euler()

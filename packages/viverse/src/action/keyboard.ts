@@ -1,14 +1,12 @@
+import { StateAction, WriteonlyEventAction, StateActionWriter } from './action.js'
 import {
   JumpAction,
   MoveBackwardAction,
   MoveForwardAction,
   MoveLeftAction,
   MoveRightAction,
-  StateAction,
   RunAction,
-  WriteonlyEventAction,
-  StateActionWriter,
-} from './index.js'
+} from './definitions.js'
 
 export class KeyboardActionBinding {
   private pressedKeys = new Set<string>()

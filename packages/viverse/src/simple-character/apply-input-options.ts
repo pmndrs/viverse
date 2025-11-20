@@ -1,4 +1,4 @@
-import { SimpleCharacterActionBindingOptions } from './index.js'
+import { SimpleCharacterActionBindingOptions } from './types.js'
 import {
   DefaultJumpKeys,
   DefaultMoveBackwardKeys,

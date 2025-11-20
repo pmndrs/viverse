@@ -4,7 +4,7 @@ import { JumpForwardAnimationUrl } from '../../animation/default.js'
 import { flattenCharacterAnimationOptions, loadCharacterAnimation } from '../../animation/index.js'
 import { startAnimation } from '../../utils.js'
 import { DefaultCrossFadeDuration } from '../defaults.js'
-import { SimpleCharacterState, SimpleCharacterOptions } from '../index.js'
+import { SimpleCharacterState, SimpleCharacterOptions } from '../types.js'
 
 export async function loadSimpleCharacterJumpForwardAction(
   state: SimpleCharacterState,

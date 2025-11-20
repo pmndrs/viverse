@@ -1,6 +1,6 @@
 import { Euler, Object3D, Quaternion, Vector3 } from 'three'
 import { BvhCharacterPhysics } from '../physics/index.js'
-import type { SimpleCharacterAnimationOptions } from './index.js'
+import type { SimpleCharacterAnimationOptions } from './types.js'
 
 const NegZAxis = new Vector3(0, 0, -1)
 const _2MathPI = 2 * Math.PI

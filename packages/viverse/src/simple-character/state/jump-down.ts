@@ -4,7 +4,7 @@ import { JumpDownAnimationUrl } from '../../animation/default.js'
 import { flattenCharacterAnimationOptions, loadCharacterAnimation } from '../../animation/index.js'
 import { startAnimation } from '../../utils.js'
 import { DefaultCrossFadeDuration } from '../defaults.js'
-import type { SimpleCharacterState, SimpleCharacterOptions } from '../index.js'
+import type { SimpleCharacterState, SimpleCharacterOptions } from '../types.js'
 
 export async function loadSimpleCharacterJumpDownState<T>(
   state: SimpleCharacterState,

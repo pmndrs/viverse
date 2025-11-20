@@ -1,11 +1,5 @@
-import {
-  MoveForwardAction,
-  MoveBackwardAction,
-  MoveLeftAction,
-  MoveRightAction,
-  RunAction,
-  StateActionWriter,
-} from './index.js'
+import { StateActionWriter } from './action.js'
+import { MoveForwardAction, MoveBackwardAction, MoveLeftAction, MoveRightAction, RunAction } from './definitions.js'
 
 const DefaultDeadZonePx = 24
 const DefaultRunDistancePx = 46

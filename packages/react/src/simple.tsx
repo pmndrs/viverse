@@ -21,10 +21,10 @@ import { Graph, GrapthState, Parallel, RunTimeline, Switch, SwitchCase, timePass
 import { forwardRef, ReactNode, Suspense, useImperativeHandle, useRef } from 'react'
 import { Group, LoopOnce, Object3D, Vector3 } from 'three'
 import { CharacterAnimationAction } from './animation.js'
-import { useViverseActiveAvatar } from './index.js'
 import { CharacterModelProvider } from './model.js'
 import { useBvhCharacterPhysics } from './physics.js'
 import { useCharacterCameraBehavior, useCharacterModelLoader, useSimpleCharacterActionBindings } from './utils.js'
+import { useViverseActiveAvatar } from './viverse.js'
 
 export const SimpleCharacter = forwardRef<
   Object3D,

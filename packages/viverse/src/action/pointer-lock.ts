@@ -1,4 +1,4 @@
-import { RotatePitchAction, RotateYawAction, ZoomAction } from './index.js'
+import { RotatePitchAction, RotateYawAction, ZoomAction } from './definitions.js'
 
 export class PointerLockRotateZoomActionBindings {
   public rotationSpeed?: number // default 0.4

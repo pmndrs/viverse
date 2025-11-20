@@ -1,4 +1,4 @@
-import { StateAction, StateActionWriter, WriteonlyEventAction } from './index.js'
+import { StateAction, StateActionWriter, WriteonlyEventAction } from './action.js'
 
 export class PointerButtonActionBinding {
   private writer?: StateActionWriter<boolean>

@@ -1,4 +1,4 @@
-import { JumpAction } from './index.js'
+import { JumpAction } from './definitions.js'
 import { PointerButtonActionBinding } from './pointer.js'
 
 export const defaultScreenButtonStyles: Partial<CSSStyleDeclaration> = {
