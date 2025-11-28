@@ -43,6 +43,20 @@ export function fixModelAnimationClip(
   clipScene: Object3D | undefined,
   removeXZMovement: boolean,
 ): void {
+  clip.tracks = clip.tracks.filter((track) => {
+    if (track instanceof QuaternionKeyframeTrack) {
+      return true
+    }
+    const [clipBoneName, propertyName] = track.name.split('.')
+    if (propertyName != 'position') {
+      return false
+    }
+    if (clipBoneName == 'hips' || clipBoneName == 'root') {
+      return true
+    }
+    return false
+  })
+
   let restRoot: Object3D | undefined | null
   let restRootParent: Object3D | null | undefined
 
@@ -162,12 +176,6 @@ export function fixModelAnimationClip(
 
       track.name = trackName
     } else if (track instanceof VectorKeyframeTrack) {
-      if (clipBoneName != 'hips' && clipBoneName != 'root') {
-        continue
-      }
-      if (propertyName != 'position') {
-        continue
-      }
       for (let i = 0; i < track.values.length; i += 3) {
         position.fromArray(track.values, i)
         if (clipSceneHips?.parent != null) {
@@ -176,6 +184,11 @@ export function fixModelAnimationClip(
           } else {
             position.multiplyScalar(clipSceneHips.parent.matrixWorld.getMaxScaleOnAxis())
           }
+        }
+        const modelBone = model.scene.getObjectByName(`rest_${clipBoneName}`)
+        if (modelBone != null) {
+          modelBone.updateMatrixWorld()
+          position.divideScalar(modelBone.matrixWorld.getMaxScaleOnAxis())
         }
         position.multiplyScalar(positionScale)
         if (!(model instanceof VRM) && clipBoneName === 'hips') {
