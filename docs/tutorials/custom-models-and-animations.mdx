@@ -9,7 +9,7 @@ nav: 8
 By default, the `SimpleCharacter` component uses a built-in robot avatar. You can easily replace this with your own 3D model by providing a URL to the model file in any of the following formats:
 
 - **VRM** - The standardized VRM format for avatars requires no additional configuration
-- **GLTF** - (or also glb) Standard 3D Model format - make sure to use the standard vrm bone names as shown below
+- **GLTF** - (or also glb) Standard 3D Model format - make sure to use the standard vrm bone names as shown below or provide a `boneMap`.
 
 <details>
 <summary>VRM 1.0 humanoid bone names (click to expand)</summary>
@@ -81,6 +81,29 @@ import { SimpleCharacter } from '@react-three/viverse'
 
 export function MyCharacter() {
   return <SimpleCharacter model={{ url: '/path/to/your-model.vrm' }} />
+}
+```
+
+If your GLTF model does not use the standard VRM bone names, you can provide a `boneMap` to map your model's bone names to the VRM standard:
+
+```tsx
+import { SimpleCharacter } from '@react-three/viverse'
+
+const myBoneMap = {
+  'mixamorig:Hips': 'hips',
+  'mixamorig:Spine': 'spine',
+  // ... other bones
+}
+
+export function MyCharacter() {
+  return (
+    <SimpleCharacter
+      model={{
+        url: '/path/to/your-model.glb',
+        boneMap: myBoneMap
+      }}
+    />
+  )
 }
 ```
 

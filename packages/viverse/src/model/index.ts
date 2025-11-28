@@ -1,12 +1,14 @@
 import { AnimationAction, AnimationMixer, Euler, Object3D, Quaternion } from 'three'
 import { loadGltfCharacterModel } from './gltf.js'
 import { loadVrmCharacterModel } from './vrm.js'
-
+import type { BoneMap } from '../utils.js'
+import type { VRMHumanBoneName } from '@pixiv/three-vrm'
 export { VRMHumanBoneName } from '@pixiv/three-vrm'
 export * from './vrm.js'
 
 export type CharacterModelOptions = {
   readonly type?: 'vrm' | 'gltf'
+  readonly boneMap?: Record<string, VRMHumanBoneName>
   readonly url?: string
   /**
    * allows to apply an rotation offset when placing objects as children of the character's bones
@@ -29,7 +31,14 @@ export function flattenCharacterModelOptions(
   if (options == null) {
     return []
   }
-  return [options.url, options.type, options.boneRotationOffset, options.castShadow, options.receiveShadow]
+  return [
+    options.url,
+    options.type,
+    options.boneRotationOffset,
+    options.castShadow,
+    options.receiveShadow,
+    options.boneMap,
+  ]
 }
 
 export type CharacterModel = {
@@ -45,6 +54,7 @@ export async function loadCharacterModel(
   boneRotationOffset?: Quaternion,
   castShadow: boolean = true,
   receiveShadow: boolean = true,
+  boneMap?: BoneMap,
 ): Promise<CharacterModel> {
   let result: Omit<CharacterModel, 'mixer' | 'currentAnimations'>
 
@@ -77,6 +87,7 @@ export async function loadCharacterModel(
   }
   result.boneRotationOffset = boneRotationOffset
   result.scene.traverse((obj) => {
+    obj.name = boneMap?.[obj.name] ?? obj.name
     obj.frustumCulled = false
     if (castShadow) {
       obj.castShadow = true

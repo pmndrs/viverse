@@ -1,7 +1,9 @@
 import { JumpAction } from './action/index.js'
-import type { CharacterModel } from './model/index.js'
+import type { CharacterModel, VRMHumanBoneName } from './model/index.js'
 import type { BvhCharacterPhysics } from './physics/index.js'
 import type { AnimationAction } from 'three'
+
+export type BoneMap = Record<string, VRMHumanBoneName>
 
 export function getIsMobileMediaQuery() {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {

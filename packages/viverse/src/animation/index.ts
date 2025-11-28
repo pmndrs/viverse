@@ -11,7 +11,7 @@ import {
 import { BVHLoader } from 'three/examples/jsm/loaders/BVHLoader.js'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { applyBoneMap } from './bone-map.js'
+import { applyAnimationBoneMap } from './bone-map.js'
 import _bvhBoneMap from './bvh-bone-map.json'
 import { DefaultUrl, resolveDefaultCharacterAnimationUrl } from './default.js'
 import { applyMask, type CharacterAnimationMask } from './mask.js'
@@ -43,13 +43,13 @@ export function fixModelAnimationClip(
   clipScene: Object3D | undefined,
   removeXZMovement: boolean,
 ): void {
-  let restRoot: Object3D | undefined
+  let restRoot: Object3D | undefined | null
   let restRootParent: Object3D | null | undefined
 
   if (!(model instanceof VRM)) {
-    restRoot = model.scene.getObjectByName('rest_root')
+    restRoot = model.scene.getObjectByName('rest_hips')?.parent
     if (restRoot == null) {
-      throw new Error(`Model rest root not found.`)
+      throw new Error(`Model hips.parent not found.`)
     }
     restRootParent = restRoot?.parent
     restRoot.parent = null
@@ -312,7 +312,7 @@ export async function loadCharacterAnimation(
   }
   const [clip] = clips
   if (boneMap != null) {
-    applyBoneMap(clip, clipScene, boneMap)
+    applyAnimationBoneMap(clip, clipScene, boneMap)
   }
   if (mask != null) {
     applyMask(clip, mask)

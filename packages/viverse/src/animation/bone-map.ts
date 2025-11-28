@@ -1,13 +1,11 @@
-import { VRMHumanBoneName } from '@pixiv/three-vrm'
 import { AnimationClip, Object3D } from 'three'
+import type { BoneMap } from '../utils.js'
 
-export type BoneMap = Record<string, VRMHumanBoneName>
-
-export function applyBoneMap(clip: AnimationClip, clipScene: Object3D | undefined, boneMap: BoneMap) {
+export function applyAnimationBoneMap(clip: AnimationClip, clipScene: Object3D | undefined, boneMap: BoneMap) {
   for (const track of clip.tracks) {
     const [clipBoneName, propertyName] = track.name.split('.')
     const clipBone = clipScene?.getObjectByName(clipBoneName)
-    const normalizedBoneName = (boneMap?.[clipBoneName] ?? clipBoneName) as VRMHumanBoneName | 'root'
+    const normalizedBoneName = boneMap?.[clipBoneName] ?? clipBoneName
     if (clipBone != null) {
       clipBone.name = normalizedBoneName
     }

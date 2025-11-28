@@ -1,7 +1,7 @@
 import { VRM, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm'
 import { VRMAnimationLoaderPlugin } from '@pixiv/three-vrm-animation'
 import { Object3D, Object3DEventMap } from 'three'
-import { GLTFLoader } from 'three/examples/jsm/Addons.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 export const vrmaLoader = new GLTFLoader()
 vrmaLoader.register((parser) => new VRMLoaderPlugin(parser, { autoUpdateHumanBones: true }))

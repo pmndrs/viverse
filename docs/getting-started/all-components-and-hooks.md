@@ -424,6 +424,7 @@ Fine-tune the default action binding classes created by `SimpleCharacter`. These
 
 - **url:** `string` - URL to VRM or GLTF model file
 - **type:** `"gltf" | "vrm"` - the type of file to be loaded (optional)
+- **boneMap:** `Record<string, VRMHumanBoneName>` - Mapping of model bone names to standard VRM bone names
 - **castShadow:** `boolean` - Enable shadow casting (default: `true`)
 - **receiveShadow:** `boolean` - Enable shadow receiving (default: `true`)
 - **boneRotationOffset:** `Quaternion | undefined` - Allows to apply an rotation offset when placing objects as children of the character's bones (default: `undefined`)
