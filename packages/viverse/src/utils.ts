@@ -27,7 +27,7 @@ export type StartAnimationOptions = {
 export function startAnimation(
   animation: AnimationAction,
   currentAnimations: CharacterModel['currentAnimations'],
-  { crossFade = true, layer, fadeDuration = 0.1, paused = false, sync = false }: StartAnimationOptions,
+  { crossFade = true, layer, fadeDuration = 0.1, paused = false, sync = false }: StartAnimationOptions = {},
 ): (() => void) | undefined {
   animation.reset()
   animation.play()

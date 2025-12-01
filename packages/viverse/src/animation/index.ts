@@ -217,6 +217,7 @@ export function fixModelAnimationClip(
 export * from './utils.js'
 export * from './default.js'
 export * from './mask.js'
+export * from './bone-map.js'
 
 export type CharacterAnimationOptions = {
   url: string | DefaultUrl
