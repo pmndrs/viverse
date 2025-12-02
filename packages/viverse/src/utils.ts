@@ -21,13 +21,13 @@ export type StartAnimationOptions = {
   sync?: boolean
   paused?: boolean
   crossFade?: boolean
-  layer?: string
+  layer?: string | Array<string | undefined>
 }
 
 export function startAnimation(
   animation: AnimationAction,
   currentAnimations: CharacterModel['currentAnimations'],
-  { crossFade = true, layer, fadeDuration = 0.1, paused = false, sync = false }: StartAnimationOptions = {},
+  { crossFade = true, layer: layers, fadeDuration = 0.1, paused = false, sync = false }: StartAnimationOptions = {},
 ): (() => void) | undefined {
   animation.reset()
   animation.play()
@@ -38,16 +38,36 @@ export function startAnimation(
       animation.fadeOut(fadeDuration)
     }
   }
-  const currentAnimation = currentAnimations.get(layer)
-  if (currentAnimation != null && sync) {
+  if (!Array.isArray(layers)) {
+    layers = [layers]
+  }
+
+  //deduplicated set of current animations
+  const resolvedCurrentAnimations = new Set(
+    layers.map((layer) => currentAnimations.get(layer)).filter((animation) => animation != null),
+  )
+
+  //sync with current animation if there is exactly one current animation that is not equal to the new animation
+  if (resolvedCurrentAnimations.size === 1 && !resolvedCurrentAnimations.has(animation) && sync) {
+    const [currentAnimation] = resolvedCurrentAnimations
     animation.syncWith(currentAnimation)
   }
-  if (currentAnimation != null) {
-    animation.crossFadeFrom(currentAnimation, fadeDuration)
-  } else {
+
+  //fade in only if not already playing the new animation
+  if (!resolvedCurrentAnimations.has(animation)) {
     animation.fadeIn(fadeDuration)
   }
-  currentAnimations.set(layer, animation)
+
+  //fading out all animations except for the new animation
+  resolvedCurrentAnimations.delete(animation)
+  for (const currentAnimation of resolvedCurrentAnimations) {
+    currentAnimation.fadeOut(fadeDuration)
+  }
+
+  //write the new animation to all the layers, if current and new animations are all the same, its just writing the same content again
+  for (const layer of layers) {
+    currentAnimations.set(layer, animation)
+  }
 }
 
 export function shouldJump(physics: BvhCharacterPhysics, lastJump: number, bufferTime = 0.1): boolean {

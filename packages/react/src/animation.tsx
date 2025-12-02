@@ -28,10 +28,18 @@ export type CharacterAnimationActionProps = {
   CharacterAnimationOptions &
   StartAnimationOptions
 
-const CharacterAnimationLayerContext = createContext<string | undefined>(undefined)
+const CharacterAnimationLayerContext = createContext<string | undefined | Array<string | undefined>>(undefined)
 
-export function CharacterAnimationLayer({ name, children }: { name: string; children?: ReactNode }) {
-  return <CharacterAnimationLayerContext.Provider value={name}>{children}</CharacterAnimationLayerContext.Provider>
+export function CharacterAnimationLayer({
+  name,
+  children,
+}: {
+  name: string | undefined | Array<string | undefined>
+  children?: ReactNode
+}) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const layers = useMemo(() => name, [JSON.stringify(name)])
+  return <CharacterAnimationLayerContext.Provider value={layers}>{children}</CharacterAnimationLayerContext.Provider>
 }
 
 export const CharacterAnimationAction = forwardRef<AnimationAction, CharacterAnimationActionProps>(
@@ -85,7 +93,17 @@ export const CharacterAnimationAction = forwardRef<AnimationAction, CharacterAni
         update={update}
         dependencies={
           dependencies != null
-            ? [...dependencies, animationOptions.mask, fadeDuration, paused, sync, crossFade, animation, model, layer]
+            ? [
+                ...dependencies,
+                animationOptions.mask,
+                fadeDuration,
+                paused,
+                sync,
+                crossFade,
+                animation,
+                model,
+                JSON.stringify(layer),
+              ]
             : undefined
         }
       />

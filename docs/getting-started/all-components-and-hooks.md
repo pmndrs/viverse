@@ -144,7 +144,7 @@ Defines a logical animation layer (e.g., "lower-body", "upper-body"). All nested
 
 **Props:**
 
-- `name: string` - Layer name
+- `name: string | Array<string | undefined> | undefined` - Layer name
 - `children?: ReactNode` - Nested timeline/animation content
 
 **Example:**
@@ -187,7 +187,7 @@ Loads and plays a clip on the active character model, integrating with `@react-t
   - `sync?: boolean` - Sync time with current action on same layer (if any)
   - `paused?: boolean`
   - `loop?: AnimationActionLoopStyles` - Defaults to `LoopRepeat`
-  - `layer?: string` - Overrides the current `<CharacterAnimationLayer>`
+  - `layer?: string | Array<string | undefined>` - Overrides the current `<CharacterAnimationLayer>`
 - Timeline control (from `@react-three/timeline`):
   - `init?(): void | (() => void)` - Called when the action starts; return a cleanup
   - `update?(state, delta): void` - Per-frame update
