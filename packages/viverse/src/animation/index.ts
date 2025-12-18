@@ -12,7 +12,7 @@ import { BVHLoader } from 'three/examples/jsm/loaders/BVHLoader.js'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { applyAnimationBoneMap } from './bone-map.js'
-import _bvhBoneMap from './bvh-bone-map.json'
+import _bvhBoneMap from './bvh-bone-map.json' with { type: 'json' }
 import { DefaultUrl, resolveDefaultCharacterAnimationUrl } from './default.js'
 import { applyMask, type CharacterAnimationMask } from './mask.js'
 import _mixamoBoneMap from './mixamo-bone-map.json'
