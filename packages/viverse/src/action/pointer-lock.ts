@@ -1,8 +1,8 @@
 import { RotatePitchAction, RotateYawAction, ZoomAction } from './definitions.js'
 
 export class PointerLockRotateZoomActionBindings {
-  public rotationSpeed?: number // default 0.4
-  public zoomSpeed?: number // default 0.0001
+  public rotationSpeed?: number // default 4.0
+  public zoomSpeed?: number // default 0.001
   public lockOnClick?: boolean
 
   constructor(domElement: HTMLElement, abortSignal: AbortSignal) {
@@ -37,7 +37,7 @@ export class PointerLockRotateZoomActionBindings {
           return
         }
         const rect = domElement.getBoundingClientRect()
-        const rotationSpeed = this.rotationSpeed ?? 0.4
+        const rotationSpeed = this.rotationSpeed ?? 4.0
         RotateYawAction.emit(-(event.movementX / rect.height) * rotationSpeed)
         RotatePitchAction.emit(-(event.movementY / rect.height) * rotationSpeed)
       },
@@ -51,7 +51,7 @@ export class PointerLockRotateZoomActionBindings {
         if (document.pointerLockElement != domElement) {
           return
         }
-        const zoomSpeed = this.zoomSpeed ?? 0.0001
+        const zoomSpeed = this.zoomSpeed ?? 0.001
         ZoomAction.emit(event.deltaY * zoomSpeed)
         event.preventDefault()
       },

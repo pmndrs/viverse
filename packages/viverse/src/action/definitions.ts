@@ -17,5 +17,11 @@ export const MoveRightAction = new StateAction<number>(Math.max, 0)
 export const RunAction = new StateAction<boolean>(BooleanOr, false)
 export const JumpAction = new EventAction()
 export const ZoomAction = new EventAction<number>(sum, 0)
+/**
+ * yaw delta rotation in radians
+ */
 export const RotateYawAction = new EventAction<number>(sum, 0)
+/**
+ * yaw delta rotation in radians
+ */
 export const RotatePitchAction = new EventAction<number>(sum, 0)

@@ -47,7 +47,7 @@ export type CharacterCameraBehaviorOptions =
              */
             maxYaw?: number
             /**
-             * @default 1000
+             * @default 1.0
              */
             speed?: number
           }
@@ -58,6 +58,9 @@ export type CharacterCameraBehaviorOptions =
        */
       zoom?:
         | {
+            /**
+             * @default 1.0
+             */
             speed?: number
             /**
              * @default 1
@@ -193,13 +196,13 @@ export class CharacterCameraBehavior {
     let rotationOptions = options.rotation ?? true
     if (!this.firstUpdate && rotationOptions !== false) {
       rotationOptions = rotationOptions === true ? {} : rotationOptions
-      const rotationSpeed = rotationOptions.speed ?? 1000.0
+      const rotationSpeed = rotationOptions.speed ?? 1.0
       this.yawReader.update()
       this.pitchReader.update()
       const deltaYaw = this.yawReader.get()
       const deltaPitch = this.pitchReader.get()
-      this.rotationYaw = this.clampYaw(this.rotationYaw + deltaYaw * rotationSpeed * deltaTime, rotationOptions)
-      this.rotationPitch = this.clampPitch(this.rotationPitch + deltaPitch * rotationSpeed * deltaTime, rotationOptions)
+      this.rotationYaw = this.clampYaw(this.rotationYaw + deltaYaw * rotationSpeed, rotationOptions)
+      this.rotationPitch = this.clampPitch(this.rotationPitch + deltaPitch * rotationSpeed, rotationOptions)
     } else {
       this.setRotationFromDelta(camera, deltaHelper, typeof rotationOptions === 'boolean' ? {} : rotationOptions)
     }
@@ -214,10 +217,10 @@ export class CharacterCameraBehavior {
     let zoomOptions = options.zoom ?? true
     if (!this.firstUpdate && zoomOptions !== false) {
       zoomOptions = zoomOptions === true ? {} : zoomOptions
-      const zoomSpeed = zoomOptions.speed ?? 1000.0
+      const zoomSpeed = zoomOptions.speed ?? 1.0
       this.zoomReader.update()
       const deltaZoom = this.zoomReader.get()
-      const zoomFactor = 1 + deltaZoom * zoomSpeed * deltaTime
+      const zoomFactor = 1 + deltaZoom * zoomSpeed
       if (deltaZoom >= 0) {
         this.zoomDistance *= zoomFactor
       } else {

@@ -4,8 +4,8 @@ export class PointerCaptureRotateZoomActionBindings {
   private activePointers: Map<number, { x: number; y: number }> = new Map()
   private lastPinchDist: number | null = null
 
-  public rotationSpeed?: number // default 0.4
-  public zoomSpeed?: number // default 0.0001
+  public rotationSpeed?: number // default 4.0
+  public zoomSpeed?: number // default 0.001
 
   constructor(
     private readonly domElement: HTMLElement,
@@ -37,14 +37,14 @@ export class PointerCaptureRotateZoomActionBindings {
           const pts = Array.from(this.activePointers.values())
           if (this.lastPinchDist != null) {
             const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y)
-            const zoomSpeed = this.zoomSpeed ?? 0.0001
-            ZoomAction.emit((this.lastPinchDist - d) * zoomSpeed)
+            const zoomSpeed = this.zoomSpeed ?? 0.001
+            ZoomAction.emit((this.lastPinchDist - d) * zoomSpeed * 3)
             this.lastPinchDist = d
           }
           event.preventDefault()
           return
         }
-        const rotationSpeed = this.rotationSpeed ?? 0.4
+        const rotationSpeed = this.rotationSpeed ?? 4.0
         RotateYawAction.emit(-(event.movementX / window.innerHeight) * rotationSpeed)
         RotatePitchAction.emit(-(event.movementY / window.innerHeight) * rotationSpeed)
       },
@@ -85,7 +85,7 @@ export class PointerCaptureRotateZoomActionBindings {
       'wheel',
       (event: WheelEvent) => {
         event.preventDefault()
-        const zoomSpeed = this.zoomSpeed ?? 0.0001
+        const zoomSpeed = this.zoomSpeed ?? 0.001
         ZoomAction.emit(event.deltaY * zoomSpeed)
       },
       {
