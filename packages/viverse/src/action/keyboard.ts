@@ -28,7 +28,7 @@ export class KeyboardActionBinding {
   }
 
   constructor(
-    action: WriteonlyEventAction<KeyboardEvent> | StateAction<boolean>,
+    action: WriteonlyEventAction<KeyboardEvent> | WriteonlyEventAction<void> | StateAction<boolean>,
     domElement: HTMLElement,
     abortSignal: AbortSignal,
   ) {
@@ -83,7 +83,8 @@ export class KeyboardActionBinding {
         if (!this.keys.includes(e.code) || e.repeat) {
           return
         }
-        action.emit(e)
+        //needed to support EventAction<void>
+        action.emit(e as any)
       },
       { signal: abortSignal },
     )
