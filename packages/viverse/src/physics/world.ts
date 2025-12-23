@@ -1,4 +1,4 @@
-import { Box3, DoubleSide, InstancedMesh, Matrix4, Object3D, Ray, Vector3 } from 'three'
+import { Box3, DoubleSide, InstancedMesh, Intersection, Matrix4, Object3D, Ray, Vector3 } from 'three'
 import { computeBoundsTree, MeshBVH, StaticGeometryGenerator, ExtendedTriangle } from 'three-mesh-bvh'
 
 const rayHelper = new Ray()
@@ -150,7 +150,7 @@ export class BvhPhysicsWorld {
   }
 
   raycast(ray: Ray, far: number) {
-    let result: number | undefined
+    let result: Intersection | undefined
     for (const entry of this.bodies.values()) {
       rayHelper.copy(ray)
       let farHelper = far
@@ -161,10 +161,10 @@ export class BvhPhysicsWorld {
         farHelper = farPointHelper.distanceTo(rayHelper.origin)
       }
       for (const intersection of entry.bvh.raycast(rayHelper, undefined, 0, farHelper)) {
-        if (result != null && intersection.distance >= result) {
+        if (result != null && intersection.distance >= result.distance) {
           continue
         }
-        result = intersection.distance
+        result = intersection
       }
     }
     return result

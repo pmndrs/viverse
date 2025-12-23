@@ -29,9 +29,9 @@ import {
   DefaultRunKeys,
 } from '@pmndrs/viverse'
 import { useFrame, useThree } from '@react-three/fiber'
-import { RefObject, useEffect, useMemo, useRef } from 'react'
+import { RefObject, useCallback, useEffect, useMemo, useRef } from 'react'
 import { suspend } from 'suspend-react'
-import { Object3D } from 'three'
+import { Object3D, Ray } from 'three'
 import { useBvhPhysicsWorld } from './physics.js'
 import { useViverseActiveAvatar } from './viverse.js'
 
@@ -49,7 +49,7 @@ export function useCharacterCameraBehavior(
     }
   }, [])
   const world = useBvhPhysicsWorld()
-  const raycast = useMemo(() => world.raycast.bind(world), [world])
+  const raycast = useCallback((ray: Ray, far: number) => world.raycast(ray, far)?.distance, [world])
   useFrame((state, delta) => {
     const resolvedModel = model instanceof Object3D ? model : model.current
     if (resolvedModel == null) {

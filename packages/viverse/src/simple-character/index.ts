@@ -136,7 +136,7 @@ export class SimpleCharacter extends Group<Object3DEventMap & { loaded: {} }> im
       this.camera,
       this,
       delta,
-      this.world.raycast.bind(this.world),
+      (ray, far) => this.world.raycast(ray, far)?.distance,
       this.options.cameraBehavior,
     )
   }
