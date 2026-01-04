@@ -44,10 +44,13 @@ export function fixModelAnimationClip(
   removeXZMovement: boolean,
 ): void {
   clip.tracks = clip.tracks.filter((track) => {
+    const [clipBoneName, propertyName] = track.name.split('.')
+    if (!allBoneNames.includes(clipBoneName)) {
+      return false
+    }
     if (track instanceof QuaternionKeyframeTrack) {
       return true
     }
-    const [clipBoneName, propertyName] = track.name.split('.')
     if (propertyName != 'position') {
       return false
     }
@@ -345,3 +348,4 @@ export async function loadCharacterAnimation(
 
 export const mixamoBoneMap = _mixamoBoneMap as Record<string, VRMHumanBoneName>
 export const bvhBoneMap = _bvhBoneMap as Record<string, VRMHumanBoneName>
+export const allBoneNames = Object.values(_mixamoBoneMap)
