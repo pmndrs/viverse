@@ -1,4 +1,4 @@
-import { Box3, DoubleSide, InstancedMesh, Intersection, Matrix4, Object3D, Ray, Vector3 } from 'three'
+import { Box3, DoubleSide, InstancedMesh, Intersection, Matrix4, Mesh, Object3D, Ray, Vector3 } from 'three'
 import { computeBoundsTree, MeshBVH, StaticGeometryGenerator, ExtendedTriangle } from 'three-mesh-bvh'
 
 const rayHelper = new Ray()
@@ -45,7 +45,26 @@ export class BvhPhysicsWorld {
 
   private computeBvhEntries(object: Object3D, isStatic: boolean): Array<BvhEntry> {
     object.updateWorldMatrix(true, true)
-    if (!(object instanceof InstancedMesh)) {
+    const result: Array<BvhEntry> = []
+    let hasNonInstancedMeshes = false
+    object.traverse((entry) => {
+      if (entry instanceof InstancedMesh) {
+        const bvh = computeBoundsTree.apply(entry.geometry)
+        result.push(
+          ...new Array(entry.instanceMatrix.count).fill(undefined as any).map((_, i) => ({
+            object,
+            bvh,
+            instanceIndex: i,
+            isStatic,
+          })),
+        )
+        return
+      }
+      if (entry instanceof Mesh) {
+        hasNonInstancedMeshes = true
+      }
+    })
+    if (hasNonInstancedMeshes) {
       const parent = object.parent
       if (!isStatic) {
         object.parent = null
@@ -57,20 +76,10 @@ export class BvhPhysicsWorld {
         object.parent = parent
         object.updateMatrixWorld(true)
       }
-      return [{ object, bvh, isStatic }]
+      result.push({ object, bvh, isStatic })
     }
 
-    if (object.children.length > 0) {
-      throw new Error(`cannot add InstancedMesh with children`)
-    }
-
-    const bvh = computeBoundsTree.apply(object.geometry)
-    return new Array(object.instanceMatrix.count).fill(undefined as any).map((_, i) => ({
-      object,
-      bvh,
-      instanceIndex: i,
-      isStatic,
-    }))
+    return result
   }
 
   removeBody(object: Object3D) {
