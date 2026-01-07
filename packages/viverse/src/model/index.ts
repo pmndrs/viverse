@@ -23,6 +23,10 @@ export type CharacterModelOptions = {
    * @default true
    */
   readonly receiveShadow?: boolean
+  /**
+   * @default false
+   */
+  readonly useDraco?: boolean
 }
 
 export function flattenCharacterModelOptions(
@@ -38,6 +42,7 @@ export function flattenCharacterModelOptions(
     options.castShadow,
     options.receiveShadow,
     options.boneMap,
+    options.useDraco,
   ]
 }
 
@@ -55,6 +60,7 @@ export async function loadCharacterModel(
   castShadow: boolean = true,
   receiveShadow: boolean = true,
   boneMap?: BoneMap,
+  useDraco?: boolean,
 ): Promise<CharacterModel> {
   let result: Omit<CharacterModel, 'mixer' | 'currentAnimations'>
 
@@ -82,7 +88,7 @@ export async function loadCharacterModel(
       result = await loadVrmCharacterModel(url)
       break
     case 'gltf':
-      result = await loadGltfCharacterModel(url)
+      result = await loadGltfCharacterModel(url, useDraco)
       break
   }
   result.boneRotationOffset = boneRotationOffset
