@@ -1,8 +1,8 @@
+import { VRM, type VRMHumanBoneName } from '@pixiv/three-vrm'
 import { AnimationAction, AnimationMixer, Euler, Object3D, Quaternion } from 'three'
 import { loadGltfCharacterModel } from './gltf.js'
 import { loadVrmCharacterModel } from './vrm.js'
 import type { BoneMap } from '../utils.js'
-import type { VRMHumanBoneName } from '@pixiv/three-vrm'
 export { VRMHumanBoneName } from '@pixiv/three-vrm'
 export * from './vrm.js'
 
@@ -107,4 +107,8 @@ export async function loadCharacterModel(
   restPose.traverse((object) => (object.name = `rest_${object.name}`))
   result.scene.add(restPose)
   return Object.assign(result, { mixer: new AnimationMixer(result.scene), currentAnimations: new Map() })
+}
+
+export function getBone(model: CharacterModel, name: VRMHumanBoneName): Object3D | undefined {
+  return model instanceof VRM ? (model.humanoid.getRawBoneNode(name) ?? undefined) : model.scene.getObjectByName(name)
 }
