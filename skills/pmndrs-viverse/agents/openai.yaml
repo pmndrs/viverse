@@ -1,0 +1,4 @@
+interface:
+  display_name: "VIVERSE Three.js"
+  short_description: "Build VIVERSE games with Three.js"
+  default_prompt: "Use $pmndrs-viverse to build a simple VIVERSE game."

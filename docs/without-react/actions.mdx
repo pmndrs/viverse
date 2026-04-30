@@ -1,0 +1,143 @@
+---
+title: Actions and Action Bindings
+description: How to use actions and action bindings without React.
+nav: 12
+---
+
+This guide covers the vanilla API for actions. For conceptual background on actions, action types, and built-in actions, see the [React Actions tutorial](/tutorials/actions).
+
+## Lifecycle with AbortController
+
+Unlike React hooks that auto-cleanup on unmount, vanilla bindings use `AbortController`:
+
+```typescript
+const abortController = new AbortController()
+
+const keyboard = new KeyboardLocomotionActionBindings(canvas, abortController.signal)
+
+// Clean up when done
+abortController.abort()
+```
+
+All built-in bindings take `(domElement, abortSignal)` and clean up automatically when aborted.
+
+## Built-in Bindings
+
+| React Hook | Vanilla Class |
+|------------|---------------|
+| `useKeyboardLocomotionActionBindings` | `KeyboardLocomotionActionBindings` |
+| `usePointerLockRotateZoomActionBindings` | `PointerLockRotateZoomActionBindings` |
+| `usePointerCaptureRotateZoomActionBindings` | `PointerCaptureRotateZoomActionBindings` |
+| `useKeyboardActionBinding` | `KeyboardActionBinding` |
+| `usePointerButtonActionBinding` | `PointerButtonActionBinding` |
+| `useScreenJoystickLocomotionActionBindings` | `ScreenJoystickLocomotionActionBindings` |
+| `useScreenButton` | `ScreenButtonJumpActionBindings` |
+
+### Keyboard
+
+```typescript
+import { KeyboardLocomotionActionBindings } from '@pmndrs/viverse'
+
+const keyboard = new KeyboardLocomotionActionBindings(canvas, abortController.signal)
+
+// Optional: require pointer lock for movement
+keyboard.moveForwardBinding.requiresPointerLock = true
+
+// Optional: customize keys (defaults: WASD, Shift, Space)
+keyboard.moveForwardBinding.keys = ['KeyW', 'ArrowUp']
+```
+
+### Mouse (Pointer Lock)
+
+```typescript
+import { PointerLockRotateZoomActionBindings } from '@pmndrs/viverse'
+
+const mouse = new PointerLockRotateZoomActionBindings(canvas, abortController.signal)
+mouse.lockOnClick = true
+```
+
+### Touch (Pointer Capture)
+
+```typescript
+import { PointerCaptureRotateZoomActionBindings } from '@pmndrs/viverse'
+
+const touch = new PointerCaptureRotateZoomActionBindings(canvas, abortController.signal)
+```
+
+### Mobile UI
+
+```typescript
+import { 
+  ScreenJoystickLocomotionActionBindings,
+  ScreenButtonJumpActionBindings,
+} from '@pmndrs/viverse'
+
+const joystick = new ScreenJoystickLocomotionActionBindings(canvas, abortController.signal)
+const jumpBtn = new ScreenButtonJumpActionBindings(canvas, abortController.signal)
+```
+
+Controls are auto-hidden on desktop via the `.mobile-only` CSS class.
+
+### Custom Key → Action Mapping
+
+```typescript
+import { KeyboardActionBinding, RotateYawAction } from '@pmndrs/viverse'
+
+const mapped = RotateYawAction.mapFrom((e: KeyboardEvent) => {
+  if (e.code === 'KeyQ') return -0.02
+  if (e.code === 'KeyE') return 0.02
+  return 0
+})
+
+const binding = new KeyboardActionBinding(mapped, canvas, abortController.signal)
+binding.keys = ['KeyQ', 'KeyE']
+```
+
+## Creating Custom Actions
+
+```typescript
+import { StateAction, EventAction } from '@pmndrs/viverse'
+
+// StateAction(mergeFn, neutralValue)
+const CrouchAction = new StateAction<boolean>((a, b) => a || b, false)
+
+// EventAction(combineFn?, neutralValue?)
+const FireAction = new EventAction<void>()
+```
+
+## Writing to StateAction
+
+Create a writer, then call `.write()` on state changes. Multiple writers merge automatically.
+
+```typescript
+const crouchWriter = CrouchAction.createWriter(abortController.signal)
+
+canvas.addEventListener('keydown', (e) => {
+  if (e.code === 'KeyC') crouchWriter.write(true)
+}, { signal: abortController.signal })
+
+canvas.addEventListener('keyup', (e) => {
+  if (e.code === 'KeyC') crouchWriter.write(false)
+}, { signal: abortController.signal })
+
+// Read merged state
+const isCrouching = CrouchAction.get()
+```
+
+## Emitting EventAction
+
+Call `.emit()` when the event occurs. For continuous polling (e.g., gamepad), track previous state to emit only on press:
+
+```typescript
+let wasPressed = false
+
+function pollGamepad() {
+  const pressed = navigator.getGamepads()[0]?.buttons[0].pressed ?? false
+  if (pressed && !wasPressed) FireAction.emit()
+  wasPressed = pressed
+  requestAnimationFrame(pollGamepad)
+}
+
+// Subscribe to events
+FireAction.subscribe(() => console.log('Fire!'), { signal: abortController.signal })
+```

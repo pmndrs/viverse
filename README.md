@@ -19,9 +19,13 @@
 
 > Build character-based XR, Desktop, or Mobile web games, the easy way.
 
+## Quickstart
+
 ```bash
-npm install three @react-three/fiber @react-three/viverse
+npx skills add pmndrs/viverse
 ```
+
+> Use $pmndrs-viverse to build a simple VIVERSE game.
 
 ### What does it look like?
 
@@ -54,7 +58,13 @@ createRoot(document.getElementById('root')!).render(
 > Some familiarity with
 > react, threejs, and @react-three/fiber, is recommended.
 
-Get started with **[building a simple game](https://pmndrs.github.io/viverse/tutorials/simple-game)**, take a look at our **[examples](https://pmndrs.github.io/viverse/getting-started/examples)**, or follow one of our **tutorials**:
+Prefer doing it manually? Install the package:
+
+```bash
+npm install three @react-three/fiber @react-three/viverse
+```
+
+Then get started with **[building a simple game](https://pmndrs.github.io/viverse/tutorials/simple-game)**, take a look at our **[examples](https://pmndrs.github.io/viverse/getting-started/examples)**, or follow one of our **tutorials**:
 
 - [First person controls](https://pmndrs.github.io/viverse/tutorials/first-person)
 - [Augmented and virtual reality](https://pmndrs.github.io/viverse/tutorials/augmented-and-virtual-reality)

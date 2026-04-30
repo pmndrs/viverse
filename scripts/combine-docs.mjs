@@ -7,6 +7,7 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '..')
 const docsDir = path.join(repoRoot, 'docs')
 const outputFile = path.join(repoRoot, 'llms.txt')
+const skillReferencesDir = path.join(repoRoot, 'skills', 'pmndrs-viverse', 'references')
 
 // Exclude specific docs (relative to docsDir, POSIX-style)
 const excludedRelFiles = new Set(['tutorials/vibe-coding-with-ai.mdx'])
@@ -437,6 +438,31 @@ function compareByNavThenTitle(a, b) {
   return aTitle.localeCompare(bTitle)
 }
 
+function skillReferenceNameForEntry(entry) {
+  const rel = path.relative(docsDir, entry.file).split(path.sep).join('/')
+  if (rel === 'getting-started/all-components-and-hooks.md') return 'components-and-hooks.md'
+  if (rel === 'tutorials/publish-to-viverse.md') return 'publishing.md'
+  if (rel.startsWith('without-react/')) return 'without-react.md'
+  if (rel.startsWith('tutorials/')) return 'tutorials.md'
+  return 'getting-started.md'
+}
+
+function renderEntries(entries) {
+  const parts = ['']
+  for (const entry of entries) {
+    const title = entry.frontmatter.title || entry.basename
+    const rel = path.relative(docsDir, entry.file)
+    const anchorId = anchorIdFromRelPath(rel)
+    parts.push(`<!-- From: ${rel} -->`)
+    parts.push(`<a id="${anchorId}"></a>`)
+    parts.push(`# ${title}`)
+    parts.push('')
+    parts.push(entry.body.trim())
+    parts.push('')
+  }
+  return parts.join('\n') + '\n'
+}
+
 async function main() {
   // discover mdx files
   const all = await listFilesRecursively(docsDir)
@@ -460,23 +486,27 @@ async function main() {
 
   entries.sort(compareByNavThenTitle)
 
-  const parts = []
-  parts.push('')
+  const combined = renderEntries(entries)
+  await fs.writeFile(outputFile, combined, 'utf8')
+  await fs.mkdir(skillReferencesDir, { recursive: true })
+
+  const obsoleteSkillReferenceFile = path.join(skillReferencesDir, 'docs.md')
+  await fs.rm(obsoleteSkillReferenceFile, { force: true })
+
+  const referenceEntries = new Map()
   for (const entry of entries) {
-    const title = entry.frontmatter.title || entry.basename
-    const rel = path.relative(docsDir, entry.file)
-    const anchorId = anchorIdFromRelPath(rel)
-    parts.push(`<!-- From: ${rel} -->`)
-    parts.push(`<a id="${anchorId}"></a>`)
-    parts.push(`# ${title}`)
-    parts.push('')
-    parts.push(entry.body.trim())
-    parts.push('')
+    const referenceName = skillReferenceNameForEntry(entry)
+    const groupedEntries = referenceEntries.get(referenceName) ?? []
+    groupedEntries.push(entry)
+    referenceEntries.set(referenceName, groupedEntries)
   }
 
-  const combined = parts.join('\n') + '\n'
-  await fs.writeFile(outputFile, combined, 'utf8')
+  for (const [referenceName, groupedEntries] of referenceEntries) {
+    await fs.writeFile(path.join(skillReferencesDir, referenceName), renderEntries(groupedEntries), 'utf8')
+  }
+
   console.log(`Wrote combined docs to ${path.relative(repoRoot, outputFile)} (${entries.length} files)`)
+  console.log(`Wrote ${referenceEntries.size} skill reference files to ${path.relative(repoRoot, skillReferencesDir)}`)
 }
 
 main().catch((err) => {
