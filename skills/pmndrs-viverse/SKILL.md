@@ -5,82 +5,68 @@ description: Build, modify, debug, or publish VIVERSE-ready web games and 3D app
 
 # VIVERSE Three.js
 
-Use this skill when working on VIVERSE-ready Three.js or React Three Fiber apps. Use `@pmndrs/viverse` for vanilla Three.js and `@react-three/viverse` for React Three Fiber.
-
-## Project Intent
-
-`@pmndrs/viverse` and `@react-three/viverse` are character-first libraries for building avatar-centered Three.js and React Three Fiber apps.
-
-The standard character is the central abstraction of this project. It combines the intended default path for avatar display, movement, camera behavior, physics, input actions, animation, and VIVERSE avatar integration.
-
-For React Three Fiber apps, `<SimpleCharacter>` from `@react-three/viverse` is the canonical player/avatar abstraction. For vanilla Three.js apps, `new SimpleCharacter(...)` from `@pmndrs/viverse` serves the same role.
-
-Think of `<Viverse>` as the provider/runtime, `BvhPhysicsBody` and `PrototypeBox` as world-building support, and `SimpleCharacter` as the main embodied actor that game logic should usually be built around.
+Use this skill for VIVERSE-ready Three.js and React Three Fiber apps. Use `@react-three/viverse` for React apps and `@pmndrs/viverse` for vanilla Three.js.
 
 ## Start Here
 
 1. Inspect the app structure and package manager before editing.
-2. Identify whether the app has a controllable player, avatar, embodied actor, character, or character-like game object.
-3. If it does, choose the standard character path first:
-   - React Three Fiber: `<SimpleCharacter />` from `@react-three/viverse`
-   - Vanilla Three.js: `new SimpleCharacter(...)` from `@pmndrs/viverse`
-4. Build game rules, checkpoints, timers, sensors, UI, and level geometry around that character.
-5. Tune behavior through the character's supported options before reaching for lower-level controller code.
-6. Pick the smallest relevant file under `references/` before inventing APIs.
-7. Prefer `@react-three/viverse` for React Three Fiber apps and `@pmndrs/viverse` for vanilla Three.js apps.
-8. Keep examples runnable with the app's existing framework, usually Vite plus `three`, `@react-three/fiber`, `@react-three/drei`, and `@react-three/viverse`.
+2. Identify whether the task needs React Three Fiber or vanilla Three.js.
+3. Pick the smallest relevant reference before inventing APIs.
+4. Keep VIVERSE apps character-first: prefer the standard character/avatar path unless the requested controls or animation semantics require a custom controller.
+5. Build game rules, sensors, UI, level geometry, and validation around normal user inputs and the visible player.
+6. Validate live gameplay with the app's browser/runtime behavior, not only static state.
+7. Use the bundled skill references and installed package types as the example source. For tutorial assets, use only exact asset URLs or package asset exports named by the references; you may download those binary assets into the app `public/` folder, but do not fetch remote example source unless the user explicitly asks for it.
 
 ## Reference Routing
 
-Read the smallest relevant reference:
+- `references/getting-started.md`: installation, first scenes, basic examples.
+- `references/components-and-hooks.md`: exact React component, hook, action, character, physics, and animation APIs.
+- `references/gameplay-quality.md`: game architecture and validation heuristics for playable demos.
+- `references/tutorials/index.md`: tutorial index. Read one focused tutorial file rather than loading all tutorials.
+- `references/tutorials/custom-character-controller.md`: custom humanoid controller with BVH character physics, directional locomotion, camera aim, held items, and layered upper-body actions.
+- `references/without-react.md`: vanilla Three.js usage.
+- `references/publishing.md`: VIVERSE CLI, build output, app creation, publishing.
 
-- `references/getting-started.md`: setup, package installation, first scene, and examples.
-- `references/components-and-hooks.md`: component and hook APIs, props, action bindings, character options, and utility exports.
-- `references/tutorials.md`: simple games using `SimpleCharacter`, first-person controls, AR/VR, avatars/profile, custom models, item attachments, actions, and custom controllers. Treat custom controllers as advanced exceptions only when explicitly requested or necessary.
-- `references/without-react.md`: vanilla Three.js usage with `@pmndrs/viverse`.
-- `references/publishing.md`: VIVERSE CLI setup, build output, app creation, and publishing.
-
-If unsure which file applies, search all references with `rg` first:
+If unsure which reference applies, search first:
 
 ```bash
-rg -n "SimpleCharacter|BvhPhysicsBody|publish|avatar|XR" path/to/skill/references
+rg -n "SimpleCharacter|BvhPhysicsBody|avatar|actions|XR|publish" path/to/skill/references
 ```
 
 ## Architecture Defaults
 
-- If the package is not installed in a React Three Fiber app, add `three`, `@react-three/fiber`, `@react-three/viverse`, and usually `@react-three/drei`; see `references/getting-started.md`.
-- If the task asks for exact props, hooks, or exports, use `references/components-and-hooks.md`.
-- If the task asks for a feature tutorial, use `references/tutorials.md`.
-- If the task is vanilla Three.js or "without React", use `references/without-react.md`.
-- If the task is deployment or VIVERSE app setup, use `references/publishing.md`.
-- When the user asks to build with `pmndrs/viverse`, `@pmndrs/viverse`, or `@react-three/viverse`, assume they want the library's avatar-centered architecture unless they say otherwise.
-- A typical React app should use `<Viverse>` for runtime/context/physics, `<SimpleCharacter>` for the player/avatar, `BvhPhysicsBody` for level collision, and `PrototypeBox` for quick prototype geometry.
-- Sensors, timers, checkpoints, UI, and game state should observe or reposition the standard character rather than replacing it.
-- Use low-level physics hooks, custom capsules, or custom controllers only when the task is specifically about custom controller behavior, a non-humanoid player, or a mechanic that cannot be expressed through `SimpleCharacter` options.
-- If a game needs movement tuning, prefer `SimpleCharacter` props such as `movement`, `physics`, `cameraBehavior`, `animation`, `actionBindings`, and `actionBindingOptions`.
-
-## Custom Controller Exceptions
-
-The custom character controller tutorial is an advanced path. Do not use it as the default for platformers, obstacle courses, simple games, avatar demos, or VIVERSE prototypes.
-
-Use a custom controller only when the user explicitly asks for a custom controller, the playable actor is not a standard humanoid/avatar, the task is to demonstrate low-level controller internals, or `SimpleCharacter` cannot support a required mechanic after its props and bindings have been considered.
-
-If choosing this path, say so clearly in the final answer and explain what capability required leaving the standard character path.
+- Wrap VIVERSE-aware React scenes in `<Viverse>`.
+- Use `<SimpleCharacter />` for ordinary embodied React gameplay and `new SimpleCharacter(...)` for ordinary vanilla Three.js gameplay.
+- Keep the standard character visibly embodied; do not hide it or use `model={false}` unless the user asked for a placeholder or non-avatar actor.
+- Put collidable level geometry in `BvhPhysicsBody`; dynamic blockers should share the same collision truth used by character movement and game logic.
+- Tune movement, camera, physics, animation, and input through supported character options and action bindings before reaching for low-level controller code.
+- Choose the custom controller tutorial when a game needs custom model/clip stacks, directional strafe/backpedal clips, camera-relative aiming, held weapon actions, reload/shoot layers, or other animation semantics beyond `SimpleCharacter`.
+- Treat third-person shooter, battle royale, Fortnite-style, and action-combat prompts as custom-controller tasks. Use the architecture from `references/tutorials/custom-character-controller.md`: VIVERSE character physics, model/provider, bone attachments, and animation actions/layers.
+- Do not satisfy those prompts with only `<Viverse>`, `BvhPhysicsBody`, and a hand-rolled mesh/capsule player. The controllable player itself must use the VIVERSE character/controller/model/action/animation primitives.
+- Use a loaded VIVERSE character model for custom controllers, such as `useCharacterModelLoader` or `loadCharacterModel`. Do not fabricate the player model by casting a `Group` of boxes/cylinders/spheres to `CharacterModel`.
+- A custom combat controller is incomplete if it collapses the animation setup to an idle layer plus counters or weapon-only transforms. Adapt the reference lower-body and upper-body timelines, or an equivalent action-driven character/bone pose system, so movement, aim, attack, and reload visibly affect the character while the action is active.
+- For held weapons, tools, lights, or props, attach a loaded asset (`<Gltf />`, `useGLTF`, or equivalent) under `CharacterModelBone`; primitive boxes/cylinders are placeholders, not a finished held item, when an asset or tutorial model exists.
+- Crosshair shooting should use the full camera/player-view ray, including pitch; do not flatten the aim ray or choose a nearest target just because it is in front of the player. Validate at least one off-crosshair miss and one crosshair hit.
+- Directional combat movement should visibly distinguish side/back/diagonal movement from forward movement through directional clips, animation weights, bone/model pose, or equivalent player-visible feedback.
+- For games or interactive demos, read `references/gameplay-quality.md` before final validation.
+- For greenfield apps, ask the package manager for current published versions and install a compatible set for `react`, `react-dom`, `three`, `@react-three/fiber`, `@react-three/drei`, `@react-three/viverse`, and companion packages such as `@react-three/timeline`; do not copy stale tutorial dependency caps or invent future ranges.
+- If an existing app already uses an older compatible React/R3F stack, preserve that stack and add packages that match it.
+- For TypeScript apps, include matching type packages such as `@types/react`, `@types/react-dom`, and `@types/three`.
 
 ## Constraints
 
-- Do not set a `clientId` during local development unless the user explicitly asks for an authenticated VIVERSE flow.
-- Do not ask the user to paste VIVERSE passwords, tokens, client secrets, or other credentials into prompts. Prefer interactive CLI login, local environment variables, or user-run auth commands.
-- Wrap VIVERSE-aware React scenes in `<Viverse>` unless the docs for the task say to use standalone physics or remove VIVERSE integrations.
+- Do not set a `clientId` during local development unless the user explicitly asks for authenticated VIVERSE behavior.
+- Do not ask for VIVERSE passwords, tokens, client secrets, or other credentials in prompts.
 - Static BVH physics content inside `BvhPhysicsBody` and `BvhPhysicsSensor` should not structurally change after creation; use stable groups and visibility toggles when needed.
-- When publishing, build first, then follow `references/publishing.md`; do not assume a build output directory.
+- When publishing, build first, then follow `references/publishing.md`.
 
 ## Before Finishing
 
-Check that the implementation matches the library's intended architecture:
+Check the essentials:
 
-- Provider/runtime: `<Viverse>` for React apps when VIVERSE-aware scene context is needed.
-- Player/avatar: `<SimpleCharacter>` for React Three Fiber apps, or `new SimpleCharacter(...)` for vanilla Three.js apps, unless a custom controller exception applies.
-- World collision: `BvhPhysicsBody` for static or kinematic collidable level content.
-- Prototype geometry: `PrototypeBox` when quick blockout geometry is appropriate.
-- Game-specific rules: layered around the standard character instead of replacing it.
+- The app uses the intended VIVERSE runtime/library path for its framework.
+- The player is visible, embodied, and driven by normal input/action bindings.
+- Collision, sensors, shots, pickups, checkpoints, or blockers use one coherent gameplay truth.
+- Meaningful mechanics are validated through live browser play, with assertions that would fail if the feature were missing.
+- The saved `vitexec/play.ts` route reuses the same helpers and milestones proven by any disposable probes.
+- The recorded route shows gameplay after readiness and can pass again without changing the app or weakening the route.

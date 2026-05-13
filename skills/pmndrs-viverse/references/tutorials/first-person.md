@@ -1,0 +1,87 @@
+
+<a id="doc-tutorials-first-person"></a>
+# First Person Controls
+
+In this tutorial we will configure the `SimpleCharacter` to use first person controls with the following result:
+
+_Here's a preview of this tutorial's result:_
+
+Dependencies:
+
+```js
+{
+      'three': 'latest',
+      '@react-three/fiber': '<9',
+      '@react-three/viverse': 'latest',
+      '@react-three/drei': '<10'
+    }
+```
+
+Files:
+
+File: /App.tsx
+
+```tsx
+import { Sky } from '@react-three/drei'
+import { Canvas } from '@react-three/fiber'
+import {
+  Viverse,
+  SimpleCharacter,
+  BvhPhysicsBody,
+  PrototypeBox,
+  FirstPersonCharacterCameraBehavior,
+  PointerLockRotateZoomActionBindings,
+  KeyboardLocomotionActionBindings,
+} from '@react-three/viverse'
+
+export default function App() {
+  return (
+   <Canvas
+      style={{ position: 'absolute', inset: '0', touchAction: 'none' }}
+    >
+      <Viverse>
+        <Sky />
+        <directionalLight intensity={1.2} position={[-10, 10, -10]} />
+        <ambientLight intensity={1} />
+        <SimpleCharacter
+          model={false}
+          actionBindings={[KeyboardLocomotionActionBindings, PointerLockRotateZoomActionBindings]}
+          cameraBehavior={FirstPersonCharacterCameraBehavior}
+        />
+        <BvhPhysicsBody>
+          <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
+        </BvhPhysicsBody>
+      </Viverse>
+    </Canvas>
+  )
+}
+```
+
+
+First, we switch from third-person to first-person camera behavior and hide the character model to prevent the model from occluding the players view.
+
+```tsx
+<SimpleCharacter
+  model={false}
+  cameraBehavior={FirstPersonCharacterCameraBehavior}
+  // ... other props
+/>
+```
+
+**Changes:**
+
+- `model={false}` - Hides the character model since in first-person view, you don't want to see your own character
+- `cameraBehavior={FirstPersonCharacterCameraBehavior}` - Switches from the default third-person camera to first-person camera behavior
+
+Next, you need to set up the appropriate action bindings for first-person movement and looking around:
+
+```tsx
+<SimpleCharacter
+  actionBindings={[KeyboardLocomotionActionBindings, PointerLockRotateZoomActionBindings]}
+  // ... other props
+/>
+```
+
+- `KeyboardLocomotionActionBindings` - Handles WASD movement action bindings for walking around
+- `PointerLockRotateZoomActionBindings` - Enables mouse look action bindings for rotating the camera/view direction
+

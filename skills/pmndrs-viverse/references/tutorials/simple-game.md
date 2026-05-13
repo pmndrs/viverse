@@ -1,0 +1,345 @@
+
+<a id="doc-tutorials-simple-game"></a>
+# Building a Simple Game
+
+In this tutorial, we'll build the following simple 3D platformer game using `@react-three/viverse` with:
+- Character movement (WASD + mouse look)
+- Jumping mechanics
+- Physics-based collision detection
+- A simple level with platforms to jump on
+- Respawn system when falling off the map
+
+
+*Here's a preview of what we will build in this tutorial:*
+
+Dependencies:
+
+```js
+{
+      'three': 'latest',
+      '@react-three/fiber': '<9',
+      '@react-three/viverse': 'latest',
+      '@react-three/drei': '<10'
+    }
+```
+
+Files:
+
+File: /Scene.tsx
+
+```tsx
+import { Sky } from '@react-three/drei'
+import { SimpleCharacter, BvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { Group } from 'three'
+
+export function Scene() {
+  const characterRef = useRef<Group>(null)
+  
+  // Respawn logic - reset character position if they fall off the map
+  useFrame(() => {
+    if (characterRef.current == null) {
+      return
+    }
+    if (characterRef.current.position.y < -10) {
+      characterRef.current.position.set(0, 0, 0)
+    }
+  })
+
+  return (
+    <>
+      {/* Environment */}
+      <Sky />
+      
+      {/* Lighting */}
+      <directionalLight
+        intensity={1.2}
+        position={[5, 10, 10]}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-left={-10}
+        shadow-camera-right={10}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-10}
+      />
+      <ambientLight intensity={1} />
+      
+      {/* Character */}
+      <SimpleCharacter ref={characterRef} />
+      
+      {/* Level Geometry */}
+      <BvhPhysicsBody>
+        {/* Main ground */}
+        <PrototypeBox 
+          color="#ffffff" 
+          scale={[10, 0.5, 10]} 
+          position={[0, -2, 0]} 
+        />
+        
+        {/* Platforms */}
+        <PrototypeBox 
+          color="#cccccc" 
+          scale={[2, 1, 3]} 
+          position={[4, 0, 0]} 
+        />
+        <PrototypeBox 
+          color="#ffccff" 
+          scale={[3, 1, 3]} 
+          position={[3, 1.5, -1]} 
+        />
+        <PrototypeBox 
+          color="#ccffff" 
+          scale={[2, 0.5, 3]} 
+          position={[2, 2.5, -3]} 
+        />
+        <PrototypeBox 
+          color="#ffccff" 
+          scale={[2, 1, 3]} 
+          position={[-3, 0, -2]} 
+        />
+        <PrototypeBox 
+          color="#ccffff" 
+          scale={[1, 1, 4]} 
+          position={[0, -1, 0]} 
+        />
+        <PrototypeBox 
+          color="#ffffcc" 
+          scale={[4, 1, 1]} 
+          position={[0, 3.5, 0]} 
+        />
+      </BvhPhysicsBody>
+    </>
+  )
+}
+```
+
+File: /App.tsx
+
+```tsx
+import { Suspense } from "react"
+import { Canvas } from '@react-three/fiber'
+import { Viverse } from '@react-three/viverse'
+import { Scene } from "./Scene"
+
+export default function App() {
+  return (
+    <Canvas
+      style={{ position: "absolute", inset: "0", touchAction: "none" }}
+      camera={{ fov: 90, position: [0, 2, 2] }}
+      shadows
+    >
+      <Suspense fallback={null}>
+        <Viverse>
+          <Scene />
+        </Viverse>
+      </Suspense>
+    </Canvas>
+  )
+}
+```
+
+
+## Step 0: Prerequisites
+
+Make sure you have the required dependencies installed:
+
+```bash
+npm install three @react-three/fiber @react-three/viverse @react-three/drei
+```
+
+## Step 1: Setting Up the Canvas
+
+First, let's create the basic Canvas setup with shadows and proper camera settings:
+
+```tsx
+import { Canvas } from '@react-three/fiber'
+import { Viverse } from '@react-three/viverse'
+import { Suspense } from 'react'
+
+export function App() {
+  return (
+    <Canvas
+      style={{ position: "absolute", inset: "0", touchAction: "none" }}
+      camera={{ fov: 90, position: [0, 2, 2] }}
+      shadows
+    >
+      <Suspense fallback={null}>
+        <Viverse>
+          <Scene />
+        </Viverse>
+      </Suspense>
+    </Canvas>
+  )
+}
+```
+
+## Step 2: Adding the Scene and creating the Sky
+
+Let's create another component called `Scene` and add the sky and basic lighting. Add the `Sky` import from `@react-three/drei`:
+
+```tsx
+import { Sky } from '@react-three/drei'
+
+export function Scene() {
+  return (
+    <>
+      {/* Environment */}
+      <Sky />
+      
+      {/* Basic lighting */}
+      <directionalLight
+        intensity={1.2}
+        position={[5, 10, 10]}
+        castShadow
+      />
+      <ambientLight intensity={1} />
+    </>
+  )
+}
+```
+
+At this point, you should see a beautiful sky gradient in your scene!
+
+## Step 3: Building the Level
+
+Now add the level geometry. Import `BvhPhysicsBody` and `PrototypeBox` from `@react-three/viverse`, and expand the directional light with shadow properties:
+
+```tsx
+import { Sky } from '@react-three/drei'
+import { BvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+
+export function Scene() {
+  return (
+    <>
+      {/* Environment */}
+      <Sky />
+      
+      {/* Lighting - expanded with shadow settings */}
+      <directionalLight
+        intensity={1.2}
+        position={[5, 10, 10]}
+        castShadow
+      />
+      <ambientLight intensity={1} />
+      
+      <BvhPhysicsBody>
+        <PrototypeBox 
+          color="#ffffff" 
+          scale={[10, 0.5, 10]} 
+          position={[0, -2, 0]} 
+        />
+        
+        {/* Platforms */}
+        <PrototypeBox 
+          color="#cccccc" 
+          scale={[2, 1, 3]} 
+          position={[4, 0, 0]} 
+        />
+        <PrototypeBox 
+          color="#ffccff" 
+          scale={[3, 1, 3]} 
+          position={[3, 1.5, -1]} 
+        />
+        <PrototypeBox 
+          color="#ccffff" 
+          scale={[2, 0.5, 3]} 
+          position={[2, 2.5, -3]} 
+        />
+        <PrototypeBox 
+          color="#ffccff" 
+          scale={[2, 1, 3]} 
+          position={[-3, 0, -2]} 
+        />
+        <PrototypeBox 
+          color="#ccffff" 
+          scale={[1, 1, 4]} 
+          position={[0, -1, 0]} 
+        />
+        <PrototypeBox 
+          color="#ffffcc" 
+          scale={[4, 1, 1]} 
+          position={[0, 3.5, 0]} 
+        />
+      </BvhPhysicsBody>
+    </>
+  )
+}
+```
+
+Now you should see a colorful platformer level with various platforms at different heights!
+
+## Step 4: Adding the Character
+
+Next we will add the character. Import `SimpleCharacter` from `@react-three/viverse`:
+
+```tsx
+import { Sky } from '@react-three/drei'
+import { SimpleCharacter, BvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+import { useRef } from 'react'
+
+export function Scene() {
+
+  return (
+    <>
+      {/* Environment */}
+      <Sky />
+      
+      {/* Lighting */}
+      <directionalLight
+        intensity={1.2}
+        position={[5, 10, 10]}
+        castShadow
+      />
+      <ambientLight intensity={1} />
+      
+      <SimpleCharacter/>
+      
+      {/* Level Geometry */}
+      <BvhPhysicsBody>
+        {/* ... platforms remain the same ... */}
+      </BvhPhysicsBody>
+    </>
+  )
+}
+```
+
+Great! Now you can move around with WASD keys, look around with the mouse, and jump with the spacebar. Try jumping between the platforms!
+
+## Step 5: Adding Respawn Logic
+
+Finally, we will add the respawn system. Import `useRef` from `react` and `useFrame` from `@react-three/fiber` and add the respawn logic:
+
+```tsx
+import { Sky } from '@react-three/drei'
+import { SimpleCharacter, BvhPhysicsBody, PrototypeBox } from '@react-three/viverse'
+import { useRef } from 'react'
+import { Group } from 'three'
+import { useFrame } from '@react-three/fiber' // NEW
+
+export function Scene() {
+  const characterRef = useRef<Group>(null)
+  
+  // Respawn logic - NEW
+  useFrame(() => {
+    if (characterRef.current == null) {
+      return
+    }
+    if (characterRef.current.position.y < -10) {
+      characterRef.current.position.set(0, 0, 0)
+    }
+  })
+
+  return (
+    <>
+      <SimpleCharacter ref={characterRef}/>
+
+      {/* ... rest remains the same ... */}
+    </>
+  )
+}
+```
+
+Perfect! Now if you fall off the map (below y = -10), you'll automatically respawn at the starting position (0, 0, 0).
+

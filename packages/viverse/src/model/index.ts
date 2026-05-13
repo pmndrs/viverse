@@ -68,7 +68,7 @@ export async function loadCharacterModel(
     //prepare loading the default model
     type = 'gltf'
     url = (await import('../assets/mannequin.js')).url
-    boneRotationOffset = new Quaternion().setFromEuler(new Euler(Math.PI, 0, Math.PI / 2, 'ZYX'))
+    boneRotationOffset = new Quaternion().setFromEuler(new Euler(Math.PI / 2, 0, Math.PI / 2, 'ZYX'))
   }
 
   if (type == null) {

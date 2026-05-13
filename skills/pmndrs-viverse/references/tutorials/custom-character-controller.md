@@ -1,8 +1,6 @@
----
-title: Custom Character Controller
-description: Building a custom humanoid character controller in the style of fortnite
-nav: 10
----
+<a id="doc-tutorials-custom-character-controller"></a>
+
+# Custom Character Controller
 
 In this tutorial, you’ll build a custom extensible humanoid character controller in a fortnite style with support for aim, shoot, reload, run, and jump, using `@react-three/viverse` and `@react-three/timeline`.
 

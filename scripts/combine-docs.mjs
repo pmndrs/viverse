@@ -344,7 +344,6 @@ function replaceSandLike(md) {
     const filesRaw = extractPropBalanced(attrs, 'files')
     const codeRaw = extractPropBalanced(attrs, 'code')
     const parts = []
-    parts.push('<!-- Sandpack/Sandbox replaced: inline code and dependencies -->')
     if (depsRaw) {
       parts.push('Dependencies:')
       parts.push('')
@@ -443,7 +442,10 @@ function skillReferenceNameForEntry(entry) {
   if (rel === 'getting-started/all-components-and-hooks.md') return 'components-and-hooks.md'
   if (rel === 'tutorials/publish-to-viverse.md') return 'publishing.md'
   if (rel.startsWith('without-react/')) return 'without-react.md'
-  if (rel.startsWith('tutorials/')) return 'tutorials.md'
+  if (rel.startsWith('tutorials/')) {
+    const slug = path.basename(rel, path.extname(rel))
+    return `tutorials/${slug}.md`
+  }
   return 'getting-started.md'
 }
 
@@ -453,7 +455,6 @@ function renderEntries(entries) {
     const title = entry.frontmatter.title || entry.basename
     const rel = path.relative(docsDir, entry.file)
     const anchorId = anchorIdFromRelPath(rel)
-    parts.push(`<!-- From: ${rel} -->`)
     parts.push(`<a id="${anchorId}"></a>`)
     parts.push(`# ${title}`)
     parts.push('')
@@ -461,6 +462,24 @@ function renderEntries(entries) {
     parts.push('')
   }
   return parts.join('\n') + '\n'
+}
+
+function renderTutorialIndex(tutorialEntries) {
+  const parts = [
+    '',
+    '# Tutorials',
+    '',
+    'Read the smallest relevant tutorial file rather than loading every tutorial.',
+    '',
+  ]
+  for (const entry of tutorialEntries) {
+    const title = entry.frontmatter.title || entry.basename
+    const rel = path.relative(docsDir, entry.file).split(path.sep).join('/')
+    const slug = path.basename(rel, path.extname(rel))
+    parts.push(`- \`references/tutorials/${slug}.md\`: ${title}`)
+  }
+  parts.push('')
+  return parts.join('\n')
 }
 
 async function main() {
@@ -492,6 +511,7 @@ async function main() {
 
   const obsoleteSkillReferenceFile = path.join(skillReferencesDir, 'docs.md')
   await fs.rm(obsoleteSkillReferenceFile, { force: true })
+  await fs.rm(path.join(skillReferencesDir, 'tutorials.md'), { force: true })
 
   const referenceEntries = new Map()
   for (const entry of entries) {
@@ -502,7 +522,22 @@ async function main() {
   }
 
   for (const [referenceName, groupedEntries] of referenceEntries) {
-    await fs.writeFile(path.join(skillReferencesDir, referenceName), renderEntries(groupedEntries), 'utf8')
+    const referencePath = path.join(skillReferencesDir, referenceName)
+    await fs.mkdir(path.dirname(referencePath), { recursive: true })
+    await fs.writeFile(referencePath, renderEntries(groupedEntries), 'utf8')
+  }
+
+  const tutorialEntries = entries.filter((entry) => {
+    const rel = path.relative(docsDir, entry.file).split(path.sep).join('/')
+    return rel.startsWith('tutorials/') && rel !== 'tutorials/publish-to-viverse.md'
+  })
+  if (tutorialEntries.length > 0) {
+    await fs.mkdir(path.join(skillReferencesDir, 'tutorials'), { recursive: true })
+    await fs.writeFile(
+      path.join(skillReferencesDir, 'tutorials', 'index.md'),
+      renderTutorialIndex(tutorialEntries),
+      'utf8',
+    )
   }
 
   console.log(`Wrote combined docs to ${path.relative(repoRoot, outputFile)} (${entries.length} files)`)

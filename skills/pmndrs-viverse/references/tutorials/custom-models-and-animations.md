@@ -1,0 +1,150 @@
+
+<a id="doc-tutorials-custom-models-and-animations"></a>
+# Custom Models and Animations
+
+## Using Custom Character Models
+
+By default, the `SimpleCharacter` component uses a built-in robot avatar. You can easily replace this with your own 3D model by providing a URL to the model file in any of the following formats:
+
+- **VRM** - The standardized VRM format for avatars requires no additional configuration
+- **GLTF** - (or also glb) Standard 3D Model format - make sure to use the standard vrm bone names as shown below or provide a `boneMap`.
+
+<details>
+<summary>VRM 1.0 humanoid bone names (click to expand)</summary>
+
+The following are the standard VRM 1.0 humanoid bone names your GLTF rig should use (aligned with the VRM specification). If your model uses these names, animations and retargeting will work reliably:
+
+| Bone name                 | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| `hips`                    | Pelvis root; parent of the spine and both legs |
+| `spine`                   | Lower/waist spine segment above hips           |
+| `chest`                   | Mid/upper torso segment above spine            |
+| `upperChest`              | Optional highest chest segment below neck      |
+| `neck`                    | Neck base; parent of head                      |
+| `head`                    | Head root; parent of eyes and jaw              |
+| `leftEye`                 | Left eyeball transform                         |
+| `rightEye`                | Right eyeball transform                        |
+| `jaw`                     | Jaw/mandible pivot                             |
+| `leftUpperLeg`            | Left thigh (upper leg)                         |
+| `leftLowerLeg`            | Left shin (lower leg)                          |
+| `leftFoot`                | Left foot root/ankle                           |
+| `leftToes`                | Left toe base                                  |
+| `rightUpperLeg`           | Right thigh (upper leg)                        |
+| `rightLowerLeg`           | Right shin (lower leg)                         |
+| `rightFoot`               | Right foot root/ankle                          |
+| `rightToes`               | Right toe base                                 |
+| `leftShoulder`            | Left clavicle/shoulder pivot                   |
+| `leftUpperArm`            | Left upper arm (humerus)                       |
+| `leftLowerArm`            | Left forearm                                   |
+| `leftHand`                | Left hand/wrist root                           |
+| `rightShoulder`           | Right clavicle/shoulder pivot                  |
+| `rightUpperArm`           | Right upper arm (humerus)                      |
+| `rightLowerArm`           | Right forearm                                  |
+| `rightHand`               | Right hand/wrist root                          |
+| `leftThumbMetacarpal`     | Left thumb metacarpal (root of thumb)          |
+| `leftThumbProximal`       | Left thumb proximal phalanx                    |
+| `leftThumbDistal`         | Left thumb distal phalanx                      |
+| `leftIndexProximal`       | Left index proximal phalanx                    |
+| `leftIndexIntermediate`   | Left index intermediate phalanx                |
+| `leftIndexDistal`         | Left index distal phalanx                      |
+| `leftMiddleProximal`      | Left middle proximal phalanx                   |
+| `leftMiddleIntermediate`  | Left middle intermediate phalanx               |
+| `leftMiddleDistal`        | Left middle distal phalanx                     |
+| `leftRingProximal`        | Left ring proximal phalanx                     |
+| `leftRingIntermediate`    | Left ring intermediate phalanx                 |
+| `leftRingDistal`          | Left ring distal phalanx                       |
+| `leftLittleProximal`      | Left little/pinky proximal phalanx             |
+| `leftLittleIntermediate`  | Left little/pinky intermediate phalanx         |
+| `leftLittleDistal`        | Left little/pinky distal phalanx               |
+| `rightThumbMetacarpal`    | Right thumb metacarpal (root of thumb)         |
+| `rightThumbProximal`      | Right thumb proximal phalanx                   |
+| `rightThumbDistal`        | Right thumb distal phalanx                     |
+| `rightIndexProximal`      | Right index proximal phalanx                   |
+| `rightIndexIntermediate`  | Right index intermediate phalanx               |
+| `rightIndexDistal`        | Right index distal phalanx                     |
+| `rightMiddleProximal`     | Right middle proximal phalanx                  |
+| `rightMiddleIntermediate` | Right middle intermediate phalanx              |
+| `rightMiddleDistal`       | Right middle distal phalanx                    |
+| `rightRingProximal`       | Right ring proximal phalanx                    |
+| `rightRingIntermediate`   | Right ring intermediate phalanx                |
+| `rightRingDistal`         | Right ring distal phalanx                      |
+| `rightLittleProximal`     | Right little/pinky proximal phalanx            |
+| `rightLittleIntermediate` | Right little/pinky intermediate phalanx        |
+| `rightLittleDistal`       | Right little/pinky distal phalanx              |
+
+</details>
+
+```tsx
+import { SimpleCharacter } from '@react-three/viverse'
+
+export function MyCharacter() {
+  return <SimpleCharacter model={{ url: '/path/to/your-model.vrm' }} />
+}
+```
+
+If your GLTF model does not use the standard VRM bone names, you can provide a `boneMap` to map your model's bone names to the VRM standard:
+
+```tsx
+import { SimpleCharacter } from '@react-three/viverse'
+
+const myBoneMap = {
+  'mixamorig:Hips': 'hips',
+  'mixamorig:Spine': 'spine',
+  // ... other bones
+}
+
+export function MyCharacter() {
+  return (
+    <SimpleCharacter
+      model={{
+        url: '/path/to/your-model.glb',
+        boneMap: myBoneMap
+      }}
+    />
+  )
+}
+```
+
+## Adding Custom Animations
+
+Your can replace the default animations of the `SimpleCharacter` component with files in any of these three supported animation formats:
+
+- **VRMA** (VRM Animation) - The native VRM animation format
+- **FBX** - Popular file format for character animations
+- **GLTF** - Standard 3D format with animations
+- **Mixamo** - **deprecated** - use remove `type: 'mixamo'` and add `boneMap: mixamoBoneMap` instead
+
+Make sure to either use a bone map, e.g. when your bone names follow the mixamo naming conventions use the `mixamoBoneMap` or use the standard VRM bones for the animation amature as shown above under "VRM 1.0 humanoid bone names".
+
+Each animation type can be configured individually:
+
+```tsx
+<SimpleCharacter
+  animation={{
+    walk: {
+      url: '/animations/walking.fbx',
+      boneMap: mixamoBoneMap,
+      removeXZMovement: true,
+      scaleTime: 0.8,
+    },
+    run: {
+      url: '/animations/running.vrma',
+    },
+    idle: {
+      url: '/animations/idle.gltf',
+      trimTime: { start: 0.5, end: 3.0 },
+    },
+  }}
+/>
+```
+
+You can customize any of these animation slots:
+
+- `walk` - Walking animation
+- `run` - Running animation
+- `idle` - Standing idle animation
+- `jumpStart` - Beginning of jump
+- `jumpUp` - Ascending during jump
+- `jumpLoop` - Mid-air loop animation
+- `jumpDown` - Landing animation
+

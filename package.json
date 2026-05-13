@@ -6,7 +6,8 @@
     "three": "0.178.0"
   },
   "scripts": {
-    "docs:combine": "node scripts/combine-docs.mjs"
+    "docs:combine": "node scripts/combine-docs.mjs",
+    "eval:pmndrs-viverse": "node scripts/eval-pmndrs-viverse.ts"
   },
   "devDependencies": {
     "@pmndrs/pointer-events": "^6.6.20",
@@ -23,9 +24,11 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-unused-imports": "^4.1.4",
     "json": "^11.0.0",
+    "playwright": "^1.60.0",
     "prettier": "^3.6.2",
     "typescript": "^5.8.3",
-    "vite": "^5.2.11"
+    "vite": "^5.2.11",
+    "vitexec": "0.1.12"
   },
   "packageManager": "pnpm@9.4.0+sha512.f549b8a52c9d2b8536762f99c0722205efc5af913e77835dbccc3b0b0b2ca9e7dc8022b78062c17291c48e88749c70ce88eb5a74f1fa8c4bf5e18bb46c8bd83a"
 }

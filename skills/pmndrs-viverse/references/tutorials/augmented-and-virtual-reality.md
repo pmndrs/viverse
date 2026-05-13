@@ -1,0 +1,448 @@
+
+<a id="doc-tutorials-augmented-and-virtual-reality"></a>
+# Augmented and Virtual Reality
+
+This tutorial shows how to add Augmented Reality (AR) and Virtual Reality (VR) support to your `@react-three/viverse` games. We'll start with AR and then show the additional changes needed for VR.
+
+## Prerequisites
+
+Make sure you have the `@react-three/xr` package installed:
+
+```bash
+npm install @react-three/xr
+```
+
+## Augmented Reality (AR)
+
+Let's start by adding AR support to a basic `@react-three/viverse` game.
+
+*Here's the AR app we'll build now:*
+
+Dependencies:
+
+```js
+{
+      'three': 'latest',
+      '@react-three/fiber': '<9',
+      '@react-three/viverse': 'latest',
+      '@react-three/drei': '<10',
+      '@react-three/xr': 'latest'
+    }
+```
+
+Files:
+
+File: /App.tsx
+
+```tsx
+import { Canvas } from '@react-three/fiber'
+import { Viverse } from '@react-three/viverse'
+import { XR, XROrigin, createXRStore } from '@react-three/xr'
+import { Scene } from './Scene'
+
+const store = createXRStore({ offerSession: 'immersive-ar' })
+
+export default function App() {
+  return (
+    <Viverse>
+      <Canvas
+        style={{ position: "absolute", inset: "0", touchAction: "none" }}
+        camera={{ fov: 90, position: [0, 2, 2] }}
+        shadows
+        gl={{ antialias: true, localClippingEnabled: true }}
+      >
+        <XR store={store}>
+            <XROrigin scale={10} position-y={-8} position-z={10} />
+            <Scene />
+        </XR>
+      </Canvas>
+    </Viverse>
+  )
+}
+
+```
+
+File: /Scene.tsx
+
+```tsx
+import { useFrame } from '@react-three/fiber'
+import {
+  SimpleCharacter,
+  BvhPhysicsBody,
+  PrototypeBox,
+  useXRControllerLocomotionActionBindings,
+} from '@react-three/viverse'
+import { useRef } from 'react'
+import { Group } from 'three'
+
+export function Scene() {
+  const characterRef = useRef<Group>(null)
+  useFrame(() => {
+    if (characterRef.current == null) {
+      return
+    }
+    if (characterRef.current.position.y < -10) {
+      characterRef.current.position.set(0, 0, 0)
+    }
+  })
+  useXRControllerLocomotionActionBindings()
+  return (
+    <>
+      <directionalLight
+        intensity={1.2}
+        position={[5, 10, 10]}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-left={-10}
+        shadow-camera-right={10}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-10}
+      />
+      <ambientLight intensity={1} />
+      <SimpleCharacter cameraBehavior={false} ref={characterRef} />
+      <BvhPhysicsBody>
+        <PrototypeBox color="&#35;cccccc" scale={[2, 1, 3]} position={[3.91, 0, 0]} />
+        <PrototypeBox color="&#35;ffccff" scale={[3, 1, 3]} position={[2.92, 1.5, -1.22]} />
+        <PrototypeBox color="&#35;ccffff" scale={[2, 0.5, 3]} position={[1.92, 2.5, -3.22]} />
+        <PrototypeBox color="&#35;ffccff" scale={[2, 1, 3]} position={[-2.92, 0, -2.22]} />
+        <PrototypeBox color="&#35;ccffff" scale={[1, 1, 4]} position={[0.08, -1, 0]} />
+        <PrototypeBox color="&#35;ffffcc" scale={[4, 1, 1]} position={[0.08, 3.5, 0]} />
+        <PrototypeBox color="&#35;ffffff" scale={[10, 0.5, 10]} position={[0.08, -2, 0]} />
+      </BvhPhysicsBody>
+    </>
+  )
+}
+
+```
+
+
+### Step 1: Set Up the XR Store
+
+Create an XR store configured for AR. Add these imports and create the store:
+
+```tsx
+import { XR, XROrigin, createXRStore } from '@react-three/xr'
+
+const store = createXRStore({ offerSession: 'immersive-ar' })
+```
+
+The `offerSession: 'immersive-ar'` option tells the XR system that we want to create an AR experience.
+
+### Step 2: Wrap Your Scene with XR Components
+
+Wrap your scene content with the `XR` component and add an `XROrigin`:
+
+```tsx
+export function App() {
+  return (
+    <Viverse>
+      <Canvas
+        style={{ width: '100%', flexGrow: 1 }}
+        camera={{ fov: 90, position: [0, 2, 2] }}
+        shadows
+        gl={{ antialias: true, localClippingEnabled: true }}
+      >
+        <Suspense fallback={<Text>Loading...</Text>}>
+          <XR store={store}>
+            <XROrigin scale={10} position-y={-8} position-z={10} />
+            <Scene />
+          </XR>
+        </Suspense>
+      </Canvas>
+    </Viverse>
+  )
+}
+```
+
+**Key points:**
+- `XROrigin` defines the coordinate system origin for AR tracking
+- `scale={10}` makes the scene 10x larger relative to the real world
+- `position-y={-8} position-z={10}` adjusts the initial positioning
+
+### Step 3: Remove Sky Component
+
+For AR, you don't want a sky background since the camera feed should show through. Remove any `Sky` components from your scene:
+
+```tsx
+export function Scene() {
+  return (
+    <>
+      {/* Remove <Sky /> for AR */}
+      <directionalLight intensity={1.2} position={[5, 10, 10]} castShadow />
+      <ambientLight intensity={1} />
+      {/* ... rest of your scene */}
+    </>
+  )
+}
+```
+
+### Step 4: Use XR Controller Action Bindings
+
+Add XR controller action bindings using the `useXRControllerLocomotionActionBindings` hook:
+
+```tsx
+import { useXRControllerLocomotionActionBindings } from '@react-three/viverse'
+
+export function Scene() {
+  useXRControllerLocomotionActionBindings()
+  
+  return (
+    <>
+      <SimpleCharacter 
+        cameraBehavior={false} 
+        ref={characterRef}
+      >
+        <PlayerTag />
+      </SimpleCharacter>
+      {/* ... rest of scene */}
+    </>
+  )
+}
+```
+
+**Key changes:**
+- `cameraBehavior={false}` - Disables automatic camera control (AR handles this)
+- `useXRControllerLocomotionActionBindings()` - Hook that provides controller action bindings for movement
+
+The `useXRControllerLocomotionActionBindings` hook binds XR controller inputs to character locomotion actions:
+- **Left thumbstick** controls movement (forward/backward/left/right)
+- **Right controller A button** triggers jumping
+- **Left trigger** enables running
+
+## Virtual Reality (VR)
+
+Now let's look at how to add VR support to a game building on the knowledge from adding AR support.
+
+*Here's the VR app we'll build now:*
+
+Dependencies:
+
+```js
+{
+      'three': 'latest',
+      '@react-three/fiber': '<9',
+      '@react-three/viverse': 'latest',
+      '@react-three/drei': '<10',
+      '@react-three/xr': 'latest'
+    }
+```
+
+Files:
+
+File: /App.tsx
+
+```tsx
+import { Canvas } from '@react-three/fiber'
+import { Viverse } from '@react-three/viverse'
+import { XR, createXRStore } from '@react-three/xr'
+import { Scene } from './Scene'
+
+const store = createXRStore({ offerSession: 'immersive-vr' })
+
+export default function App() {
+  return (
+    <Viverse>
+      <Canvas
+        style={{ position: "absolute", inset: "0", touchAction: "none" }}
+        camera={{ fov: 90, position: [0, 2, 2] }}
+        shadows
+        gl={{ antialias: true, localClippingEnabled: true }}
+      >
+        <XR store={store}>
+            <Scene />
+        </XR>
+      </Canvas>
+    </Viverse>
+  )
+}
+
+```
+
+File: /Scene.tsx
+
+```tsx
+import { useFrame } from '@react-three/fiber'
+import {
+  SimpleCharacter,
+  BvhPhysicsBody,
+  PrototypeBox,
+  useXRControllerLocomotionActionBindings,
+} from '@react-three/viverse'
+import { Sky } from '@react-three/drei'
+import { XROrigin, useXRInputSourceState } from '@react-three/xr'
+import { useRef } from 'react'
+import { Group } from 'three'
+
+export function Scene() {
+  const characterRef = useRef<Group>(null)
+  useFrame(() => {
+    if (characterRef.current == null) {
+      return
+    }
+    if (characterRef.current.position.y < -10) {
+      characterRef.current.position.set(0, 0, 0)
+    }
+  })
+  useXRControllerLocomotionActionBindings()
+  return (
+    <>
+      <Sky />
+      <directionalLight
+        intensity={1.2}
+        position={[5, 10, 10]}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-left={-10}
+        shadow-camera-right={10}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-10}
+      />
+      <ambientLight intensity={1} />
+      <SimpleCharacter cameraBehavior={false} model={false} ref={characterRef}>
+        <SnapRotateXROrigin />
+      </SimpleCharacter>
+             <BvhPhysicsBody>
+         <PrototypeBox color="&#35;cccccc" scale={[2, 1, 3]} position={[3.91, 0, 0]} />
+         <PrototypeBox color="&#35;ffccff" scale={[3, 1, 3]} position={[2.92, 1.5, -1.22]} />
+         <PrototypeBox color="&#35;ccffff" scale={[2, 0.5, 3]} position={[1.92, 2.5, -3.22]} />
+         <PrototypeBox color="&#35;ffccff" scale={[2, 1, 3]} position={[-2.92, 0, -2.22]} />
+         <PrototypeBox color="&#35;ccffff" scale={[1, 1, 4]} position={[0.08, -1, 0]} />
+         <PrototypeBox color="&#35;ffffcc" scale={[4, 1, 1]} position={[0.08, 3.5, 0]} />
+         <PrototypeBox color="&#35;ffffff" scale={[10, 0.5, 10]} position={[0.08, -2, 0]} />
+       </BvhPhysicsBody>
+    </>
+  )
+}
+
+function SnapRotateXROrigin() {
+  const ref = useRef<Group>(null)
+  const rightController = useXRInputSourceState('controller', 'right')
+  const prev = useRef(0)
+  
+  useFrame(() => {
+    if (ref.current == null) return
+    
+    const current = Math.round(rightController?.gamepad?.['xr-standard-thumbstick']?.xAxis ?? 0)
+    if (current < 0 && prev.current >= 0) {
+      // Rotate left
+      ref.current.rotation.y += Math.PI / 2
+    }
+    if (current > 0 && prev.current <= 0) {
+      // Rotate right
+      ref.current.rotation.y -= Math.PI / 2
+    }
+    prev.current = current
+  })
+  
+  return <XROrigin ref={ref} />
+}
+
+```
+
+
+### Step 1: Change Session Type to VR
+
+We can update the offer session to show the user a native "VR" enter button.
+
+```tsx
+const store = createXRStore({ 
+  offerSession: 'immersive-vr',
+})
+```
+
+### Step 2: Re-add the Sky for VR
+
+Unlike AR, VR needs a sky background since there's no camera feed:
+
+```tsx
+import { Sky } from '@react-three/drei'
+
+export function Scene() {
+  return (
+    <>
+      <Sky />
+      <directionalLight intensity={1.2} position={[5, 10, 10]} castShadow />
+      <ambientLight intensity={1} />
+      {/* ... rest of scene */}
+    </>
+  )
+}
+```
+
+### Step 3: Hide the Character Model
+
+In VR, you typically don't want to see your own character model:
+
+```tsx
+<SimpleCharacter 
+  cameraBehavior={false} 
+  model={false}
+  ref={characterRef}
+>
+```
+
+**Key change:**
+- `model={false}` - Hides the character model in VR
+
+### Step 4: Place the XROrigin into the Simple Character and Optionally Add Snap Rotation
+
+As the XROrigin defines the player's position, we need to remove it from outside the Scene and add it into the SimpleCharacter.
+
+```tsx
+import { useXRInputSourceState } from '@react-three/xr'
+
+<SimpleCharacter ... >
+    <XROrigin />
+</SimpleCharacter>
+```
+
+For comfort in VR, you can add snap rotation using the right thumbstick by building a SnapRotateXROrigin which replaces the XROrigin component.
+
+```tsx
+import { useXRInputSourceState } from '@react-three/xr'
+
+<SimpleCharacter ... >
+    <SnapRotateXROrigin />
+</SimpleCharacter>
+
+function SnapRotateXROrigin() {
+  const ref = useRef<Group>(null)
+  const rightController = useXRInputSourceState('controller', 'right')
+  const prev = useRef(0)
+  
+  useFrame(() => {
+    if (ref.current == null) return
+    
+    const current = Math.round(rightController?.gamepad?.['xr-standard-thumbstick']?.xAxis ?? 0)
+    if (current < 0 && prev.current >= 0) {
+      // Rotate left
+      ref.current.rotation.y += Math.PI / 2
+    }
+    if (current > 0 && prev.current <= 0) {
+      // Rotate right
+      ref.current.rotation.y -= Math.PI / 2
+    }
+    prev.current = current
+  })
+  
+  return <XROrigin ref={ref} />
+}
+```
+
+## Summary
+
+**For AR:**
+1. Use `offerSession: 'immersive-ar'`
+2. Remove `Sky` component
+3. Use `useXRControllerLocomotionActionBindings()` for to bind the locomotion actions
+4. Set `cameraBehavior={false}` on SimpleCharacter
+5. Add `XROrigin` with appropriate scaling/positioning
+
+**Additional changes for VR:**
+1. Change to `offerSession: 'immersive-vr'` 
+2. Re-add `Sky` component
+3. Set `model={false}` to hide character
+4. Place the XROrigin into the SimpleCharacter and optionally add snap rotation for comfort
+

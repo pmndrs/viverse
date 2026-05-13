@@ -1,5 +1,4 @@
 
-<!-- From: getting-started/all-components-and-hooks.md -->
 <a id="doc-getting-started-all-components-and-hooks"></a>
 # All Components and Hooks
 
@@ -125,12 +124,15 @@ Provides the active character model context so that animation and bone utilities
 **Example:**
 
 ```tsx
-const model = useCharacterModelLoader({ url: 'avatar.vrm', castShadow: true })
+const model = useCharacterModelLoader({
+  url: 'https://raw.githubusercontent.com/pmndrs/viverse/main/examples/fortnite/public/avatar.vrm',
+  castShadow: true,
+})
 
 return (
   <CharacterModelProvider model={model}>
     <RunTimeline>
-      <CharacterAnimationAction url="idle.glb" />
+      <CharacterAnimationAction url="https://raw.githubusercontent.com/pmndrs/viverse/main/packages/viverse/assets/idle.glb" />
     </RunTimeline>
     <primitive object={model.scene} />
   </CharacterModelProvider>
@@ -151,12 +153,17 @@ Defines a logical animation layer (e.g., "lower-body", "upper-body"). All nested
 ```tsx
 <RunTimeline>
   <CharacterAnimationLayer name="lower-body">
-    <CharacterAnimationAction url="walk.glb" mask={lowerBodyMask} />
+    <CharacterAnimationAction
+      url="https://raw.githubusercontent.com/pmndrs/viverse/main/packages/viverse/assets/walk.glb"
+      mask={lowerBodyMask}
+    />
   </CharacterAnimationLayer>
   <CharacterAnimationLayer name="upper-body">
     <AdditiveCharacterAnimationAction
-      referenceClip={{ url: 'aim-forward.glb' }}
-      url="pistol-idle.glb"
+      referenceClip={{
+        url: 'https://raw.githubusercontent.com/pmndrs/viverse/main/examples/fortnite/public/aim-forward.glb',
+      }}
+      url="https://raw.githubusercontent.com/pmndrs/viverse/main/examples/fortnite/public/pistol-idle.glb"
       mask={upperBodyMask}
     />
   </CharacterAnimationLayer>
@@ -198,7 +205,7 @@ Loads and plays a clip on the active character model, integrating with `@react-t
 **Example:**
 
 ```tsx
-<CharacterAnimationAction url="idle.glb" />
+<CharacterAnimationAction url="https://raw.githubusercontent.com/pmndrs/viverse/main/packages/viverse/assets/idle.glb" />
 ```
 
 ### `<AdditiveCharacterAnimationAction>`
@@ -214,8 +221,8 @@ Convenience wrapper around `<CharacterAnimationAction>` that plays an additive v
 
 ```tsx
 <AdditiveCharacterAnimationAction
-  referenceClip={{ url: 'aim-forward.glb' }}
-  url="pistol-reload.glb"
+  referenceClip={{ url: 'https://raw.githubusercontent.com/pmndrs/viverse/main/examples/fortnite/public/aim-forward.glb' }}
+  url="https://raw.githubusercontent.com/pmndrs/viverse/main/examples/fortnite/public/pistol-reload.glb"
   mask={upperBodyMask}
 />
 ```

@@ -1,4 +1,4 @@
 interface:
-  display_name: "VIVERSE Three.js"
-  short_description: "Build VIVERSE games with Three.js"
-  default_prompt: "Use $pmndrs-viverse to build a simple VIVERSE game."
+  display_name: 'VIVERSE Three.js'
+  short_description: 'Build VIVERSE games with Three.js'
+  default_prompt: 'Use $pmndrs-viverse by routing to the smallest relevant reference before inventing APIs. Build around a visible VIVERSE player: use SimpleCharacter for ordinary locomotion, and use the custom character controller reference when the game needs custom clips, directional locomotion, camera-relative aim, held items, or layered upper-body actions. Keep collision, sensors, shots, pickups, blockers, and scoring on one coherent gameplay path. Validate playable games with $vitexec through normal user input, visible evidence, and a saved ./vitexec/play.ts route that reuses the helpers and milestones proven by any disposable probes.'

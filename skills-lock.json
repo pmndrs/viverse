@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "vitexec": {
+      "source": "drawcall-ai/vitexec",
+      "sourceType": "github",
+      "skillPath": "skills/vitexec/SKILL.md",
+      "computedHash": "c1c8b62829ee5b14fe1708ff06b6e03310888ba4d90b57a2237c2e877724ef45"
+    }
+  }
+}

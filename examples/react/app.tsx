@@ -86,15 +86,7 @@ export function Scene() {
         {!firstPerson && hasSword && (
           <CharacterModelBone bone="rightHand">
             <Suspense fallback={null}>
-              <Gltf
-                scale={0.5}
-                scale-y={0.65}
-                position-y={-0.02}
-                position-x={0.07}
-                rotation-z={-(0.2 * Math.PI) / 2}
-                rotation-x={-(1 * Math.PI) / 2}
-                src="sword.gltf"
-              />
+              <Gltf scale={0.5} scale-y={0.65} position-y={-0.02} position-x={0.07} src="sword.gltf" />
             </Suspense>
           </CharacterModelBone>
         )}

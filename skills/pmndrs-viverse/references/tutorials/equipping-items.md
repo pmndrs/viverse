@@ -1,54 +1,52 @@
----
-title: Equipping the Character With Items
-description: Learn how to attach 3D objects onto the character's bones.
-nav: 7
----
+<a id="doc-tutorials-equipping-items"></a>
+
+# Equipping the Character With Items
 
 This tutorial shows you how to equip your character with items by attaching 3D objects to specific bones. We'll create a simple sword using just two meshes and attach it to the character's right hand.
 
 _Here's a preview of what we'll build in this tutorial:_
 
-<Sandpack
-  template="react-ts"
-  customSetup={{
-    dependencies: {
+Dependencies:
+
+```js
+{
       'three': 'latest',
       '@react-three/fiber': '<9',
       '@react-three/viverse': 'latest',
       '@react-three/drei': '<10'
-    },
-  }}
-  files={{
-    '/App.tsx': `
+    }
+```
+
+Files:
+
+File: /App.tsx
+
+```tsx
 import { Sky } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Viverse, SimpleCharacter, BvhPhysicsBody, PrototypeBox, CharacterModelBone } from '@react-three/viverse'
 
 export default function App() {
   return (
-    <Canvas shadows style={{ position: "absolute", inset: "0", touchAction: "none" }}>
+    <Canvas shadows style={{ position: 'absolute', inset: '0', touchAction: 'none' }}>
       <Viverse>
         <Sky />
         <directionalLight intensity={1.2} position={[-10, 10, -10]} castShadow />
         <ambientLight intensity={1} />
         <SimpleCharacter>
           <CharacterModelBone bone="rightHand">
-            <group
-              scale={0.5}
-              position-y={-0.02}
-              position-x={0.07}
-            >
-                {/* Blade */}
-                <mesh position={[0, 0.8, 0]} castShadow>
-                    <boxGeometry args={[0.08, 1.9, 0.04]} />
-                    <meshStandardMaterial color="#c0c0c0" metalness={0.9} roughness={0.1} />
-                </mesh>
-                
-                {/* Handle */}
-                <mesh position={[0, 0.2, 0]} castShadow>
-                    <boxGeometry args={[0.3, 0.04, 0.04]} />
-                    <meshStandardMaterial color="#654321" metalness={0.1} roughness={0.8} />
-                </mesh>
+            <group scale={0.5} position-y={-0.02} position-x={0.07}>
+              {/* Blade */}
+              <mesh position={[0, 0.8, 0]} castShadow>
+                <boxGeometry args={[0.08, 1.9, 0.04]} />
+                <meshStandardMaterial color="#c0c0c0" metalness={0.9} roughness={0.1} />
+              </mesh>
+
+              {/* Handle */}
+              <mesh position={[0, 0.2, 0]} castShadow>
+                <boxGeometry args={[0.3, 0.04, 0.04]} />
+                <meshStandardMaterial color="#654321" metalness={0.1} roughness={0.8} />
+              </mesh>
             </group>
           </CharacterModelBone>
         </SimpleCharacter>
@@ -58,14 +56,14 @@ export default function App() {
       </Viverse>
     </Canvas>
   )
-}`}}
-/>
+}
+```
 
 ## Understanding Bone Attachment
 
 The `CharacterModelBone` component allows you to attach any 3D object to specific bones in the character's skeleton. This is perfect for equipping weapons, accessories, or any items that should move with the character.
 
-For right-hand attachments, use the same local-axis convention as the custom controller tutorial: `+X` offsets across the hand, `+Y` is vertical or grip-up, and `-Z` is forward for a muzzle, beam, torch cone, or other aimed tool. If a glTF weapon is authored with its barrel on another axis, wrap or rotate it so the muzzle points local `-Z` after attachment; the tutorial `pistol.glb` uses `rotation-x={-Math.PI / 2}` because its barrel is authored on model `+Y`.
+For hand attachments, use the same local-axis convention as the custom controller tutorial: `+X` offsets across the hand, `+Y` is vertical or grip-up, and `-Z` is forward for a muzzle, beam, torch cone, or other aimed tool. If a glTF weapon is authored with its barrel on another axis, wrap or rotate it so the muzzle points local `-Z` after attachment; the tutorial `pistol.glb` uses `rotation-x={-Math.PI / 2}` because its barrel is authored on model `+Y`.
 
 ### Step 1: Import the CharacterModelBone Component
 

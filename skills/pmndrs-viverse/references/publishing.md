@@ -1,5 +1,4 @@
 
-<!-- From: tutorials/publish-to-viverse.md -->
 <a id="doc-tutorials-publish-to-viverse"></a>
 # Publish to VIVERSE
 

@@ -1,5 +1,4 @@
 
-<!-- From: without-react/introduction.mdx -->
 <a id="doc-without-react-introduction"></a>
 # Without React
 
@@ -110,7 +109,9 @@ import { GLTFLoader } from 'three/examples/jsm/Addons.js'
 
 // Add after sky setup
 const gltfLoader = new GLTFLoader()
-const ground = await gltfLoader.loadAsync('./map.glb')
+const ground = await gltfLoader.loadAsync(
+  'https://raw.githubusercontent.com/pmndrs/viverse/main/examples/vanilla/public/map.glb',
+)
 ground.scene.traverse((object) => {
   object.castShadow = true
   object.receiveShadow = true
@@ -118,7 +119,7 @@ ground.scene.traverse((object) => {
 scene.add(ground.scene)
 ```
 
-Make sure to place your `map.glb` file in the `public` folder.
+The map is loaded from `https://raw.githubusercontent.com/pmndrs/viverse/main/examples/vanilla/public/map.glb`.
 
 ## Step 4: Adding Lighting
 
@@ -305,7 +306,6 @@ npm run dev
 
 Your vanilla Three.js game with VIVERSE integration is now complete! You should see a 3D environment with a controllable character that displays a floating player tag with the user's avatar and name.
 
-<!-- From: without-react/actions.mdx -->
 <a id="doc-without-react-actions"></a>
 # Actions and Action Bindings
 

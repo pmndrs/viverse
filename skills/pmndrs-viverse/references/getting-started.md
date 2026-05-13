@@ -1,5 +1,4 @@
 
-<!-- From: getting-started/index.mdx -->
 <a id="doc-getting-started-index"></a>
 # Introduction
 
@@ -11,7 +10,6 @@ npm install three @react-three/fiber @react-three/viverse
 
 > A prototype map with the `<SimpleCharacter/>` component and its default model
 
-<!-- Sandpack/Sandbox replaced: inline code and dependencies -->
 Dependencies:
 
 ```js
@@ -78,7 +76,6 @@ Check out how to build games using @pmndrs/viverse and only [vanilla three.js](#
 
 This project would not be possible without the default model and default animations made by [Quaternius](https://quaternius.com/), the prototype texture from [kenney.nl](https://www.kenney.nl/), and the [three-vrm project](https://github.com/pixiv/three-vrm) from the [pixiv team](https://github.com/pixiv)!
 
-<!-- From: getting-started/examples.md -->
 <a id="doc-getting-started-examples"></a>
 # Examples
 

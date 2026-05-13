@@ -1,0 +1,225 @@
+
+<a id="doc-tutorials-access-avatar-and-profile"></a>
+# Accessing Avatar and Profile
+
+This tutorial shows you how to display a player tag above the character by accessing the user profile information from VIVERSE.
+
+_Here's a preview of what we'll build in this tutorial:_
+
+Dependencies:
+
+```js
+{
+      'three': 'latest',
+      '@react-three/fiber': '<9',
+      '@react-three/viverse': 'latest',
+      '@react-three/drei': '<10',
+      "@react-three/uikit": "^1.0.41"
+    }
+```
+
+Files:
+
+File: /Playertag.tsx
+
+```tsx
+import { useViverseProfile } from '@react-three/viverse'
+import { Container, Image, Text } from '@react-three/uikit'
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { Group } from 'three'
+
+export function PlayerTag() {
+  const profile = useViverseProfile() ?? {
+    name: 'Anonymous',
+    activeAvatar: { headIconUrl: 'https://picsum.photos/200' },
+  }
+  
+  const ref = useRef<Group>(null)
+  
+  // Make the tag always face the camera
+  useFrame((state) => {
+    if (ref.current == null) {
+      return
+    }
+    ref.current.quaternion.copy(state.camera.quaternion)
+  })
+
+return (
+
+<group ref={ref} position-y={2.15}>
+  <Container
+    depthTest={false}
+    renderOrder={1}
+    borderRadius={10}
+    paddingX={2}
+    height={20}
+    backgroundColor="rgba(255, 255, 255, 0.5)"
+    flexDirection="row"
+    alignItems="center"
+    gap={4}
+  >
+    <Image
+      width={16}
+      height={16}
+      borderRadius={14}
+      depthTest={false}
+      renderOrder={1}
+      src={profile.activeAvatar?.headIconUrl}
+    />
+    <Text depthTest={false} renderOrder={1} fontWeight="bold" fontSize={12} marginRight={3}>
+      {profile.name}
+    </Text>
+  </Container>
+</group>
+) }
+```
+
+File: /App.tsx
+
+```tsx
+ import {Sky} from '@react-three/drei' import {Canvas} from '@react-three/fiber' import
+{(Viverse, SimpleCharacter, BvhPhysicsBody, PrototypeBox)} from '@react-three/viverse' import {PlayerTag} from
+"./Playertag"
+
+export default function App() {
+  return (
+    <Canvas shadows style={{ position: "absolute", inset: "0", touchAction: "none" }}>
+      <Viverse>
+        <Sky />
+        <directionalLight intensity={1.2} position={[-10, 10, -10]} castShadow />
+        <ambientLight intensity={1} />
+        <SimpleCharacter>
+          <PlayerTag />
+        </SimpleCharacter>
+        <BvhPhysicsBody>
+          <PrototypeBox scale={[10, 1, 15]} position={[0, -0.5, 0]} />
+        </BvhPhysicsBody>
+      </Viverse>
+    </Canvas>
+  )
+}
+```
+
+
+First, we use the `useViverseProfile()` hook to fetch the current user's profile from VIVERSE, including their name and avatar information. We provide a fallback for when the user isn't logged in:
+
+```tsx
+const profile = useViverseProfile() ?? {
+  name: 'Anonymous',
+  activeAvatar: { headIconUrl: 'https://picsum.photos/200' },
+}
+```
+
+Next, we need a 3D ui library, install it via
+
+```bash
+npm install @react-three/uikit
+```
+
+UIKit provides HTML-like components (`Container`, `Image`, `Text`) that work in 3D space. We create a card-like layout with flexbox:
+
+```tsx
+<Container
+  depthTest={false}
+  renderOrder={1}
+  borderRadius={10}
+  paddingX={2}
+  height={20}
+  backgroundColor="rgba(255, 255, 255, 0.5)"
+  flexDirection="row"
+  alignItems="center"
+  gap={4}
+>
+  <Image
+    depthTest={false}
+    renderOrder={1}
+    width={16}
+    height={16}
+    borderRadius={14}
+    src={profile.activeAvatar?.headIconUrl}
+  />
+  <Text depthTest={false} renderOrder={1} fontWeight="bold" fontSize={12} marginRight={3}>
+    {profile.name}
+  </Text>
+</Container>
+```
+
+Next, we use `useFrame` to constantly update the tag's rotation to match the camera:
+
+```tsx
+import { Group } from 'three'
+
+const ref = useRef<Group>(null)
+
+useFrame((state) => {
+  if (ref.current == null) {
+    return
+  }
+  ref.current.quaternion.copy(state.camera.quaternion)
+})
+```
+
+The full `PlayerTag` component looks like this:
+
+```tsx
+import { useViverseProfile } from '@react-three/viverse'
+import { Container, Image, Text } from '@react-three/uikit'
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { Group } from 'three'
+
+export function PlayerTag() {
+  const profile = useViverseProfile() ?? {
+    name: 'Anonymous',
+    activeAvatar: { headIconUrl: 'https://picsum.photos/200' },
+  }
+
+  const ref = useRef<Group>(null)
+
+  // Make the tag always face the camera
+  useFrame((state) => {
+    if (ref.current == null) {
+      return
+    }
+    ref.current.quaternion.copy(state.camera.quaternion)
+  })
+
+  return (
+    <group ref={ref} position-y={2.15}>
+      <Container
+        depthTest={false}
+        renderOrder={1}
+        borderRadius={10}
+        paddingX={2}
+        height={20}
+        backgroundColor="rgba(255, 255, 255, 0.5)"
+        flexDirection="row"
+        alignItems="center"
+        gap={4}
+      >
+        <Image
+          depthTest={false}
+          renderOrder={1}
+          width={16}
+          height={16}
+          borderRadius={14}
+          src={profile.activeAvatar?.headIconUrl}
+        />
+        <Text depthTest={false} renderOrder={1} fontWeight="bold" fontSize={12} marginRight={3}>
+          {profile.name}
+        </Text>
+      </Container>
+    </group>
+  )
+}
+```
+
+Now finally lets add the PlayerTag as a child of SimpleCharacter to display it
+
+```tsx
+<SimpleCharacter>
+  <PlayerTag />
+</SimpleCharacter>
+```
+
