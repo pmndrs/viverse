@@ -1,4 +1,4 @@
-import { Object3D, Vector3, Euler, Vector3Tuple, Ray, Quaternion } from 'three'
+import { Object3D, Vector3, Euler, Vector3Tuple, Ray } from 'three'
 import { clamp } from 'three/src/math/MathUtils.js'
 import { RotatePitchAction, RotateYawAction, ZoomAction } from './action/index.js'
 
@@ -81,7 +81,7 @@ const sphericalOffset = new Vector3()
 const characterWorldPosition = new Vector3()
 const euler = new Euler()
 const rayHelper = new Ray()
-const quaternionHelper = new Quaternion()
+const upAxisHelper = new Vector3(0, 1, 0)
 
 export class CharacterCameraBehavior {
   public rotationPitch = (-20 * Math.PI) / 180
@@ -185,8 +185,10 @@ export class CharacterCameraBehavior {
 
     //compute character->camera delta through offset
     this.computeCharacterBaseOffset(chracterBaseOffsetHelper, options.characterBaseOffset)
-    target.getWorldQuaternion(quaternionHelper)
-    chracterBaseOffsetHelper.applyQuaternion(quaternionHelper)
+    // Rotate the offset by the camera yaw (camera-relative), not the character's body
+    // facing: an over-the-shoulder offset then tracks the view instead of swimming with
+    // the character, and a purely vertical offset (default / first-person) is unchanged.
+    chracterBaseOffsetHelper.applyAxisAngle(upAxisHelper, this.rotationYaw)
     target.getWorldPosition(characterWorldPosition)
     characterWorldPosition.add(chracterBaseOffsetHelper)
     camera.getWorldPosition(deltaHelper)
@@ -249,8 +251,10 @@ export class CharacterCameraBehavior {
 
     // Get target position with offset (reuse helper vector)
     this.computeCharacterBaseOffset(chracterBaseOffsetHelper, options.characterBaseOffset)
-    target.getWorldQuaternion(quaternionHelper)
-    chracterBaseOffsetHelper.applyQuaternion(quaternionHelper)
+    // Rotate the offset by the camera yaw (camera-relative), not the character's body
+    // facing: an over-the-shoulder offset then tracks the view instead of swimming with
+    // the character, and a purely vertical offset (default / first-person) is unchanged.
+    chracterBaseOffsetHelper.applyAxisAngle(upAxisHelper, this.rotationYaw)
     target.getWorldPosition(characterWorldPosition)
     characterWorldPosition.add(chracterBaseOffsetHelper)
 
