@@ -1,5 +1,5 @@
 import { VRM, type VRMHumanBoneName } from '@pixiv/three-vrm'
-import { AnimationAction, AnimationMixer, Euler, Object3D, Quaternion } from 'three'
+import { AnimationAction, AnimationMixer, Box3, Euler, Object3D, Quaternion, Vector3 } from 'three'
 import { loadGltfCharacterModel } from './gltf.js'
 import { loadVrmCharacterModel } from './vrm.js'
 import type { BoneMap } from '../utils.js'
@@ -51,6 +51,17 @@ export type CharacterModel = {
   scene: Object3D
   currentAnimations: Map<string | undefined, AnimationAction>
   boneRotationOffset?: Quaternion
+  /**
+   * The character's real height in world units, measured once from the loaded mesh in its
+   * bind pose. Use this to size things to the character (nameplates, hitboxes, scale
+   * normalization) instead of `new Box3().setFromObject(scene)` — that includes the skeleton
+   * bones and the internal rest-pose reference copy and changes as the animation plays, so it
+   * returns a height several times the visible body.
+   *
+   * Always set by `loadCharacterModel`; optional only so hand-built `CharacterModel` objects
+   * (e.g. cloned NPC instances) stay valid — copy it across when you clone.
+   */
+  height?: number
 }
 
 export async function loadCharacterModel(
@@ -102,11 +113,16 @@ export async function loadCharacterModel(
       obj.receiveShadow = true
     }
   })
+  // Measure the real height here: the scene is still in its bind pose, the mixer has not run,
+  // and the rest-pose clone below has not been added yet — so the bounding box is just the
+  // visible mesh and is stable. Measuring later (after the clone, once animating) inflates it.
+  const height = new Box3().setFromObject(result.scene).getSize(new Vector3()).y
+
   const restPose = result.scene.clone()
   restPose.visible = false
   restPose.traverse((object) => (object.name = `rest_${object.name}`))
   result.scene.add(restPose)
-  return Object.assign(result, { mixer: new AnimationMixer(result.scene), currentAnimations: new Map() })
+  return Object.assign(result, { mixer: new AnimationMixer(result.scene), currentAnimations: new Map(), height })
 }
 
 export function getBone(model: CharacterModel, name: VRMHumanBoneName): Object3D | undefined {
