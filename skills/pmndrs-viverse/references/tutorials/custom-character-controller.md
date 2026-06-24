@@ -195,6 +195,16 @@ Render the character and attach the pistol so you can already walk around. We wi
 
 Keep the pistol as a loaded model (`FortniteAsset.pistol`, or `/pistol.glb` after copying assets). Primitive box or cylinder meshes are useful while sketching, but they do not prove hand-bone orientation, muzzle direction, or held-item animation.
 
+### Orienting a hand-held prop
+
+The `rotation` and `position` above are specific to *this* pistol and *this* avatar. A hand-parented prop lives in two unrelated coordinate frames — the asset's own (which local axis is the barrel, which is up) and the hand bone's rest frame (which varies per rig) — and the offset reconciles only that one pair. Copy these numbers onto a different gun or rig and the barrel points off. Re-derive the offset for your pair, and get these three things right or it looks wrong the moment the player aims:
+
+- **Align the barrel to the character's *local* forward axis, never a world direction.** The prop is parented to the hand, so when the controller turns the body to face the aim, the prop turns with it. Solve for the character's forward and that body rotation carries the barrel correctly — it cancels out of your offset, so you can fit and check the offset with the body at any heading. Solve for a world direction (e.g. "+Z") and the facing rotation leaks into the offset: the barrel swings off-aim as soon as the character turns — the classic "points sideways or backward when aiming" bug.
+- **Fit and check it in the pose the prop is actually seen in.** The hand's orientation differs between poses and the offset is fixed, so one tuned in the idle/rest pose tips the barrel off once the aim clip plays. For a shooter, drive the character into its aim/fire stance first, then fit the offset there.
+- **Verify by looking, from two angles.** A plausible-looking rotation is not proof. Render the armed character in its aim pose and confirm the barrel visibly runs along the aim: top-down catches left/right (yaw); a side view catches pitch and roll (level, upright, grip seated in the palm).
+
+VIVERSE humanoid models share one normalized skeleton, so the offset for a given gun-convention is a constant across characters — fit it once and reuse it; do not re-measure per model (measuring a rigged character to derive transforms is unreliable anyway).
+
 ## Step 3.1 — Create ammo store
 
 We’ll track ammo with a tiny Zustand store so reload/shoot actions can update it and the HUD can display it.
