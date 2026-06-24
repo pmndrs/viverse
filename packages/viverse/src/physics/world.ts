@@ -1,4 +1,15 @@
-import { Box3, DoubleSide, InstancedMesh, Intersection, Matrix4, Mesh, Object3D, Ray, Vector3 } from 'three'
+import {
+  Box3,
+  BufferGeometry,
+  DoubleSide,
+  InstancedMesh,
+  Intersection,
+  Matrix4,
+  Mesh,
+  Object3D,
+  Ray,
+  Vector3,
+} from 'three'
 import { computeBoundsTree, MeshBVH, StaticGeometryGenerator, ExtendedTriangle } from 'three-mesh-bvh'
 
 const rayHelper = new Ray()
@@ -8,6 +19,16 @@ const triangleHelper = new ExtendedTriangle()
 const matrixHelper = new Matrix4()
 
 type BvhEntry = { object: Object3D; isStatic: boolean; bvh: MeshBVH; instanceIndex?: number }
+
+/**
+ * Identifies which geometries StaticGeometryGenerator can merge together. Geometries are mergeable when they share
+ * the same set of attributes and agree on whether they are indexed, so two geometries with an equal signature are
+ * guaranteed not to trigger the "Make sure all geometries have the same number of attributes." error.
+ */
+function geometryAttributeSignature(geometry: BufferGeometry): string {
+  const attributeNames = Object.keys(geometry.attributes).sort().join(',')
+  return `${geometry.index == null ? 'non-indexed' : 'indexed'}:${attributeNames}`
+}
 
 export class BvhPhysicsWorld {
   private bodies: Array<BvhEntry> = []
@@ -46,37 +67,47 @@ export class BvhPhysicsWorld {
   private computeBvhEntries(object: Object3D, isStatic: boolean): Array<BvhEntry> {
     object.updateWorldMatrix(true, true)
     const result: Array<BvhEntry> = []
-    let hasNonInstancedMeshes = false
+    //StaticGeometryGenerator merges all meshes into a single geometry and throws if they don't all expose
+    //the same attributes ("Make sure all geometries have the same number of attributes."). Group the meshes by
+    //their attribute signature so every merge only ever sees compatible geometries and generate one bvh per group.
+    const meshGroups = new Map<string, Array<Mesh>>()
     object.traverse((entry) => {
       if (entry instanceof InstancedMesh) {
         const bvh = computeBoundsTree.apply(entry.geometry)
         result.push(
-          ...new Array(entry.instanceMatrix.count).fill(undefined as any).map((_, i) => ({
+          ...Array.from({ length: entry.instanceMatrix.count }, (_, instanceIndex) => ({
             object: entry,
             bvh,
-            instanceIndex: i,
+            instanceIndex,
             isStatic,
           })),
         )
         return
       }
       if (entry instanceof Mesh) {
-        hasNonInstancedMeshes = true
+        const signature = geometryAttributeSignature(entry.geometry)
+        let group = meshGroups.get(signature)
+        if (group == null) {
+          meshGroups.set(signature, (group = []))
+        }
+        group.push(entry)
       }
     })
-    if (hasNonInstancedMeshes) {
+    if (meshGroups.size > 0) {
       const parent = object.parent
       if (!isStatic) {
         object.parent = null
         object.updateMatrixWorld(true)
       }
-      const geometry = new StaticGeometryGenerator(object).generate()
-      const bvh = computeBoundsTree.apply(geometry)
+      for (const meshes of meshGroups.values()) {
+        const geometry = new StaticGeometryGenerator(meshes).generate()
+        const bvh = computeBoundsTree.apply(geometry)
+        result.push({ object, bvh, isStatic })
+      }
       if (!isStatic) {
         object.parent = parent
         object.updateMatrixWorld(true)
       }
-      result.push({ object, bvh, isStatic })
     }
 
     return result
