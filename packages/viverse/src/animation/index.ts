@@ -12,10 +12,10 @@ import { BVHLoader } from 'three/examples/jsm/loaders/BVHLoader.js'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { applyAnimationBoneMap } from './bone-map.js'
-import _bvhBoneMap from './bvh-bone-map.json' with { type: 'json' }
+import _bvhBoneMap from './bvh-bone-map.js'
 import { DefaultUrl, resolveDefaultCharacterAnimationUrl } from './default.js'
 import { applyMask, type CharacterAnimationMask } from './mask.js'
-import _mixamoBoneMap from './mixamo-bone-map.json' with { type: 'json' }
+import _mixamoBoneMap from './mixamo-bone-map.js'
 import { scaleAnimationClipTime, trimAnimationClip } from './utils.js'
 import { vrmaLoader, type CharacterModel } from '../model/index.js'
 
@@ -346,6 +346,6 @@ export async function loadCharacterAnimation(
   return clip
 }
 
-export const mixamoBoneMap = _mixamoBoneMap as Record<string, VRMHumanBoneName>
-export const bvhBoneMap = _bvhBoneMap as Record<string, VRMHumanBoneName>
-export const allBoneNames = Object.values(_mixamoBoneMap)
+export const mixamoBoneMap = _mixamoBoneMap
+export const bvhBoneMap = _bvhBoneMap
+export const allBoneNames: Array<string> = Object.values(_mixamoBoneMap)
