@@ -10,7 +10,8 @@ import {
   Ray,
   Vector3,
 } from 'three'
-import { computeBoundsTree, MeshBVH, StaticGeometryGenerator, ExtendedTriangle } from 'three-mesh-bvh'
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { computeBoundsTree, MeshBVH, ExtendedTriangle } from 'three-mesh-bvh'
 
 const rayHelper = new Ray()
 const farPointHelper = new Vector3()
@@ -21,13 +22,17 @@ const matrixHelper = new Matrix4()
 type BvhEntry = { object: Object3D; isStatic: boolean; bvh: MeshBVH; instanceIndex?: number }
 
 /**
- * Identifies which geometries StaticGeometryGenerator can merge together. Geometries are mergeable when they share
- * the same set of attributes and agree on whether they are indexed, so two geometries with an equal signature are
- * guaranteed not to trigger the "Make sure all geometries have the same number of attributes." error.
+ * Bakes a mesh's collision geometry into `matrix` space. A bvh only needs positions and (optionally) an index, so
+ * everything else is dropped - this keeps the merge below trivial and sidesteps three's "geometries must have the
+ * same attributes" restriction that a body mixing meshes with different attribute sets (e.g. gltf primitives) hits.
  */
-function geometryAttributeSignature(geometry: BufferGeometry): string {
-  const attributeNames = Object.keys(geometry.attributes).sort().join(',')
-  return `${geometry.index == null ? 'non-indexed' : 'indexed'}:${attributeNames}`
+function bakeCollisionGeometry(mesh: Mesh, matrix: Matrix4): BufferGeometry {
+  const geometry = new BufferGeometry()
+  geometry.setAttribute('position', mesh.geometry.getAttribute('position').clone())
+  if (mesh.geometry.index != null) {
+    geometry.setIndex(mesh.geometry.index.clone())
+  }
+  return geometry.applyMatrix4(matrix)
 }
 
 export class BvhPhysicsWorld {
@@ -66,11 +71,15 @@ export class BvhPhysicsWorld {
 
   private computeBvhEntries(object: Object3D, isStatic: boolean): Array<BvhEntry> {
     object.updateWorldMatrix(true, true)
+    //Static bodies are baked in world space; kinematic bodies are baked in the body's local space so that its
+    //(changing) world matrix can be applied at query time instead (see computeMatrix), hence the inverse here.
+    const worldToBakeSpace = isStatic ? undefined : new Matrix4().copy(object.matrixWorld).invert()
+    const bakeMatrix = new Matrix4()
     const result: Array<BvhEntry> = []
-    //StaticGeometryGenerator merges all meshes into a single geometry and throws if they don't all expose
-    //the same attributes ("Make sure all geometries have the same number of attributes."). Group the meshes by
-    //their attribute signature so every merge only ever sees compatible geometries and generate one bvh per group.
-    const meshGroups = new Map<string, Array<Mesh>>()
+    //A merge of collision geometries only works when they agree on being indexed, so keep indexed and
+    //non-indexed meshes apart and turn each group into its own bvh.
+    const indexedGeometries: Array<BufferGeometry> = []
+    const nonIndexedGeometries: Array<BufferGeometry> = []
     object.traverse((entry) => {
       if (entry instanceof InstancedMesh) {
         const bvh = computeBoundsTree.apply(entry.geometry)
@@ -84,30 +93,23 @@ export class BvhPhysicsWorld {
         )
         return
       }
-      if (entry instanceof Mesh) {
-        const signature = geometryAttributeSignature(entry.geometry)
-        let group = meshGroups.get(signature)
-        if (group == null) {
-          meshGroups.set(signature, (group = []))
-        }
-        group.push(entry)
+      if (!(entry instanceof Mesh)) {
+        return
       }
+      bakeMatrix.copy(entry.matrixWorld)
+      if (worldToBakeSpace != null) {
+        bakeMatrix.premultiply(worldToBakeSpace)
+      }
+      const geometry = bakeCollisionGeometry(entry, bakeMatrix)
+      ;(geometry.index == null ? nonIndexedGeometries : indexedGeometries).push(geometry)
     })
-    if (meshGroups.size > 0) {
-      const parent = object.parent
-      if (!isStatic) {
-        object.parent = null
-        object.updateMatrixWorld(true)
+    for (const geometries of [indexedGeometries, nonIndexedGeometries]) {
+      if (geometries.length === 0) {
+        continue
       }
-      for (const meshes of meshGroups.values()) {
-        const geometry = new StaticGeometryGenerator(meshes).generate()
-        const bvh = computeBoundsTree.apply(geometry)
-        result.push({ object, bvh, isStatic })
-      }
-      if (!isStatic) {
-        object.parent = parent
-        object.updateMatrixWorld(true)
-      }
+      const geometry = geometries.length === 1 ? geometries[0] : mergeGeometries(geometries)
+      const bvh = computeBoundsTree.apply(geometry)
+      result.push({ object, bvh, isStatic })
     }
 
     return result
