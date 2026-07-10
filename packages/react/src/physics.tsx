@@ -46,7 +46,7 @@ export function useBvhCharacterPhysics(
       return
     }
     characterPhysics.update(resolvedModel, delta, options)
-  })
+  }, -2)
   return characterPhysics
 }
 
