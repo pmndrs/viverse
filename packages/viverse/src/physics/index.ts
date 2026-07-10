@@ -41,6 +41,7 @@ const centerHelper = new Vector3()
 const collisionFreePosition = new Vector3()
 const position = new Vector3()
 const invertedParentMatrix = new Matrix4()
+const velocity = new Vector3()
 
 const YAxis = new Vector3(0, 1, 0)
 
@@ -80,13 +81,14 @@ export class BvhCharacterPhysics {
     fullDelta = Math.min(1, fullDelta)
 
     const updatesPerSecond = options.updatesPerSecond ?? 60
-    const physicsDelta = 1 / updatesPerSecond
-
-    //strong simplified fixed physics update: we compute a frame for the fractional
+    const maxPhysicsDelta = 1 / updatesPerSecond
+    const capsuleRadius = options.capsuleRadius ?? 0.4
 
     while (fullDelta > 0) {
-      const partialDelta = Math.min(fullDelta, physicsDelta)
-      fullDelta -= physicsDelta
+      const speed = velocity.copy(this.inputVelocity).add(this.stateVelocity).length()
+      const maxCollisionDelta = speed === 0 ? maxPhysicsDelta : capsuleRadius / speed
+      const partialDelta = Math.min(fullDelta, maxPhysicsDelta, maxCollisionDelta)
+      fullDelta -= partialDelta
       //compute global position and inverted parent matrix so that we can compute the position in global space and re-assign it to the local chracter space
       if (model.parent != null) {
         model.parent.updateWorldMatrix(true, false)
