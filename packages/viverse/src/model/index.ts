@@ -75,31 +75,36 @@ export async function loadCharacterModel(
 ): Promise<CharacterModel> {
   let result: Omit<CharacterModel, 'mixer' | 'currentAnimations'>
 
+  let resolvedUrl: string
   if (url == null) {
     //prepare loading the default model
     type = 'gltf'
-    url = (await import('../assets/mannequin.js')).url
+    resolvedUrl = (await import('../assets/mannequin.js')).url
     boneRotationOffset = new Quaternion().setFromEuler(new Euler(Math.PI / 2, 0, Math.PI / 2, 'ZYX'))
+  } else {
+    resolvedUrl = url
   }
 
   if (type == null) {
-    if (url.endsWith('.gltf') || url.endsWith('.glb')) {
+    if (resolvedUrl.endsWith('.gltf') || resolvedUrl.endsWith('.glb')) {
       type = 'gltf'
     }
-    if (url.endsWith('.vrm')) {
+    if (resolvedUrl.endsWith('.vrm')) {
       type = 'vrm'
     }
     if (type == null) {
-      throw new Error(`Unable to infer model type from url "${url}. Please specify the type of the model manually."`)
+      throw new Error(
+        `Unable to infer model type from url "${resolvedUrl}. Please specify the type of the model manually.`,
+      )
     }
   }
 
   switch (type) {
     case 'vrm':
-      result = await loadVrmCharacterModel(url)
+      result = await loadVrmCharacterModel(resolvedUrl)
       break
     case 'gltf':
-      result = await loadGltfCharacterModel(url, useDraco)
+      result = await loadGltfCharacterModel(resolvedUrl, useDraco)
       break
   }
   result.boneRotationOffset = boneRotationOffset
