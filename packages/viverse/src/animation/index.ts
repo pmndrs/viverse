@@ -253,6 +253,24 @@ const gltfLoader = new GLTFLoader()
 const fbxLoader = new FBXLoader()
 const bvhLoader = new BVHLoader()
 
+// Animation files are fetched and parsed once per session — three.js caches
+// neither (THREE.Cache is off and holds bytes, not parse results), so without
+// this every character re-parsed every clip file. The pipeline below mutates
+// the parsed clip and resolves rest transforms against the clip's scene, so
+// consumers receive clones and the cached originals stay pristine. Failed
+// loads are evicted and retried.
+const files = new Map<string, Promise<unknown>>()
+
+function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
+  let entry = files.get(key) as Promise<T> | undefined
+  if (entry == null) {
+    entry = load()
+    files.set(key, entry)
+    void entry.catch(() => files.delete(key))
+  }
+  return entry
+}
+
 export async function loadCharacterAnimation(
   model: CharacterModel,
   url: string | DefaultUrl,
@@ -291,29 +309,30 @@ export async function loadCharacterAnimation(
       )
     }
   }
+  const fileUrl = url
   switch (type) {
     case 'gltf': {
-      const { animations, scene } = await gltfLoader.loadAsync(url)
-      clips = animations
-      clipScene = scene
+      const { animations, scene } = await cached(`gltf:${fileUrl}`, () => gltfLoader.loadAsync(fileUrl))
+      clips = animations.map((animation) => animation.clone())
+      clipScene = scene.clone(true)
       break
     }
     case 'fbx': {
-      const scene = await fbxLoader.loadAsync(url)
-      clips = scene.animations
-      clipScene = scene
+      const scene = await cached(`fbx:${fileUrl}`, () => fbxLoader.loadAsync(fileUrl))
+      clips = scene.animations.map((animation) => animation.clone())
+      clipScene = scene.clone(true)
       break
     }
     case 'bvh': {
-      const { clip, skeleton } = await bvhLoader.loadAsync(url)
-      clips = [clip]
+      const { clip } = await cached(`bvh:${fileUrl}`, () => bvhLoader.loadAsync(fileUrl))
+      clips = [clip.clone()]
       boneMap ??= bvhBoneMap
       break
     }
     case 'mixamo': {
-      const scene = await fbxLoader.loadAsync(url)
-      clips = scene.animations
-      clipScene = scene
+      const scene = await cached(`fbx:${fileUrl}`, () => fbxLoader.loadAsync(fileUrl))
+      clips = scene.animations.map((animation) => animation.clone())
+      clipScene = scene.clone(true)
       boneMap ??= mixamoBoneMap
       break
     }
